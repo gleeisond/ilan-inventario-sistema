@@ -1,13 +1,9 @@
 // middleware.ts
-// Protege rotas e redireciona usuários não autenticados para login
+// Protege rotas verificando sessão via cookie (Edge Runtime seguro)
 
 import { type NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Rotas públicas que não precisam de autenticação
@@ -18,27 +14,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Para qualquer outra rota, verifica autenticação
-  try {
-    const supabase = createClient(supabaseUrl!, supabaseAnonKey!)
-    
-    // Tenta pegar a sessão do cookie
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
+  // Verifica se tem token de autenticação nos cookies
+  const authToken = request.cookies.get('sb-auth-token')?.value || 
+                    request.cookies.get('sb-refresh-token')?.value
 
-    // Se não tem sessão, redireciona para login
-    if (!session) {
-      return NextResponse.redirect(new URL('/auth', request.url))
-    }
-
-    // Se tem sessão, deixa passar
-    return NextResponse.next()
-  } catch (error) {
-    console.error('Erro no middleware:', error)
-    // Em caso de erro, redireciona para login (seguro)
+  // Se não tem token, redireciona para login
+  if (!authToken) {
     return NextResponse.redirect(new URL('/auth', request.url))
   }
+
+  // Se tem token, deixa passar
+  return NextResponse.next()
 }
 
 // Configurar quais rotas o middleware deve rodar
