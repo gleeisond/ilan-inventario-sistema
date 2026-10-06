@@ -1,5 +1,5 @@
 // app/layout.tsx
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { headers } from 'next/headers'
 import Sidebar from '@/components/Sidebar'
@@ -8,6 +8,13 @@ import { exigirLogin } from '@/lib/auth'
 export const metadata: Metadata = {
   title: 'ILAN - Sistema de Inventário de Mídia',
   description: 'Gerenciamento de equipamentos e manutenção de mídia para igrejas ILAN',
+  // Nome e ícone quando o sistema é instalado na tela de início do iPhone
+  appleWebApp: { capable: true, title: 'Inventário ILAN', statusBarStyle: 'black' },
+  icons: { icon: '/icone-192.png', apple: '/apple-touch-icon.png' },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#111827',
 }
 
 export default async function RootLayout({

@@ -4,6 +4,7 @@ import { loginAtivo } from '@/lib/sessao'
 import { PERFIL_LABELS } from '@/lib/usuarios'
 import { sair } from '@/app/login/actions'
 import MenuLateral from './MenuLateral'
+import InstalarApp from './InstalarApp'
 
 export default async function Sidebar() {
   if (headers().get('x-pathname') === '/login') return null
@@ -41,6 +42,7 @@ export default async function Sidebar() {
         ) : (
           !loginAtivo() && <p className="text-gray-400">Login desligado (modo de teste)</p>
         )}
+        <InstalarApp />
       </div>
     </MenuLateral>
   )
