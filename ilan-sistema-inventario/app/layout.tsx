@@ -1,6 +1,7 @@
 // app/layout.tsx
 import type { Metadata } from 'next'
 import './globals.css'
+import Sidebar from '@/components/Sidebar'
 
 export const metadata: Metadata = {
   title: 'ILAN - Sistema de Inventário de Mídia',
@@ -14,7 +15,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body>
+        <div className="flex min-h-screen">
+          <Sidebar />
+          <main className="flex-1 bg-gray-50">{children}</main>
+        </div>
+      </body>
     </html>
   )
 }
