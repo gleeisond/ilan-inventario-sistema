@@ -17,7 +17,6 @@ export const STATUS_COLORS: Record<EquipmentStatus, string> = {
   descartado: 'bg-gray-200 text-gray-700',
 }
 
-export const CATEGORIAS = ['câmera', 'áudio', 'projetor', 'luz', 'computador', 'cabo', 'tripé', 'outro']
 
 export function formatarMoeda(valor?: number | null) {
   if (valor == null) return '—'

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getSupabase } from '@/lib/supabase'
-import { CATEGORIAS, STATUS_COLORS, STATUS_LABELS, formatarMoeda } from '@/lib/equipamentos'
+import { STATUS_COLORS, STATUS_LABELS, formatarMoeda } from '@/lib/equipamentos'
 import { EquipmentStatus } from '@/types/database'
 
 export const dynamic = 'force-dynamic'
@@ -35,9 +35,10 @@ export default async function Equipamentos({ searchParams }: { searchParams: Fil
     if (termo) query = query.or(`name.ilike.%${termo}%,brand.ilike.%${termo}%`)
   }
 
-  const [{ data, error }, { data: campusList }] = await Promise.all([
+  const [{ data, error }, { data: campusList }, { data: categorias }] = await Promise.all([
     query,
     supabase.from('campus').select('id, name').order('name'),
+    supabase.from('categories').select('name').order('name'),
   ])
 
   const equipamentos = (data ?? []) as unknown as EquipamentoLinha[]
@@ -100,8 +101,8 @@ export default async function Equipamentos({ searchParams }: { searchParams: Fil
           Categoria
           <select name="categoria" defaultValue={searchParams.categoria ?? ''} className="px-3 py-2 border border-gray-300 rounded-lg">
             <option value="">Todas</option>
-            {CATEGORIAS.map(c => (
-              <option key={c} value={c}>{c}</option>
+            {categorias?.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')).map(c => (
+              <option key={c.name} value={c.name}>{c.name}</option>
             ))}
           </select>
         </label>

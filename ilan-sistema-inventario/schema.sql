@@ -209,6 +209,20 @@ CREATE TABLE IF NOT EXISTS activity_logs (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Categorias e locais dos equipamentos (o administrador gerencia em Cadastros).
+-- equipment.category e equipment.location guardam o nome.
+CREATE TABLE IF NOT EXISTS categories (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name VARCHAR(100) NOT NULL UNIQUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS locations (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name VARCHAR(255) NOT NULL UNIQUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- ====================================
 -- 4. ÍNDICES PARA PERFORMANCE
 -- ====================================
@@ -292,6 +306,8 @@ ALTER TABLE maintenance_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE maintenance_notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE equipment_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE locations ENABLE ROW LEVEL SECURITY;
 
 -- Remove políticas antigas que consultavam a própria tabela users (erro de recursão)
 DROP POLICY IF EXISTS admin_all ON users;
@@ -305,7 +321,7 @@ DECLARE t TEXT;
 BEGIN
   FOREACH t IN ARRAY ARRAY['regions', 'campus', 'users', 'equipment', 'maintenance_requests',
                            'maintenance_logs', 'maintenance_notifications', 'equipment_history',
-                           'activity_logs']
+                           'activity_logs', 'categories', 'locations']
   LOOP
     IF NOT EXISTS (SELECT 1 FROM pg_policies
                    WHERE schemaname = 'public' AND tablename = t AND policyname = 'acesso_teste') THEN

@@ -6,10 +6,10 @@ const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:rin
 
 export default function Login({ searchParams }: { searchParams: { erro?: string; voltar?: string } }) {
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-gray-900">
       <div className="w-full max-w-sm">
-        <h1 className="text-3xl font-bold text-center">ILAN</h1>
-        <p className="text-gray-600 text-center mt-1 mb-8">Inventário de Mídia</p>
+        <img src="/logo-ilan.png" alt="Ilan Church" className="w-64 mx-auto" />
+        <p className="text-gray-400 text-center mt-4 mb-8">Inventário de Mídia</p>
 
         <form action={entrar} className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
           <input type="hidden" name="voltar" value={searchParams.voltar ?? ''} />

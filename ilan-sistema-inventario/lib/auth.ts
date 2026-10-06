@@ -73,11 +73,14 @@ export type AcaoLog =
   | 'usuario_editado'
   | 'senha_definida'
   | 'senha_alterada'
+  | 'cadastro_criado'
+  | 'cadastro_editado'
+  | 'cadastro_excluido'
 
 type Log = {
   acao: AcaoLog
   descricao: string
-  entidade?: 'equipment' | 'maintenance_request' | 'user'
+  entidade?: 'equipment' | 'maintenance_request' | 'user' | 'campus' | 'category' | 'location'
   entidade_id?: string | null
   // Quem fez. Sem informar, usa o usuário logado.
   usuario?: { id: string | null; name: string } | null

@@ -13,7 +13,7 @@ export default async function Sidebar() {
 
   return (
     <aside className="w-64 bg-gray-900 text-white p-6 flex flex-col">
-      <h2 className="font-bold text-xl mb-8">ILAN</h2>
+      <img src="/logo-ilan.png" alt="Ilan Church" className="w-full max-w-[200px] mb-10" />
       <nav className="space-y-4">
         <a href="/dashboard" className="block hover:text-gray-300">Dashboard</a>
         <a href="/equipamentos" className="block hover:text-gray-300">Equipamentos</a>
@@ -21,6 +21,7 @@ export default async function Sidebar() {
         {podeAdministrar && (
           <>
             <a href="/usuarios" className="block hover:text-gray-300">Usuários</a>
+            <a href="/cadastros" className="block hover:text-gray-300">Cadastros</a>
             <a href="/logs" className="block hover:text-gray-300">Logs</a>
           </>
         )}

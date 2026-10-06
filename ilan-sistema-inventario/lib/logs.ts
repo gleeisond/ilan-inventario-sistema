@@ -14,6 +14,9 @@ export const ACAO_LOG_LABELS: Record<AcaoLog, string> = {
   usuario_editado: 'Usuário editado',
   senha_definida: 'Senha definida',
   senha_alterada: 'Trocou a senha',
+  cadastro_criado: 'Cadastro criado',
+  cadastro_editado: 'Cadastro editado',
+  cadastro_excluido: 'Cadastro excluído',
 }
 
 export const ACAO_LOG_COLORS: Record<AcaoLog, string> = {
@@ -27,10 +30,16 @@ export const ACAO_LOG_COLORS: Record<AcaoLog, string> = {
   usuario_editado: 'bg-purple-100 text-purple-800',
   senha_definida: 'bg-purple-100 text-purple-800',
   senha_alterada: 'bg-purple-100 text-purple-800',
+  cadastro_criado: 'bg-teal-100 text-teal-800',
+  cadastro_editado: 'bg-teal-100 text-teal-800',
+  cadastro_excluido: 'bg-red-100 text-red-800',
 }
 
 export const LINK_ENTIDADE: Record<string, (id: string) => string> = {
   maintenance_request: id => `/manutencoes/${id}`,
   user: id => `/usuarios/${id}`,
   equipment: () => '/equipamentos',
+  campus: () => '/cadastros/campus',
+  category: () => '/cadastros/categorias',
+  location: () => '/cadastros/locais',
 }

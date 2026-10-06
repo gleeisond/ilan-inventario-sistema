@@ -27,5 +27,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // Arquivos de public/ (como a logo) ficam fora, para aparecerem também na tela de login
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\.png$).*)'],
 }

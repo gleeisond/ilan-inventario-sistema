@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getSupabase } from '@/lib/supabase'
-import { CATEGORIAS, STATUS_LABELS } from '@/lib/equipamentos'
+import { STATUS_LABELS } from '@/lib/equipamentos'
 import { criarEquipamento } from './actions'
 
 export const dynamic = 'force-dynamic'
@@ -18,10 +18,13 @@ function Campo({ label, children }: { label: string; children: React.ReactNode }
 
 export default async function CriarEquipamento({ searchParams }: { searchParams: { erro?: string } }) {
   const supabase = getSupabase()
-  const [{ data: campusList, error: erroCampus }, { data: usuarios, error: erroUsuarios }] = await Promise.all([
-    supabase.from('campus').select('id, name').order('name'),
-    supabase.from('users').select('id, name').eq('is_active', true).order('name'),
-  ])
+  const [{ data: campusList, error: erroCampus }, { data: usuarios, error: erroUsuarios }, { data: categorias }, { data: locais }] =
+    await Promise.all([
+      supabase.from('campus').select('id, name').order('name'),
+      supabase.from('users').select('id, name').eq('is_active', true).order('name'),
+      supabase.from('categories').select('name').order('name'),
+      supabase.from('locations').select('name').order('name'),
+    ])
 
   return (
     <div className="p-8 max-w-3xl">
@@ -60,8 +63,8 @@ export default async function CriarEquipamento({ searchParams }: { searchParams:
           <Campo label="Categoria">
             <select name="category" defaultValue="" className={inputClass}>
               <option value="">Selecione</option>
-              {CATEGORIAS.map(c => (
-                <option key={c} value={c}>{c}</option>
+              {categorias?.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')).map(c => (
+                <option key={c.name} value={c.name}>{c.name}</option>
               ))}
             </select>
           </Campo>
@@ -89,7 +92,12 @@ export default async function CriarEquipamento({ searchParams }: { searchParams:
             </select>
           </Campo>
           <Campo label="Local">
-            <input name="location" placeholder="Ex: Palco principal" className={inputClass} />
+            <select name="location" defaultValue="" className={inputClass}>
+              <option value="">Selecione</option>
+              {locais?.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')).map(l => (
+                <option key={l.name} value={l.name}>{l.name}</option>
+              ))}
+            </select>
           </Campo>
           <Campo label="Valor (R$)">
             <input name="value" inputMode="decimal" placeholder="Ex: 3500,00" className={inputClass} />
