@@ -1,14 +1,26 @@
 // lib/supabase.ts
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+let client: SupabaseClient | null = null
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Faltam credenciais do Supabase. Verifique .env.local')
+// Cria o cliente só no primeiro uso, para o build não exigir as variáveis do Supabase
+export function getSupabase() {
+  if (client) return client
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Faltam credenciais do Supabase. Verifique .env.local')
+  }
+
+  client = createClient(supabaseUrl, supabaseAnonKey)
+  return client
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = new Proxy({} as SupabaseClient, {
+  get: (_, prop) => Reflect.get(getSupabase(), prop),
+})
 
 // Função helper para verificar se usuário está autenticado
 export async function getSession() {
