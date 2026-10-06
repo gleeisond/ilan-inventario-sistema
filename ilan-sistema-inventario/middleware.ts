@@ -1,42 +1,31 @@
 // middleware.ts
-// Protege rotas verificando sessão via cookie (Edge Runtime seguro)
+// Com LOGIN_ATIVO=1, toda página exige sessão válida (exceto /login).
+// Sem a variável, o sistema continua aberto, para o admin cadastrar as senhas antes de fechar.
 
 import { type NextRequest, NextResponse } from 'next/server'
+import { COOKIE_SESSAO, lerToken, loginAtivo } from '@/lib/sessao'
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+export async function middleware(request: NextRequest) {
+  const { pathname, search } = request.nextUrl
 
-  // Rotas públicas que não precisam de autenticação
-  const publicRoutes = ['/auth', '/']
+  if (pathname === '/') return NextResponse.redirect(new URL('/dashboard', request.url))
+  if (pathname === '/auth') return NextResponse.redirect(new URL('/login', request.url))
 
-  // Se é rota pública, deixa passar
-  if (publicRoutes.some(route => pathname === route || pathname.startsWith(route))) {
-    return NextResponse.next()
+  if (loginAtivo() && pathname !== '/login') {
+    const sessao = await lerToken(request.cookies.get(COOKIE_SESSAO)?.value)
+    if (!sessao) {
+      const destino = new URL('/login', request.url)
+      destino.searchParams.set('voltar', pathname + search)
+      return NextResponse.redirect(destino)
+    }
   }
 
-  // Verifica se tem token de autenticação nos cookies
-  const authToken = request.cookies.get('sb-auth-token')?.value || 
-                    request.cookies.get('sb-refresh-token')?.value
-
-  // Se não tem token, redireciona para login
-  if (!authToken) {
-    return NextResponse.redirect(new URL('/auth', request.url))
-  }
-
-  // Se tem token, deixa passar
-  return NextResponse.next()
+  // Repassa o caminho para o layout saber quando está na tela de login
+  const headers = new Headers(request.headers)
+  headers.set('x-pathname', pathname)
+  return NextResponse.next({ request: { headers } })
 }
 
-// Configurar quais rotas o middleware deve rodar
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
-    '/((?!_next/static|_next/image|favicon.ico|public).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 }
