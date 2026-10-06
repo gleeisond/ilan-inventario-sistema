@@ -6,6 +6,7 @@ export default function Sidebar() {
         <a href="/dashboard" className="block hover:text-gray-300">Dashboard</a>
         <a href="/equipamentos" className="block hover:text-gray-300">Equipamentos</a>
         <a href="/manutencoes" className="block hover:text-gray-300">Manutenções</a>
+        <a href="/usuarios" className="block hover:text-gray-300">Usuários</a>
       </nav>
     </aside>
   )
