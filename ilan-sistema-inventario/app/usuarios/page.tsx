@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getSupabase } from '@/lib/supabase'
 import { PERFIS, PERFIL_COLORS, PERFIL_DESCRICOES, PERFIL_LABELS } from '@/lib/usuarios'
 import { UserRole } from '@/types/database'
+import { emailParaLogin, exigirAdmin, idsComAcesso } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,6 +21,7 @@ type UsuarioLinha = {
 const selectClass = 'px-3 py-2 border border-gray-300 rounded-lg'
 
 export default async function Usuarios({ searchParams }: { searchParams: Filtros }) {
+  await exigirAdmin()
   const supabase = getSupabase()
   const situacao = searchParams.situacao ?? 'ativos'
 
@@ -35,10 +37,11 @@ export default async function Usuarios({ searchParams }: { searchParams: Filtros
     if (termo) query = query.or(`name.ilike.%${termo}%,email.ilike.%${termo}%`)
   }
 
-  const [{ data, error }, { data: campusList }, { data: todos }] = await Promise.all([
+  const [{ data, error }, { data: campusList }, { data: todos }, comAcesso] = await Promise.all([
     query,
     supabase.from('campus').select('id, name').order('name'),
     supabase.from('users').select('role').eq('is_active', true),
+    idsComAcesso(),
   ])
 
   const usuarios = (data ?? []) as unknown as UsuarioLinha[]
@@ -90,7 +93,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Filtros
       <form className="bg-white rounded-lg border border-gray-200 p-4 flex flex-wrap gap-3 items-end">
         <label className="flex flex-col text-sm text-gray-700 gap-1">
           Buscar
-          <input name="busca" defaultValue={searchParams.busca} placeholder="Nome ou e-mail" className={selectClass} />
+          <input name="busca" defaultValue={searchParams.busca} placeholder="Nome ou usuário" className={selectClass} />
         </label>
         <label className="flex flex-col text-sm text-gray-700 gap-1">
           Perfil
@@ -113,8 +116,8 @@ export default async function Usuarios({ searchParams }: { searchParams: Filtros
         <label className="flex flex-col text-sm text-gray-700 gap-1">
           Situação
           <select name="situacao" defaultValue={situacao} className={selectClass}>
-            <option value="ativos">Ativos</option>
-            <option value="inativos">Inativos</option>
+            <option value="ativos">Acesso liberado</option>
+            <option value="inativos">Bloqueados</option>
             <option value="todos">Todos</option>
           </select>
         </label>
@@ -144,7 +147,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Filtros
                 <th className="px-4 py-3 font-semibold">Nome</th>
                 <th className="px-4 py-3 font-semibold">Perfil</th>
                 <th className="px-4 py-3 font-semibold">Campus / região</th>
-                <th className="px-4 py-3 font-semibold">Situação</th>
+                <th className="px-4 py-3 font-semibold">Acesso</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -153,7 +156,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Filtros
                 <tr key={u.id} className={`hover:bg-gray-50 ${u.is_active ? '' : 'text-gray-400'}`}>
                   <td className="px-4 py-3">
                     <div className={`font-medium ${u.is_active ? 'text-gray-900' : ''}`}>{u.name}</div>
-                    <div className="text-gray-500">{u.email}</div>
+                    <div className="text-gray-500">{emailParaLogin(u.email)}</div>
                   </td>
                   <td className="px-4 py-3">
                     <span className={`inline-block whitespace-nowrap px-2 py-1 rounded-full text-xs font-medium ${PERFIL_COLORS[u.role]}`}>
@@ -161,7 +164,15 @@ export default async function Usuarios({ searchParams }: { searchParams: Filtros
                     </span>
                   </td>
                   <td className="px-4 py-3">{u.campus?.name ?? (u.region ? `Região ${u.region.name}` : '—')}</td>
-                  <td className="px-4 py-3">{u.is_active ? 'Ativo' : 'Inativo'}</td>
+                  <td className="px-4 py-3">
+                    {!u.is_active ? (
+                      <span className="text-red-700">Bloqueado</span>
+                    ) : comAcesso && !comAcesso.has(u.id) ? (
+                      <span className="text-yellow-700">Sem senha</span>
+                    ) : (
+                      'Liberado'
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-right">
                     <Link href={`/usuarios/${u.id}`} className="text-indigo-600 hover:text-indigo-700">
                       Editar

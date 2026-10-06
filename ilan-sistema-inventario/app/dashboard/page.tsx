@@ -37,7 +37,7 @@ function Indicador({ titulo, valor, detalhe, destaque }: { titulo: string; valor
   )
 }
 
-export default async function Dashboard() {
+export default async function Dashboard({ searchParams }: { searchParams: { sem_permissao?: string } }) {
   const supabase = getSupabase()
 
   const [equipRes, manutRes, campusRes] = await Promise.all([
@@ -99,6 +99,11 @@ export default async function Dashboard() {
 
   return (
     <div className="p-8 space-y-8">
+      {searchParams.sem_permissao && (
+        <div className="p-3 rounded-lg text-sm bg-yellow-50 text-yellow-800 border border-yellow-200">
+          Essa área é só para administradores.
+        </div>
+      )}
       <div>
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <p className="text-gray-600 mt-1">Visão geral do inventário de mídia dos {campusList.length} campus</p>

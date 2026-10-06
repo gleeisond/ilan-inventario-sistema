@@ -14,6 +14,7 @@ import {
   formatarData,
 } from '@/lib/manutencoes'
 import { ActionType, MaintenanceStatus, PriorityLevel } from '@/types/database'
+import { getUsuarioAtual } from '@/lib/auth'
 import { atualizarManutencao } from '../actions'
 
 export const dynamic = 'force-dynamic'
@@ -94,6 +95,7 @@ export default async function DetalheManutencao({
   }
   if (!data) notFound()
 
+  const usuarioLogado = await getUsuarioAtual()
   const m = data as unknown as Chamado
   const registros = (logsData ?? []) as unknown as Registro[]
   const atraso = STATUS_FINALIZADOS.includes(m.status) ? null : diasDeAtraso(m.scheduled_completion_date)
@@ -190,14 +192,16 @@ export default async function DetalheManutencao({
               ))}
             </select>
           </Campo>
-          <Campo label="Quem está registrando (obrigatório ao mudar o status)">
-            <select name="performed_by_id" defaultValue="" className={inputClass}>
-              <option value="">Selecione</option>
-              {usuarios?.map(u => (
-                <option key={u.id} value={u.id}>{u.name}</option>
-              ))}
-            </select>
-          </Campo>
+          {!usuarioLogado && (
+            <Campo label="Quem está registrando (obrigatório ao mudar o status)">
+              <select name="performed_by_id" defaultValue="" className={inputClass}>
+                <option value="">Selecione</option>
+                {usuarios?.map(u => (
+                  <option key={u.id} value={u.id}>{u.name}</option>
+                ))}
+              </select>
+            </Campo>
+          )}
           <Campo label="Comentário sobre a mudança">
             <input name="comentario" placeholder="Ex: trocada a fonte" className={inputClass} />
           </Campo>

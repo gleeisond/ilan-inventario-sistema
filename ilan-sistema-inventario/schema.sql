@@ -197,6 +197,18 @@ CREATE TABLE IF NOT EXISTS equipment_history (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Activity Logs (o que cada usuário fez no sistema)
+CREATE TABLE IF NOT EXISTS activity_logs (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  user_name VARCHAR(255) NOT NULL,
+  action VARCHAR(50) NOT NULL,
+  entity VARCHAR(50),
+  entity_id UUID,
+  description TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- ====================================
 -- 4. ÍNDICES PARA PERFORMANCE
 -- ====================================
@@ -225,6 +237,9 @@ CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 CREATE INDEX IF NOT EXISTS idx_users_campus_id ON users(campus_id);
 
 CREATE INDEX IF NOT EXISTS idx_campus_region ON campus(region_id);
+
+CREATE INDEX IF NOT EXISTS idx_activity_logs_created_at ON activity_logs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_activity_logs_user_id ON activity_logs(user_id);
 
 -- ====================================
 -- 5. CONSTRAINTS ADICIONAIS
@@ -276,6 +291,7 @@ ALTER TABLE maintenance_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE maintenance_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE maintenance_notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE equipment_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
 
 -- Remove políticas antigas que consultavam a própria tabela users (erro de recursão)
 DROP POLICY IF EXISTS admin_all ON users;
@@ -288,7 +304,8 @@ DO $$
 DECLARE t TEXT;
 BEGIN
   FOREACH t IN ARRAY ARRAY['regions', 'campus', 'users', 'equipment', 'maintenance_requests',
-                           'maintenance_logs', 'maintenance_notifications', 'equipment_history']
+                           'maintenance_logs', 'maintenance_notifications', 'equipment_history',
+                           'activity_logs']
   LOOP
     IF NOT EXISTS (SELECT 1 FROM pg_policies
                    WHERE schemaname = 'public' AND tablename = t AND policyname = 'acesso_teste') THEN

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getSupabase } from '@/lib/supabase'
 import { PRIORIDADE_LABELS } from '@/lib/manutencoes'
+import { getUsuarioAtual } from '@/lib/auth'
 import { criarManutencao } from '../actions'
 
 export const dynamic = 'force-dynamic'
@@ -25,6 +26,7 @@ export default async function CriarManutencao({ searchParams }: { searchParams: 
     supabase.from('users').select('id, name').eq('is_active', true).order('name'),
   ])
   const equipamentos = (equipData ?? []) as unknown as EquipamentoOpcao[]
+  const usuarioLogado = await getUsuarioAtual()
 
   return (
     <div className="p-8 max-w-3xl">
@@ -79,12 +81,16 @@ export default async function CriarManutencao({ searchParams }: { searchParams: 
             <input name="scheduled_completion_date" type="date" className={inputClass} />
           </Campo>
           <Campo label="Aberto por *">
-            <select name="created_by_id" required defaultValue="" className={inputClass}>
-              <option value="" disabled>Selecione</option>
-              {usuarios?.map(u => (
-                <option key={u.id} value={u.id}>{u.name}</option>
-              ))}
-            </select>
+            {usuarioLogado ? (
+              <p className="px-3 py-2 text-gray-900">{usuarioLogado.name}</p>
+            ) : (
+              <select name="created_by_id" required defaultValue="" className={inputClass}>
+                <option value="" disabled>Selecione</option>
+                {usuarios?.map(u => (
+                  <option key={u.id} value={u.id}>{u.name}</option>
+                ))}
+              </select>
+            )}
           </Campo>
           <Campo label="Responsável pelo conserto">
             <select name="assigned_to_id" defaultValue="" className={inputClass}>

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getSupabase } from '@/lib/supabase'
 import { PERFIS, PERFIL_DESCRICOES, PERFIL_LABELS } from '@/lib/usuarios'
 import { User } from '@/types/database'
+import { emailParaLogin } from '@/lib/auth'
 import { salvarUsuario } from './actions'
 
 const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none'
@@ -17,7 +18,15 @@ function Campo({ label, dica, children }: { label: string; dica?: string; childr
 }
 
 // Formulário compartilhado entre o cadastro e a edição
-export default async function FormularioUsuario({ usuario, erro }: { usuario?: User; erro?: string }) {
+export default async function FormularioUsuario({
+  usuario,
+  erro,
+  temAcesso,
+}: {
+  usuario?: User
+  erro?: string
+  temAcesso?: boolean | null
+}) {
   const supabase = getSupabase()
   const [{ data: campusList }, { data: regioes }] = await Promise.all([
     supabase.from('campus').select('id, name').order('name'),
@@ -40,8 +49,29 @@ export default async function FormularioUsuario({ usuario, erro }: { usuario?: U
           <Campo label="Nome *">
             <input name="name" required defaultValue={usuario?.name} placeholder="Ex: João Silva" className={inputClass} />
           </Campo>
-          <Campo label="E-mail *" dica="Será usado para entrar no sistema quando o login voltar.">
-            <input name="email" type="email" required defaultValue={usuario?.email} placeholder="joao@ilan.com" className={inputClass} />
+          <Campo label="Usuário (para entrar) *" dica="Letras minúsculas, números, ponto ou hífen. Ex: joao.silva">
+            <input
+              name="login"
+              required
+              autoCapitalize="none"
+              autoComplete="off"
+              pattern="[a-z0-9._\-]{3,40}"
+              defaultValue={usuario ? emailParaLogin(usuario.email) : ''}
+              placeholder="joao.silva"
+              className={inputClass}
+            />
+          </Campo>
+          <Campo
+            label={usuario ? 'Nova senha' : 'Senha'}
+            dica={
+              usuario
+                ? temAcesso === false
+                  ? 'Este usuário ainda não tem senha. Defina uma para liberar o acesso.'
+                  : 'Deixe em branco para manter a senha atual.'
+                : 'Mínimo de 6 caracteres. Você pode definir depois.'
+            }
+          >
+            <input name="senha" type="password" minLength={6} autoComplete="new-password" className={inputClass} />
           </Campo>
         </div>
 
@@ -84,8 +114,8 @@ export default async function FormularioUsuario({ usuario, erro }: { usuario?: U
 
         <label className="flex items-center gap-2 text-sm text-gray-700">
           <input type="checkbox" name="is_active" defaultChecked={usuario?.is_active ?? true} />
-          Usuário ativo
-          <span className="text-xs text-gray-500">(inativos não aparecem nas listas de responsáveis)</span>
+          Acesso liberado
+          <span className="text-xs text-gray-500">(desmarque para bloquear a entrada; a pessoa some das listas de responsáveis)</span>
         </label>
 
         <div className="flex gap-3 pt-2">

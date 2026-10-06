@@ -22,6 +22,22 @@ export function getSupabase() {
   return client
 }
 
+// Cliente com a chave service_role (só no servidor). Necessário para criar e alterar senhas de acesso.
+let adminClient: SupabaseClient | null = null
+export function getSupabaseAdmin() {
+  if (adminClient) return adminClient
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!supabaseUrl || !serviceKey) {
+    throw new Error('Falta a variável SUPABASE_SERVICE_ROLE_KEY na Vercel para gerenciar senhas.')
+  }
+  adminClient = createClient(supabaseUrl, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { fetch: (input, init) => fetch(input, { ...init, cache: 'no-store' }) },
+  })
+  return adminClient
+}
+
 export const supabase = new Proxy({} as SupabaseClient, {
   get: (_, prop) => Reflect.get(getSupabase(), prop),
 })
