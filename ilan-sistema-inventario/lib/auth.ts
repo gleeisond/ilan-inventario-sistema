@@ -72,6 +72,7 @@ export type AcaoLog =
   | 'usuario_criado'
   | 'usuario_editado'
   | 'senha_definida'
+  | 'senha_alterada'
 
 type Log = {
   acao: AcaoLog

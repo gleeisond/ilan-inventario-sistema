@@ -27,7 +27,7 @@ export default function Login({ searchParams }: { searchParams: { erro?: string;
           <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition">
             Entrar
           </button>
-          <p className="text-xs text-gray-500 text-center">Esqueceu a senha? Peça ao administrador para definir uma nova.</p>
+          <p className="text-xs text-gray-500 text-center">No primeiro acesso, use a senha que o administrador passou. Depois você pode trocá-la. Esqueceu? Peça ao administrador uma nova.</p>
         </form>
       </div>
     </div>

@@ -38,6 +38,15 @@ export function getSupabaseAdmin() {
   return adminClient
 }
 
+// Cliente só para conferir usuário e senha. Novo a cada uso (a sessão não fica guardada no servidor)
+// e sem cache: o Next 14 também guarda POST do servidor, e uma senha antiga continuaria valendo.
+export function criarClienteLogin() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { fetch: (input, init) => fetch(input, { ...init, cache: 'no-store' }) },
+  })
+}
+
 export const supabase = new Proxy({} as SupabaseClient, {
   get: (_, prop) => Reflect.get(getSupabase(), prop),
 })

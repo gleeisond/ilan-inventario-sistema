@@ -2,8 +2,7 @@
 
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
-import { getSupabase } from '@/lib/supabase'
+import { criarClienteLogin, getSupabase } from '@/lib/supabase'
 import { COOKIE_SESSAO, DURACAO_SESSAO_SEGUNDOS, criarToken } from '@/lib/sessao'
 import { getUsuarioAtual, loginParaEmail, registrarLog } from '@/lib/auth'
 
@@ -21,11 +20,7 @@ export async function entrar(form: FormData) {
 
   if (!login || !senha) falhar('Informe usuário e senha.')
 
-  // Cliente novo a cada tentativa: a sessão do Supabase não fica guardada no servidor
-  const auth = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
-  const { data, error } = await auth.auth.signInWithPassword({ email: loginParaEmail(login), password: senha })
+  const { data, error } = await criarClienteLogin().auth.signInWithPassword({ email: loginParaEmail(login), password: senha })
   if (error || !data.user) {
     await registrarLog({ acao: 'login_falhou', descricao: `Tentativa de entrar como "${login}"`, usuario: { id: null, name: login } })
     falhar('Usuário ou senha incorretos.')

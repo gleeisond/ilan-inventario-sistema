@@ -13,6 +13,7 @@ export const ACAO_LOG_LABELS: Record<AcaoLog, string> = {
   usuario_criado: 'Usuário cadastrado',
   usuario_editado: 'Usuário editado',
   senha_definida: 'Senha definida',
+  senha_alterada: 'Trocou a senha',
 }
 
 export const ACAO_LOG_COLORS: Record<AcaoLog, string> = {
@@ -25,6 +26,7 @@ export const ACAO_LOG_COLORS: Record<AcaoLog, string> = {
   usuario_criado: 'bg-purple-100 text-purple-800',
   usuario_editado: 'bg-purple-100 text-purple-800',
   senha_definida: 'bg-purple-100 text-purple-800',
+  senha_alterada: 'bg-purple-100 text-purple-800',
 }
 
 export const LINK_ENTIDADE: Record<string, (id: string) => string> = {

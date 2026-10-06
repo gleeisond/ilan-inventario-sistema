@@ -30,8 +30,9 @@ export default async function Sidebar() {
           <>
             <p className="font-medium">{usuario.name}</p>
             <p className="text-gray-400">{PERFIL_LABELS[usuario.role]}</p>
+            <a href="/minha-senha" className="block mt-3 text-gray-300 hover:text-white">Trocar minha senha</a>
             <form action={sair}>
-              <button type="submit" className="mt-3 text-gray-300 hover:text-white">Sair</button>
+              <button type="submit" className="mt-2 text-gray-300 hover:text-white">Sair</button>
             </form>
           </>
         ) : (
