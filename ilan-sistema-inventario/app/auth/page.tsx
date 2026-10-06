@@ -15,10 +15,10 @@ export default function Auth() {
   const [error, setError] = useState('')
   const [mode, setMode] = useState<'login' | 'signup'>('login')
 
-  const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
+    // Criado aqui (e não na renderização) para o build não exigir as variáveis do Supabase
+    const supabase = createClient(supabaseUrl, supabaseAnonKey)
     setLoading(true)
     setError('')
 
