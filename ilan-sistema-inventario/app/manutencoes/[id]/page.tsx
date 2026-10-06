@@ -86,7 +86,7 @@ export default async function DetalheManutencao({
 
   if (error) {
     return (
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
           Erro ao carregar o chamado: {error.message}
         </div>
@@ -101,7 +101,7 @@ export default async function DetalheManutencao({
   const atraso = STATUS_FINALIZADOS.includes(m.status) ? null : diasDeAtraso(m.scheduled_completion_date)
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="p-4 md:p-8 max-w-5xl">
       <Link href="/manutencoes" className="text-sm text-indigo-600 hover:text-indigo-700">
         ← Voltar para manutenções
       </Link>

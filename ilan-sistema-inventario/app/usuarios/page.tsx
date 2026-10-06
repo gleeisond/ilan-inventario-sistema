@@ -49,7 +49,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Filtros
   const temFiltro = situacao !== 'ativos' || Boolean(searchParams.perfil || searchParams.campus || searchParams.busca)
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Usuários e perfis</h1>

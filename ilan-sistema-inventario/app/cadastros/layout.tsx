@@ -13,7 +13,7 @@ export default async function LayoutCadastros({ children }: { children: React.Re
   const caminho = headers().get('x-pathname') ?? ''
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Cadastros</h1>
         <p className="text-gray-600 mt-1">Campus, categorias e locais usados no inventário</p>

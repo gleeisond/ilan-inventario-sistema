@@ -3,6 +3,7 @@ import { getUsuarioAtual } from '@/lib/auth'
 import { loginAtivo } from '@/lib/sessao'
 import { PERFIL_LABELS } from '@/lib/usuarios'
 import { sair } from '@/app/login/actions'
+import MenuLateral from './MenuLateral'
 
 export default async function Sidebar() {
   if (headers().get('x-pathname') === '/login') return null
@@ -12,8 +13,8 @@ export default async function Sidebar() {
   const podeAdministrar = !loginAtivo() || usuario?.role === 'admin'
 
   return (
-    <aside className="w-64 bg-gray-900 text-white p-6 flex flex-col">
-      <img src="/logo-ilan.png" alt="Ilan Church" className="w-full max-w-[200px] mb-10" />
+    <MenuLateral>
+      <img src="/logo-ilan.png" alt="Ilan Church" className="hidden md:block w-full max-w-[200px] mb-10" />
       <nav className="space-y-4">
         <a href="/dashboard" className="block hover:text-gray-300">Dashboard</a>
         <a href="/equipamentos" className="block hover:text-gray-300">Equipamentos</a>
@@ -40,6 +41,6 @@ export default async function Sidebar() {
           !loginAtivo() && <p className="text-gray-400">Login desligado (modo de teste)</p>
         )}
       </div>
-    </aside>
+    </MenuLateral>
   )
 }

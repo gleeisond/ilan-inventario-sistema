@@ -18,7 +18,7 @@ export default async function MinhaSenha({ searchParams }: { searchParams: { err
   const usuario = await exigirLogin()
 
   return (
-    <div className="p-8 max-w-md">
+    <div className="p-4 md:p-8 max-w-md">
       <h1 className="text-2xl font-bold mb-1">Minha senha</h1>
       <p className="text-gray-600 mb-6">Troque a senha que o administrador passou para você.</p>
 

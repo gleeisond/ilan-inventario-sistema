@@ -21,9 +21,10 @@ export default async function RootLayout({
   return (
     <html lang="pt-BR">
       <body>
-        <div className="flex min-h-screen">
+        <div className="flex flex-col md:flex-row min-h-screen">
           <Sidebar />
-          <main className="flex-1 bg-gray-50">{children}</main>
+          {/* min-w-0 deixa tabelas largas rolarem dentro da página em vez de cortar a tela */}
+          <main className="flex-1 min-w-0 bg-gray-50">{children}</main>
         </div>
       </body>
     </html>

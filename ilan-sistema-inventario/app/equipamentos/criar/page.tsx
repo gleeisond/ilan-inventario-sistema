@@ -27,7 +27,7 @@ export default async function CriarEquipamento({ searchParams }: { searchParams:
     ])
 
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="p-4 md:p-8 max-w-3xl">
       <Link href="/equipamentos" className="text-sm text-indigo-600 hover:text-indigo-700">
         ← Voltar para equipamentos
       </Link>

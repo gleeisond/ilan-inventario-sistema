@@ -46,7 +46,7 @@ export default async function Equipamentos({ searchParams }: { searchParams: Fil
   const temFiltro = Boolean(searchParams.campus || searchParams.status || searchParams.categoria || searchParams.busca)
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold">Equipamentos</h1>

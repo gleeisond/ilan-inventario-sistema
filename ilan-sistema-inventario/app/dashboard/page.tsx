@@ -51,7 +51,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
   const erro = equipRes.error ?? manutRes.error ?? campusRes.error
   if (erro) {
     return (
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
         <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
           Erro ao carregar o dashboard: {erro.message}
@@ -98,7 +98,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
   const maiorTotal = Math.max(1, ...porCampus.map(c => c.total))
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 md:p-8 space-y-8">
       {searchParams.sem_permissao && (
         <div className="p-3 rounded-lg text-sm bg-yellow-50 text-yellow-800 border border-yellow-200">
           Essa área é só para administradores.
@@ -132,7 +132,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
         <section className="xl:col-span-2 bg-white rounded-lg border border-gray-200">
           <div className="flex items-center justify-between p-5 border-b border-gray-100">
             <h2 className="font-semibold text-lg">Manutenções em andamento</h2>
-            <Link href="/manutencoes" className="text-sm text-indigo-600 hover:text-indigo-700">Ver todas →</Link>
+            <Link href="/manutencoes" className="text-sm text-indigo-600 hover:text-indigo-700 whitespace-nowrap">Ver todas →</Link>
           </div>
           {pendentes.length === 0 ? (
             <p className="p-5 text-gray-500">Nenhuma manutenção em andamento.</p>

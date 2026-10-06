@@ -29,7 +29,7 @@ export default async function CriarManutencao({ searchParams }: { searchParams: 
   const usuarioLogado = await getUsuarioAtual()
 
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="p-4 md:p-8 max-w-3xl">
       <Link href="/manutencoes" className="text-sm text-indigo-600 hover:text-indigo-700">
         ← Voltar para manutenções
       </Link>

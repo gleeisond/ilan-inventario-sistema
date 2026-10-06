@@ -61,7 +61,7 @@ export default async function Logs({ searchParams }: { searchParams: Filtros }) 
   const temFiltro = Object.values(searchParams).some(Boolean)
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Logs de atividade</h1>
         <p className="text-gray-600 mt-1">O que cada usuário fez no sistema, do mais recente para o mais antigo.</p>
