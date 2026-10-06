@@ -1,0 +1,245 @@
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { getSupabase } from '@/lib/supabase'
+import { formatarMoeda } from '@/lib/equipamentos'
+import {
+  ACAO_LABELS,
+  MANUTENCAO_STATUS_COLORS,
+  MANUTENCAO_STATUS_LABELS,
+  PRIORIDADE_COLORS,
+  PRIORIDADE_LABELS,
+  STATUS_FINALIZADOS,
+  descreverPrazo,
+  diasDeAtraso,
+  formatarData,
+} from '@/lib/manutencoes'
+import { ActionType, MaintenanceStatus, PriorityLevel } from '@/types/database'
+import { atualizarManutencao } from '../actions'
+
+export const dynamic = 'force-dynamic'
+
+const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none'
+
+type Chamado = {
+  id: string
+  equipment_id: string
+  problem_description: string
+  status: MaintenanceStatus
+  priority: PriorityLevel
+  scheduled_completion_date: string | null
+  actual_completion_date: string | null
+  cost: number | null
+  notes: string | null
+  assigned_to_id: string | null
+  created_at: string
+  updated_at: string
+  equipment: { name: string; brand: string | null } | null
+  campus: { name: string } | null
+  created_by: { name: string } | null
+}
+
+type Registro = {
+  id: string
+  action_type: ActionType
+  description: string | null
+  created_at: string
+  performed_by: { name: string } | null
+}
+
+function Campo({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block text-sm font-medium text-gray-700">
+      <span className="block mb-1">{label}</span>
+      {children}
+    </label>
+  )
+}
+
+function formatarDataHora(data: string) {
+  return new Date(data).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' })
+}
+
+export default async function DetalheManutencao({
+  params,
+  searchParams,
+}: {
+  params: { id: string }
+  searchParams: { erro?: string; salvo?: string }
+}) {
+  const supabase = getSupabase()
+  const [{ data, error }, { data: logsData }, { data: usuarios }] = await Promise.all([
+    supabase
+      .from('maintenance_requests')
+      .select(
+        'id, equipment_id, problem_description, status, priority, scheduled_completion_date, actual_completion_date, cost, notes, assigned_to_id, created_at, updated_at, equipment:equipment_id (name, brand), campus:campus_id (name), created_by:created_by_id (name)'
+      )
+      .eq('id', params.id)
+      .maybeSingle(),
+    supabase
+      .from('maintenance_logs')
+      .select('id, action_type, description, created_at, performed_by:performed_by_id (name)')
+      .eq('maintenance_request_id', params.id)
+      .order('created_at', { ascending: false }),
+    supabase.from('users').select('id, name').eq('is_active', true).order('name'),
+  ])
+
+  if (error) {
+    return (
+      <div className="p-8">
+        <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
+          Erro ao carregar o chamado: {error.message}
+        </div>
+      </div>
+    )
+  }
+  if (!data) notFound()
+
+  const m = data as unknown as Chamado
+  const registros = (logsData ?? []) as unknown as Registro[]
+  const atraso = STATUS_FINALIZADOS.includes(m.status) ? null : diasDeAtraso(m.scheduled_completion_date)
+
+  return (
+    <div className="p-8 max-w-5xl">
+      <Link href="/manutencoes" className="text-sm text-indigo-600 hover:text-indigo-700">
+        ← Voltar para manutenções
+      </Link>
+
+      <div className="flex flex-wrap items-start justify-between gap-4 mt-2 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">{m.equipment?.name ?? 'Equipamento'}</h1>
+          <p className="text-gray-600 mt-1">
+            {[m.equipment?.brand, m.campus?.name].filter(Boolean).join(' · ')}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2 text-sm">
+          <span className={`px-3 py-1 rounded-full font-medium ${PRIORIDADE_COLORS[m.priority]}`}>
+            Prioridade {PRIORIDADE_LABELS[m.priority].toLowerCase()}
+          </span>
+          <span className={`px-3 py-1 rounded-full font-medium ${MANUTENCAO_STATUS_COLORS[m.status]}`}>
+            {MANUTENCAO_STATUS_LABELS[m.status]}
+          </span>
+        </div>
+      </div>
+
+      {searchParams.salvo && (
+        <div className="mb-4 p-3 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200">Chamado atualizado.</div>
+      )}
+      {searchParams.erro && (
+        <div className="mb-4 p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">{searchParams.erro}</div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="lg:col-span-3 space-y-6">
+          <section className="bg-white rounded-lg border border-gray-200 p-6">
+            <h2 className="font-semibold mb-2">Problema</h2>
+            <p className="text-gray-700 whitespace-pre-line">{m.problem_description}</p>
+            <dl className="grid grid-cols-2 gap-4 mt-6 text-sm">
+              <div>
+                <dt className="text-gray-500">Aberto em</dt>
+                <dd>{formatarDataHora(m.created_at)}{m.created_by && ` por ${m.created_by.name}`}</dd>
+              </div>
+              <div>
+                <dt className="text-gray-500">Previsão</dt>
+                <dd>
+                  {formatarData(m.scheduled_completion_date)}
+                  {atraso !== null && (
+                    <span className={`ml-2 ${atraso > 0 ? 'text-red-700 font-medium' : 'text-gray-500'}`}>({descreverPrazo(atraso)})</span>
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-gray-500">Entregue em</dt>
+                <dd>{formatarData(m.actual_completion_date)}</dd>
+              </div>
+              <div>
+                <dt className="text-gray-500">Custo</dt>
+                <dd>{formatarMoeda(m.cost)}</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section className="bg-white rounded-lg border border-gray-200 p-6">
+            <h2 className="font-semibold mb-4">Histórico</h2>
+            {registros.length === 0 ? (
+              <p className="text-sm text-gray-500">Nenhuma movimentação registrada ainda.</p>
+            ) : (
+              <ol className="space-y-4">
+                {registros.map(r => (
+                  <li key={r.id} className="border-l-2 border-indigo-200 pl-4">
+                    <p className="font-medium text-gray-900">{ACAO_LABELS[r.action_type]}</p>
+                    {r.description && <p className="text-sm text-gray-700">{r.description}</p>}
+                    <p className="text-xs text-gray-500 mt-1">
+                      {formatarDataHora(r.created_at)}{r.performed_by && ` · ${r.performed_by.name}`}
+                    </p>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </section>
+        </div>
+
+        {/* key muda a cada gravação para o formulário voltar limpo (sem o comentário anterior) */}
+        <form key={m.updated_at} action={atualizarManutencao} className="lg:col-span-2 bg-white rounded-lg border border-gray-200 p-6 space-y-4 h-fit">
+          <h2 className="font-semibold">Atualizar chamado</h2>
+          <input type="hidden" name="id" value={m.id} />
+
+          <Campo label="Status">
+            <select name="status" defaultValue={m.status} className={inputClass}>
+              {Object.entries(MANUTENCAO_STATUS_LABELS).map(([valor, rotulo]) => (
+                <option key={valor} value={valor}>{rotulo}</option>
+              ))}
+            </select>
+          </Campo>
+          <Campo label="Quem está registrando (obrigatório ao mudar o status)">
+            <select name="performed_by_id" defaultValue="" className={inputClass}>
+              <option value="">Selecione</option>
+              {usuarios?.map(u => (
+                <option key={u.id} value={u.id}>{u.name}</option>
+              ))}
+            </select>
+          </Campo>
+          <Campo label="Comentário sobre a mudança">
+            <input name="comentario" placeholder="Ex: trocada a fonte" className={inputClass} />
+          </Campo>
+
+          <hr className="border-gray-100" />
+
+          <Campo label="Prioridade">
+            <select name="priority" defaultValue={m.priority} className={inputClass}>
+              {Object.entries(PRIORIDADE_LABELS).map(([valor, rotulo]) => (
+                <option key={valor} value={valor}>{rotulo}</option>
+              ))}
+            </select>
+          </Campo>
+          <Campo label="Responsável pelo conserto">
+            <select name="assigned_to_id" defaultValue={m.assigned_to_id ?? ''} className={inputClass}>
+              <option value="">Ninguém ainda</option>
+              {usuarios?.map(u => (
+                <option key={u.id} value={u.id}>{u.name}</option>
+              ))}
+            </select>
+          </Campo>
+          <Campo label="Previsão de conclusão">
+            <input name="scheduled_completion_date" type="date" defaultValue={m.scheduled_completion_date ?? ''} className={inputClass} />
+          </Campo>
+          <Campo label="Custo (R$)">
+            <input
+              name="cost"
+              inputMode="decimal"
+              placeholder="Ex: 350,00"
+              defaultValue={m.cost === null ? '' : String(m.cost).replace('.', ',')}
+              className={inputClass}
+            />
+          </Campo>
+          <Campo label="Observações">
+            <textarea name="notes" rows={3} defaultValue={m.notes ?? ''} className={inputClass} />
+          </Campo>
+
+          <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition">
+            Salvar
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}
