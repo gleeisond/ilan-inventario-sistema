@@ -18,7 +18,7 @@ function Campo({ label, children }: { label: string; children: React.ReactNode }
 
 export default async function CriarEquipamento({ searchParams }: { searchParams: { erro?: string } }) {
   const supabase = getSupabase()
-  const [{ data: campusList }, { data: usuarios }] = await Promise.all([
+  const [{ data: campusList, error: erroCampus }, { data: usuarios, error: erroUsuarios }] = await Promise.all([
     supabase.from('campus').select('id, name').order('name'),
     supabase.from('users').select('id, name').eq('is_active', true).order('name'),
   ])
@@ -29,6 +29,18 @@ export default async function CriarEquipamento({ searchParams }: { searchParams:
         ← Voltar para equipamentos
       </Link>
       <h1 className="text-2xl font-bold mt-2 mb-6">Novo equipamento</h1>
+
+      {(erroCampus || erroUsuarios) && (
+        <div className="mb-4 p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
+          Erro ao carregar campus e responsáveis: {(erroCampus ?? erroUsuarios)?.message}
+        </div>
+      )}
+
+      {!erroCampus && campusList?.length === 0 && (
+        <div className="mb-4 p-3 rounded-lg text-sm bg-yellow-50 text-yellow-800 border border-yellow-200">
+          Nenhum campus encontrado. Confira se o schema.sql foi rodado no Supabase (ele libera a leitura da tabela campus).
+        </div>
+      )}
 
       {searchParams.erro && (
         <div className="mb-4 p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
