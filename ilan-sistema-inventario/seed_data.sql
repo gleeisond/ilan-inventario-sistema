@@ -9,7 +9,7 @@
 INSERT INTO regions (name, description) VALUES
 ('Metropolitana', 'Região de Rio de Janeiro'),
 ('Litoral', 'Região do Litoral Fluminense'),
-('Interior', 'Região do Interior'),
+('Interior', 'Região do Interior')
 ON CONFLICT DO NOTHING;
 
 -- ====================================
