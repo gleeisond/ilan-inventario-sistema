@@ -76,6 +76,7 @@ export type AcaoLog =
   | 'cadastro_criado'
   | 'cadastro_editado'
   | 'cadastro_excluido'
+  | 'relatorio_exportado'
 
 type Log = {
   acao: AcaoLog

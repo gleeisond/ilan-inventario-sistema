@@ -17,6 +17,7 @@ export const ACAO_LOG_LABELS: Record<AcaoLog, string> = {
   cadastro_criado: 'Cadastro criado',
   cadastro_editado: 'Cadastro editado',
   cadastro_excluido: 'Cadastro excluído',
+  relatorio_exportado: 'Planilha exportada',
 }
 
 export const ACAO_LOG_COLORS: Record<AcaoLog, string> = {
@@ -33,6 +34,7 @@ export const ACAO_LOG_COLORS: Record<AcaoLog, string> = {
   cadastro_criado: 'bg-teal-100 text-teal-800',
   cadastro_editado: 'bg-teal-100 text-teal-800',
   cadastro_excluido: 'bg-red-100 text-red-800',
+  relatorio_exportado: 'bg-gray-100 text-gray-700',
 }
 
 export const LINK_ENTIDADE: Record<string, (id: string) => string> = {
