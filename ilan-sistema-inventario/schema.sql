@@ -277,6 +277,11 @@ ALTER TABLE maintenance_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE maintenance_notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE equipment_history ENABLE ROW LEVEL SECURITY;
 
+-- Remove políticas antigas que consultavam a própria tabela users (erro de recursão)
+DROP POLICY IF EXISTS admin_all ON users;
+DROP POLICY IF EXISTS admin_all_equipment ON equipment;
+DROP POLICY IF EXISTS lider_see_own_campus ON equipment;
+
 -- FASE DE TESTES (login desligado): qualquer visitante do site lê e grava tudo.
 -- Quando o login voltar, troque esta política por regras por papel/campus.
 DO $$
