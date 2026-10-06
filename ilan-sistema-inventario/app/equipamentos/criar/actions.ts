@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { getSupabase } from '@/lib/supabase'
+import { lerMoeda } from '@/lib/equipamentos'
 
 function texto(form: FormData, campo: string) {
   const valor = String(form.get(campo) ?? '').trim()
@@ -17,10 +18,7 @@ export async function criarEquipamento(form: FormData) {
     redirect('/equipamentos/criar?erro=' + encodeURIComponent('Preencha o nome e o campus.'))
   }
 
-  const valorTexto = texto(form, 'value')
-  // Aceita "4.250,90" (formato brasileiro) e "4250.90"
-  const valorNormalizado = valorTexto?.includes(',') ? valorTexto.replace(/\./g, '').replace(',', '.') : valorTexto
-  const value = valorNormalizado ? Number(valorNormalizado) : null
+  const value = lerMoeda(texto(form, 'value'))
   if (value !== null && Number.isNaN(value)) {
     redirect('/equipamentos/criar?erro=' + encodeURIComponent('Valor inválido. Use só números, ex: 3500,00'))
   }

@@ -7,6 +7,7 @@ import {
   PRIORIDADE_LABELS,
   PRIORIDADE_ORDEM,
   STATUS_FINALIZADOS,
+  descreverPrazo,
   diasDeAtraso,
 } from '@/lib/manutencoes'
 import { EquipmentStatus, MaintenanceStatus, PriorityLevel } from '@/types/database'
@@ -147,11 +148,7 @@ export default async function Dashboard() {
                     <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-700">{MANUTENCAO_STATUS_LABELS[m.status]}</span>
                     {m.atraso !== null && (
                       <span className={m.atraso > 0 ? 'text-red-700 font-medium' : 'text-gray-500'}>
-                        {m.atraso > 0
-                          ? `${m.atraso} dia(s) de atraso`
-                          : m.atraso === 0
-                            ? 'previsto para hoje'
-                            : `previsto em ${-m.atraso} dia(s)`}
+                        {descreverPrazo(m.atraso)}
                       </span>
                     )}
                   </div>

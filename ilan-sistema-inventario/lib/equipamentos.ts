@@ -23,3 +23,10 @@ export function formatarMoeda(valor?: number | null) {
   if (valor == null) return '—'
   return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
+
+// Aceita "4.250,90" (formato brasileiro) e "4250.90". Retorna null se vazio e NaN se inválido.
+export function lerMoeda(valorTexto: string | null) {
+  if (!valorTexto) return null
+  const normalizado = valorTexto.includes(',') ? valorTexto.replace(/\./g, '').replace(',', '.') : valorTexto
+  return Number(normalizado)
+}

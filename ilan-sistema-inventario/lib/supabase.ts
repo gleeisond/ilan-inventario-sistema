@@ -14,7 +14,11 @@ export function getSupabase() {
     throw new Error('Faltam credenciais do Supabase. Verifique .env.local')
   }
 
-  client = createClient(supabaseUrl, supabaseAnonKey)
+  client = createClient(supabaseUrl, supabaseAnonKey, {
+    // O Next 14 guarda em cache os fetch GET do servidor (inclusive dentro de server actions),
+    // o que faria as telas e ações lerem dados antigos do banco
+    global: { fetch: (input, init) => fetch(input, { ...init, cache: 'no-store' }) },
+  })
   return client
 }
 
