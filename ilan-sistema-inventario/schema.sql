@@ -2,6 +2,8 @@
 -- SISTEMA DE INVENTÁRIO ILAN
 -- Schema SQL completo para Supabase
 -- ====================================
+-- Pode rodar quantas vezes precisar no SQL Editor do Supabase:
+-- só cria o que ainda não existe e não apaga nenhum dado.
 
 -- ====================================
 -- 1. CRIAR EXTENSÕES
@@ -13,73 +15,87 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- 2. CRIAR ENUM TYPES
 -- ====================================
 
-CREATE TYPE user_role AS ENUM (
-  'lider_midia',
-  'pastor',
-  'rodrigo',
-  'lider_regional',
-  'admin'
-);
+DO $$ BEGIN
+  CREATE TYPE user_role AS ENUM (
+    'lider_midia',
+    'pastor',
+    'rodrigo',
+    'lider_regional',
+    'admin'
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TYPE equipment_status AS ENUM (
-  'ativo',
-  'danificado',
-  'em_manutencao',
-  'descartado'
-);
+DO $$ BEGIN
+  CREATE TYPE equipment_status AS ENUM (
+    'ativo',
+    'danificado',
+    'em_manutencao',
+    'descartado'
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TYPE maintenance_status AS ENUM (
-  'aberto',
-  'recebido',
-  'em_diagnostico',
-  'em_conserto',
-  'aguardando_pecas',
-  'pronto',
-  'entregue',
-  'cancelado'
-);
+DO $$ BEGIN
+  CREATE TYPE maintenance_status AS ENUM (
+    'aberto',
+    'recebido',
+    'em_diagnostico',
+    'em_conserto',
+    'aguardando_pecas',
+    'pronto',
+    'entregue',
+    'cancelado'
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TYPE priority_level AS ENUM (
-  'baixa',
-  'media',
-  'alta',
-  'critica'
-);
+DO $$ BEGIN
+  CREATE TYPE priority_level AS ENUM (
+    'baixa',
+    'media',
+    'alta',
+    'critica'
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TYPE action_type AS ENUM (
-  'recebido',
-  'diagnosticado',
-  'conserto_iniciado',
-  'peca_solicitada',
-  'peca_recebida',
-  'conserto_completo',
-  'pronto_para_entrega',
-  'entregue'
-);
+DO $$ BEGIN
+  CREATE TYPE action_type AS ENUM (
+    'recebido',
+    'diagnosticado',
+    'conserto_iniciado',
+    'peca_solicitada',
+    'peca_recebida',
+    'conserto_completo',
+    'pronto_para_entrega',
+    'entregue'
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TYPE notification_type AS ENUM (
-  'pronto_para_buscar',
-  'pronto',
-  'aguardando_pecas',
-  'atrasado',
-  'nova_requisicao'
-);
+DO $$ BEGIN
+  CREATE TYPE notification_type AS ENUM (
+    'pronto_para_buscar',
+    'pronto',
+    'aguardando_pecas',
+    'atrasado',
+    'nova_requisicao'
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TYPE event_type AS ENUM (
-  'criado',
-  'movido',
-  'danificado',
-  'consertado',
-  'responsavel_alterado',
-  'status_alterado'
-);
+DO $$ BEGIN
+  CREATE TYPE event_type AS ENUM (
+    'criado',
+    'movido',
+    'danificado',
+    'consertado',
+    'responsavel_alterado',
+    'status_alterado'
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ====================================
 -- 3. TABELAS PRINCIPAIS
 -- ====================================
 
 -- Region (Regiões)
-CREATE TABLE regions (
+CREATE TABLE IF NOT EXISTS regions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name VARCHAR(255) NOT NULL UNIQUE,
   description TEXT,
@@ -87,9 +103,9 @@ CREATE TABLE regions (
 );
 
 -- Campus (13 igrejas)
-CREATE TABLE campus (
+CREATE TABLE IF NOT EXISTS campus (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  name VARCHAR(255) NOT NULL,
+  name VARCHAR(255) NOT NULL UNIQUE,
   location TEXT,
   region_id UUID NOT NULL REFERENCES regions(id) ON DELETE CASCADE,
   pastor_id UUID,
@@ -99,7 +115,7 @@ CREATE TABLE campus (
 );
 
 -- Users (Autenticação via Supabase Auth, mas com dados adicionais aqui)
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY,
   email VARCHAR(255) NOT NULL UNIQUE,
   name VARCHAR(255) NOT NULL,
@@ -112,7 +128,7 @@ CREATE TABLE users (
 );
 
 -- Equipment (Os "muitoooosssss")
-CREATE TABLE equipment (
+CREATE TABLE IF NOT EXISTS equipment (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name VARCHAR(255) NOT NULL,
   brand VARCHAR(255),
@@ -129,7 +145,7 @@ CREATE TABLE equipment (
 );
 
 -- Maintenance Request (Fluxo de Manutenção)
-CREATE TABLE maintenance_requests (
+CREATE TABLE IF NOT EXISTS maintenance_requests (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   equipment_id UUID NOT NULL REFERENCES equipment(id) ON DELETE CASCADE,
   campus_id UUID NOT NULL REFERENCES campus(id) ON DELETE CASCADE,
@@ -147,7 +163,7 @@ CREATE TABLE maintenance_requests (
 );
 
 -- Maintenance Log (Histórico do trabalho)
-CREATE TABLE maintenance_logs (
+CREATE TABLE IF NOT EXISTS maintenance_logs (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   maintenance_request_id UUID NOT NULL REFERENCES maintenance_requests(id) ON DELETE CASCADE,
   action_type action_type NOT NULL,
@@ -158,7 +174,7 @@ CREATE TABLE maintenance_logs (
 );
 
 -- Maintenance Notifications (Notificações)
-CREATE TABLE maintenance_notifications (
+CREATE TABLE IF NOT EXISTS maintenance_notifications (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   maintenance_request_id UUID NOT NULL REFERENCES maintenance_requests(id) ON DELETE CASCADE,
   recipient_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -170,7 +186,7 @@ CREATE TABLE maintenance_notifications (
 );
 
 -- Equipment History (Auditoria geral)
-CREATE TABLE equipment_history (
+CREATE TABLE IF NOT EXISTS equipment_history (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   equipment_id UUID NOT NULL REFERENCES equipment(id) ON DELETE CASCADE,
   event_type event_type NOT NULL,
@@ -185,81 +201,110 @@ CREATE TABLE equipment_history (
 -- 4. ÍNDICES PARA PERFORMANCE
 -- ====================================
 
-CREATE INDEX idx_equipment_campus_id ON equipment(campus_id);
-CREATE INDEX idx_equipment_responsible_id ON equipment(responsible_id);
-CREATE INDEX idx_equipment_status ON equipment(status);
+CREATE INDEX IF NOT EXISTS idx_equipment_campus_id ON equipment(campus_id);
+CREATE INDEX IF NOT EXISTS idx_equipment_responsible_id ON equipment(responsible_id);
+CREATE INDEX IF NOT EXISTS idx_equipment_status ON equipment(status);
 
-CREATE INDEX idx_maintenance_equipment_id ON maintenance_requests(equipment_id);
-CREATE INDEX idx_maintenance_campus_id ON maintenance_requests(campus_id);
-CREATE INDEX idx_maintenance_status ON maintenance_requests(status);
-CREATE INDEX idx_maintenance_created_by ON maintenance_requests(created_by_id);
-CREATE INDEX idx_maintenance_assigned_to ON maintenance_requests(assigned_to_id);
+CREATE INDEX IF NOT EXISTS idx_maintenance_equipment_id ON maintenance_requests(equipment_id);
+CREATE INDEX IF NOT EXISTS idx_maintenance_campus_id ON maintenance_requests(campus_id);
+CREATE INDEX IF NOT EXISTS idx_maintenance_status ON maintenance_requests(status);
+CREATE INDEX IF NOT EXISTS idx_maintenance_created_by ON maintenance_requests(created_by_id);
+CREATE INDEX IF NOT EXISTS idx_maintenance_assigned_to ON maintenance_requests(assigned_to_id);
 
-CREATE INDEX idx_maintenance_logs_request_id ON maintenance_logs(maintenance_request_id);
-CREATE INDEX idx_maintenance_logs_performed_by ON maintenance_logs(performed_by_id);
+CREATE INDEX IF NOT EXISTS idx_maintenance_logs_request_id ON maintenance_logs(maintenance_request_id);
+CREATE INDEX IF NOT EXISTS idx_maintenance_logs_performed_by ON maintenance_logs(performed_by_id);
 
-CREATE INDEX idx_notifications_recipient ON maintenance_notifications(recipient_id);
-CREATE INDEX idx_notifications_is_read ON maintenance_notifications(is_read);
-CREATE INDEX idx_notifications_request ON maintenance_notifications(maintenance_request_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON maintenance_notifications(recipient_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON maintenance_notifications(is_read);
+CREATE INDEX IF NOT EXISTS idx_notifications_request ON maintenance_notifications(maintenance_request_id);
 
-CREATE INDEX idx_equipment_history_equipment_id ON equipment_history(equipment_id);
-CREATE INDEX idx_equipment_history_changed_by ON equipment_history(changed_by_id);
+CREATE INDEX IF NOT EXISTS idx_equipment_history_equipment_id ON equipment_history(equipment_id);
+CREATE INDEX IF NOT EXISTS idx_equipment_history_changed_by ON equipment_history(changed_by_id);
 
-CREATE INDEX idx_users_role ON users(role);
-CREATE INDEX idx_users_campus_id ON users(campus_id);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_users_campus_id ON users(campus_id);
 
-CREATE INDEX idx_campus_region ON campus(region_id);
+CREATE INDEX IF NOT EXISTS idx_campus_region ON campus(region_id);
 
 -- ====================================
 -- 5. CONSTRAINTS ADICIONAIS
 -- ====================================
 
--- Corrigir foreign keys de pastor e lider_midia em campus
-ALTER TABLE campus
-ADD CONSTRAINT fk_campus_pastor FOREIGN KEY (pastor_id) REFERENCES users(id) ON DELETE SET NULL,
-ADD CONSTRAINT fk_campus_lider_midia FOREIGN KEY (lider_midia_id) REFERENCES users(id) ON DELETE SET NULL;
+-- Foreign keys de pastor e lider_midia em campus (users é criada depois de campus)
+DO $$ BEGIN
+  ALTER TABLE campus
+    ADD CONSTRAINT fk_campus_pastor FOREIGN KEY (pastor_id) REFERENCES users(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  ALTER TABLE campus
+    ADD CONSTRAINT fk_campus_lider_midia FOREIGN KEY (lider_midia_id) REFERENCES users(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- Nome de campus único (o seed usa o nome para achar o campus)
+DO $$ BEGIN
+  ALTER TABLE campus ADD CONSTRAINT campus_name_key UNIQUE (name);
+EXCEPTION WHEN duplicate_table OR duplicate_object THEN NULL; END $$;
+
+-- updated_at automático
+CREATE OR REPLACE FUNCTION set_updated_at() RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = CURRENT_TIMESTAMP;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SET search_path = public;
+
+CREATE OR REPLACE TRIGGER trg_campus_updated_at BEFORE UPDATE ON campus
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE OR REPLACE TRIGGER trg_users_updated_at BEFORE UPDATE ON users
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE OR REPLACE TRIGGER trg_equipment_updated_at BEFORE UPDATE ON equipment
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE OR REPLACE TRIGGER trg_maintenance_updated_at BEFORE UPDATE ON maintenance_requests
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- ====================================
--- 6. INSERIR DADOS INICIAIS (OPCIONAL)
+-- 6. ENABLE ROW LEVEL SECURITY (RLS)
 -- ====================================
 
--- Inserir regiões (você pode ajustar depois)
--- INSERT INTO regions (name, description) VALUES
--- ('Região Metropolitana', 'Região de Rio de Janeiro'),
--- ('Região Interior', 'Região do interior RJ'),
--- ('Litoral', 'Região do litoral');
-
--- ====================================
--- 7. ENABLE ROW LEVEL SECURITY (RLS)
--- ====================================
-
--- Habilitar RLS nas tabelas sensíveis
+-- RLS ligado em todas as tabelas expostas pela API do Supabase
+ALTER TABLE regions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE campus ENABLE ROW LEVEL SECURITY;
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE equipment ENABLE ROW LEVEL SECURITY;
 ALTER TABLE maintenance_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE maintenance_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE maintenance_notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE equipment_history ENABLE ROW LEVEL SECURITY;
 
--- Políticas básicas (você vai detalhar depois)
--- Admin vê tudo
-CREATE POLICY admin_all ON users AS (true)
-  USING (auth.uid() IN (SELECT id FROM users WHERE role = 'admin'));
+-- Remove políticas antigas que consultavam a própria tabela users (erro de recursão)
+DROP POLICY IF EXISTS admin_all ON users;
+DROP POLICY IF EXISTS admin_all_equipment ON equipment;
+DROP POLICY IF EXISTS lider_see_own_campus ON equipment;
 
-CREATE POLICY admin_all_equipment ON equipment AS (true)
-  USING (auth.uid() IN (SELECT id FROM users WHERE role = 'admin'));
-
--- Líderes veem equipamentos do seu campus
-CREATE POLICY lider_see_own_campus ON equipment
-  USING (campus_id IN (
-    SELECT campus_id FROM users WHERE id = auth.uid()
-  ) OR auth.uid() IN (SELECT id FROM users WHERE role = 'admin'));
+-- FASE DE TESTES (login desligado): qualquer visitante do site lê e grava tudo.
+-- Quando o login voltar, troque esta política por regras por papel/campus.
+DO $$
+DECLARE t TEXT;
+BEGIN
+  FOREACH t IN ARRAY ARRAY['regions', 'campus', 'users', 'equipment', 'maintenance_requests',
+                           'maintenance_logs', 'maintenance_notifications', 'equipment_history']
+  LOOP
+    IF NOT EXISTS (SELECT 1 FROM pg_policies
+                   WHERE schemaname = 'public' AND tablename = t AND policyname = 'acesso_teste') THEN
+      EXECUTE format(
+        'CREATE POLICY acesso_teste ON %I FOR ALL TO anon, authenticated USING (true) WITH CHECK (true)', t);
+    END IF;
+  END LOOP;
+END $$;
 
 -- ====================================
--- 8. VIEWS ÚTEIS
+-- 7. VIEWS ÚTEIS
 -- ====================================
+-- security_invoker: as views respeitam o RLS de quem consulta
 
 -- View: Manutenções Pendentes com detalhes
-CREATE VIEW v_pending_maintenance AS
+CREATE OR REPLACE VIEW v_pending_maintenance WITH (security_invoker = true) AS
 SELECT
   mr.id,
   mr.status,
@@ -279,7 +324,7 @@ WHERE mr.status NOT IN ('entregue', 'cancelado')
 ORDER BY mr.priority DESC, mr.created_at ASC;
 
 -- View: Equipamentos por Campus
-CREATE VIEW v_equipment_by_campus AS
+CREATE OR REPLACE VIEW v_equipment_by_campus WITH (security_invoker = true) AS
 SELECT
   c.name as campus_name,
   COUNT(eq.id) as total_equipamentos,
@@ -292,7 +337,7 @@ LEFT JOIN equipment eq ON c.id = eq.campus_id
 GROUP BY c.id, c.name;
 
 -- View: Custo de Manutenção por Campus (Mês)
-CREATE VIEW v_maintenance_cost_monthly AS
+CREATE OR REPLACE VIEW v_maintenance_cost_monthly WITH (security_invoker = true) AS
 SELECT
   TO_DATE(TO_CHAR(mr.created_at, 'YYYY-MM'), 'YYYY-MM') as mes,
   c.name as campus_name,
