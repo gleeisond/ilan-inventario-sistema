@@ -80,6 +80,7 @@ Num projeto Supabase novo, rode no SQL Editor, nesta ordem:
 2. `seed_data.sql`: dados de exemplo, só se quiser um ambiente de teste.
 3. `sql/01_activity_logs.sql`: tabela de logs.
 4. `sql/02_cadastros.sql`: categorias e locais.
+5. `sql/03_fluxo_reparo.sql`: etapas do fluxo de reparo (triagem, aprovação de orçamento, descarte, instalação).
 
 Toda mudança futura de banco deve ganhar um arquivo novo em `sql/` com o próximo número e ser registrada aqui.
 
