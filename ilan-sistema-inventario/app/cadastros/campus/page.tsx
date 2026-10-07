@@ -4,12 +4,14 @@ import BotaoExcluir from '@/components/BotaoExcluir'
 import { excluirCampus } from '../actions'
 import Aviso from '../Aviso'
 import FormCampus from './FormCampus'
+import { exigirAdmin } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
 type CampusLinha = { id: string; name: string; location: string | null; region: { name: string } | null }
 
 export default async function CadastroCampus({ searchParams }: { searchParams: { erro?: string; salvo?: string } }) {
+  await exigirAdmin()
   const supabase = getSupabase()
   const [{ data, error }, { data: regioes }, { data: equipamentos }, { data: usuarios }] = await Promise.all([
     supabase.from('campus').select('id, name, location, region:region_id (name)').order('name'),

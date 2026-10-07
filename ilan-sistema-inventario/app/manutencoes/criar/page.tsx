@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { getSupabase } from '@/lib/supabase'
 import { PRIORIDADE_LABELS } from '@/lib/manutencoes'
-import { getUsuarioAtual } from '@/lib/auth'
+import { getUsuarioAtual, exigirLogin } from '@/lib/auth'
 import { criarManutencao } from '../actions'
 
 export const dynamic = 'force-dynamic'
@@ -20,6 +20,7 @@ function Campo({ label, children }: { label: string; children: React.ReactNode }
 type EquipamentoOpcao = { id: string; name: string; campus: { name: string } | null }
 
 export default async function CriarManutencao({ searchParams }: { searchParams: { erro?: string; equipamento?: string } }) {
+  await exigirLogin()
   const supabase = getSupabase()
   const [{ data: equipData, error: erroEquip }, { data: usuarios, error: erroUsuarios }] = await Promise.all([
     supabase.from('equipment').select('id, name, campus:campus_id (name)').neq('status', 'descartado').order('name'),
@@ -36,13 +37,13 @@ export default async function CriarManutencao({ searchParams }: { searchParams: 
       <h1 className="text-2xl font-bold mt-2 mb-6">Novo chamado de manutenção</h1>
 
       {(erroEquip || erroUsuarios) && (
-        <div className="mb-4 p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
+        <div className="mb-4 aviso aviso-erro p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
           Erro ao carregar equipamentos e pessoas: {(erroEquip ?? erroUsuarios)?.message}
         </div>
       )}
 
       {searchParams.erro && (
-        <div className="mb-4 p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
+        <div className="mb-4 aviso aviso-erro p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
           {searchParams.erro}
         </div>
       )}

@@ -66,7 +66,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Filtros
       </div>
 
       {searchParams.salvo && (
-        <div className="p-3 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200">
+        <div className="aviso aviso-ok p-3 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200">
           Usuário {searchParams.salvo} salvo.
         </div>
       )}
@@ -132,7 +132,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Filtros
       </form>
 
       {error ? (
-        <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
+        <div className="aviso aviso-erro p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
           Erro ao carregar usuários: {error.message}
         </div>
       ) : usuarios.length === 0 ? (

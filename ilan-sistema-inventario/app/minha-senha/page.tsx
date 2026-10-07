@@ -23,10 +23,10 @@ export default async function MinhaSenha({ searchParams }: { searchParams: { err
       <p className="text-gray-600 mb-6">Troque a senha que o administrador passou para você.</p>
 
       {searchParams.salvo && (
-        <div className="mb-4 p-3 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200">Senha trocada. Use a nova senha no próximo acesso.</div>
+        <div className="mb-4 aviso aviso-ok p-3 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200">Senha trocada. Use a nova senha no próximo acesso.</div>
       )}
       {searchParams.erro && (
-        <div className="mb-4 p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">{searchParams.erro}</div>
+        <div className="mb-4 aviso aviso-erro p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">{searchParams.erro}</div>
       )}
 
       {!usuario ? (

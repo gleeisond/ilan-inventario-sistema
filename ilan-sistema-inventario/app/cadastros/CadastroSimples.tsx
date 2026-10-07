@@ -2,6 +2,7 @@ import { getSupabase } from '@/lib/supabase'
 import BotaoExcluir from '@/components/BotaoExcluir'
 import { excluirSimples, salvarSimples } from './actions'
 import Aviso from './Aviso'
+import { exigirAdmin } from '@/lib/auth'
 
 const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none'
 
@@ -16,6 +17,7 @@ type Props = {
 
 // Lista de categorias ou locais: criar, renomear na própria linha e excluir
 export default async function CadastroSimples({ tipo, tabela, coluna, titulo, exemplo, searchParams }: Props) {
+  await exigirAdmin()
   const supabase = getSupabase()
   const [{ data, error }, { data: equipamentos }] = await Promise.all([
     supabase.from(tabela).select('id, name').order('name'),

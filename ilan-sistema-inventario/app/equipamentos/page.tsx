@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getSupabase } from '@/lib/supabase'
 import { STATUS_COLORS, STATUS_LABELS, formatarMoeda } from '@/lib/equipamentos'
 import { EquipmentStatus } from '@/types/database'
+import { exigirLogin } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,6 +21,7 @@ type EquipamentoLinha = {
 }
 
 export default async function Equipamentos({ searchParams }: { searchParams: Filtros }) {
+  await exigirLogin()
   const supabase = getSupabase()
 
   let query = supabase
@@ -63,7 +65,7 @@ export default async function Equipamentos({ searchParams }: { searchParams: Fil
       </div>
 
       {searchParams.criado && (
-        <div className="mb-4 p-3 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200">
+        <div className="mb-4 aviso aviso-ok p-3 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200">
           Equipamento cadastrado.
         </div>
       )}
@@ -117,7 +119,7 @@ export default async function Equipamentos({ searchParams }: { searchParams: Fil
       </form>
 
       {error ? (
-        <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
+        <div className="aviso aviso-erro p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
           Erro ao carregar equipamentos: {error.message}
         </div>
       ) : equipamentos.length === 0 ? (

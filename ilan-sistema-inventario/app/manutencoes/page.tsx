@@ -13,6 +13,7 @@ import {
   formatarData,
 } from '@/lib/manutencoes'
 import { MaintenanceStatus, PriorityLevel } from '@/types/database'
+import { exigirLogin } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,6 +35,7 @@ type ManutencaoLinha = {
 const selectClass = 'px-3 py-2 border border-gray-300 rounded-lg'
 
 export default async function Manutencoes({ searchParams }: { searchParams: Filtros }) {
+  await exigirLogin()
   const supabase = getSupabase()
   const situacao = searchParams.situacao ?? 'abertas'
 
@@ -85,7 +87,7 @@ export default async function Manutencoes({ searchParams }: { searchParams: Filt
       </div>
 
       {searchParams.criado && (
-        <div className="mb-4 p-3 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200">
+        <div className="mb-4 aviso aviso-ok p-3 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200">
           Chamado aberto. O equipamento foi marcado como em manutenção.
         </div>
       )}
@@ -131,7 +133,7 @@ export default async function Manutencoes({ searchParams }: { searchParams: Filt
       </form>
 
       {error ? (
-        <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
+        <div className="aviso aviso-erro p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
           Erro ao carregar manutenções: {error.message}
         </div>
       ) : manutencoes.length === 0 ? (

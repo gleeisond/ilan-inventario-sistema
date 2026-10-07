@@ -14,7 +14,7 @@ import {
   formatarData,
 } from '@/lib/manutencoes'
 import { ActionType, MaintenanceStatus, PriorityLevel } from '@/types/database'
-import { getUsuarioAtual } from '@/lib/auth'
+import { getUsuarioAtual, exigirLogin } from '@/lib/auth'
 import { atualizarManutencao } from '../actions'
 
 export const dynamic = 'force-dynamic'
@@ -67,6 +67,7 @@ export default async function DetalheManutencao({
   params: { id: string }
   searchParams: { erro?: string; salvo?: string }
 }) {
+  await exigirLogin()
   const supabase = getSupabase()
   const [{ data, error }, { data: logsData }, { data: usuarios }] = await Promise.all([
     supabase
@@ -87,7 +88,7 @@ export default async function DetalheManutencao({
   if (error) {
     return (
       <div className="p-4 md:p-8">
-        <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
+        <div className="aviso aviso-erro p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
           Erro ao carregar o chamado: {error.message}
         </div>
       </div>
@@ -124,10 +125,10 @@ export default async function DetalheManutencao({
       </div>
 
       {searchParams.salvo && (
-        <div className="mb-4 p-3 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200">Chamado atualizado.</div>
+        <div className="mb-4 aviso aviso-ok p-3 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200">Chamado atualizado.</div>
       )}
       {searchParams.erro && (
-        <div className="mb-4 p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">{searchParams.erro}</div>
+        <div className="mb-4 aviso aviso-erro p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">{searchParams.erro}</div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">

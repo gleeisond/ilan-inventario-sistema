@@ -8,13 +8,19 @@ export default function Login({ searchParams }: { searchParams: { erro?: string;
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-gray-900">
       <div className="w-full max-w-sm">
-        <img src="/logo-ilan.png" alt="Ilan Church" className="w-64 mx-auto" />
-        <p className="text-gray-400 text-center mt-4 mb-8">Inventário de Mídia</p>
+        <img src="/logo-ilan.png" alt="Ilan Church" className="entrada w-64 mx-auto" />
+        <p className="entrada text-gray-400 text-center mt-4 mb-8" style={{ '--atraso': '150ms' } as React.CSSProperties}>
+          Inventário de Mídia
+        </p>
 
-        <form action={entrar} className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
+        <form
+          action={entrar}
+          className="entrada bg-white rounded-lg border border-gray-200 p-6 space-y-4 shadow-2xl shadow-black/40"
+          style={{ '--atraso': '300ms' } as React.CSSProperties}
+        >
           <input type="hidden" name="voltar" value={searchParams.voltar ?? ''} />
           {searchParams.erro && (
-            <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">{searchParams.erro}</div>
+            <div className="aviso aviso-erro p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">{searchParams.erro}</div>
           )}
           <label className="block text-sm font-medium text-gray-700">
             <span className="block mb-1">Usuário</span>

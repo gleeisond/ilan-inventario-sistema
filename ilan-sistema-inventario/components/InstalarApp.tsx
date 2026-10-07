@@ -58,15 +58,34 @@ export default function InstalarApp() {
   if (iphone) {
     return (
       <div className="mt-3">
-        <button type="button" onClick={() => setDicaAberta(!dicaAberta)} className="text-gray-300 hover:text-white">
+        <button
+          type="button"
+          onClick={() => setDicaAberta(!dicaAberta)}
+          aria-expanded={dicaAberta}
+          className="inline-flex items-center gap-1 text-gray-300 hover:text-white"
+        >
           Instalar aplicativo
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            className={`transition-transform duration-300 ${dicaAberta ? 'rotate-180' : ''}`}
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
         </button>
-        {dicaAberta && (
-          <p className="mt-2 text-gray-400 leading-snug">
-            No Safari, toque em <strong className="text-gray-200">Compartilhar</strong> (o quadrado com a seta para cima) e
-            depois em <strong className="text-gray-200">Adicionar à Tela de Início</strong>.
-          </p>
-        )}
+        <div className="expansivel" data-aberto={dicaAberta}>
+          <div>
+            <p className="pt-2 text-gray-400 leading-snug">
+              No Safari, toque em <strong className="text-gray-200">Compartilhar</strong> (o quadrado com a seta para cima) e
+              depois em <strong className="text-gray-200">Adicionar à Tela de Início</strong>.
+            </p>
+          </div>
+        </div>
       </div>
     )
   }

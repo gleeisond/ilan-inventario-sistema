@@ -40,7 +40,7 @@ export default async function FormularioUsuario({
       </Link>
       <h1 className="text-2xl font-bold mt-2 mb-6">{usuario ? `Editar ${usuario.name}` : 'Novo usuário'}</h1>
 
-      {erro && <div className="mb-4 p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">{erro}</div>}
+      {erro && <div className="mb-4 aviso aviso-erro p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">{erro}</div>}
 
       <form action={salvarUsuario} className="bg-white rounded-lg border border-gray-200 p-6 space-y-5">
         {usuario && <input type="hidden" name="id" value={usuario.id} />}

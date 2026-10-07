@@ -2,7 +2,9 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { headers } from 'next/headers'
+import { Suspense } from 'react'
 import Sidebar from '@/components/Sidebar'
+import Interacoes from '@/components/Interacoes'
 import { exigirLogin } from '@/lib/auth'
 
 export const metadata: Metadata = {
@@ -28,6 +30,9 @@ export default async function RootLayout({
   return (
     <html lang="pt-BR">
       <body>
+        <Suspense>
+          <Interacoes />
+        </Suspense>
         <div className="flex flex-col md:flex-row min-h-screen">
           <Sidebar />
           {/* min-w-0 deixa tabelas largas rolarem dentro da página em vez de cortar a tela */}

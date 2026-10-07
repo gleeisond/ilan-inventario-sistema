@@ -10,7 +10,10 @@ import {
   descreverPrazo,
   diasDeAtraso,
 } from '@/lib/manutencoes'
+import NumeroAnimado from '@/components/NumeroAnimado'
+import TextoRevelado from '@/components/TextoRevelado'
 import { EquipmentStatus, MaintenanceStatus, PriorityLevel } from '@/types/database'
+import { exigirLogin } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,15 +32,18 @@ type Manutencao = {
 
 function Indicador({ titulo, valor, detalhe, destaque }: { titulo: string; valor: string | number; detalhe?: string; destaque?: string }) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-5">
+    <div className="cartao bg-white rounded-lg border border-gray-200 p-5">
       <p className="text-sm text-gray-600">{titulo}</p>
-      <p className={`text-3xl font-bold mt-1 ${destaque ?? 'text-gray-900'}`}>{valor}</p>
+      <p className={`text-3xl font-bold mt-1 ${destaque ?? 'text-gray-900'}`}>
+        {typeof valor === 'number' ? <NumeroAnimado valor={valor} /> : valor}
+      </p>
       {detalhe && <p className="text-xs text-gray-500 mt-1">{detalhe}</p>}
     </div>
   )
 }
 
 export default async function Dashboard({ searchParams }: { searchParams: { sem_permissao?: string } }) {
+  await exigirLogin()
   const supabase = getSupabase()
 
   const [equipRes, manutRes, campusRes] = await Promise.all([
@@ -53,7 +59,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
     return (
       <div className="p-4 md:p-8">
         <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-        <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
+        <div className="aviso aviso-erro p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
           Erro ao carregar o dashboard: {erro.message}
         </div>
       </div>
@@ -100,17 +106,21 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
   return (
     <div className="p-4 md:p-8 space-y-8">
       {searchParams.sem_permissao && (
-        <div className="p-3 rounded-lg text-sm bg-yellow-50 text-yellow-800 border border-yellow-200">
+        <div className="aviso p-3 rounded-lg text-sm bg-yellow-50 text-yellow-800 border border-yellow-200">
           Essa área é só para administradores.
         </div>
       )}
       <div>
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-gray-600 mt-1">Visão geral do inventário de mídia dos {campusList.length} campus</p>
+        <h1 className="text-2xl font-bold">
+          <TextoRevelado texto="Dashboard" />
+        </h1>
+        <p className="text-gray-600 mt-1">
+          <TextoRevelado texto={`Visão geral do inventário de mídia dos ${campusList.length} campus`} atraso={1} />
+        </p>
       </div>
 
       {/* Indicadores */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <section className="cascata grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Indicador titulo="Equipamentos em uso" valor={emUso.length} detalhe={`${formatarMoeda(valorTotal)} em patrimônio`} />
         <Indicador
           titulo="Com problema"
@@ -132,14 +142,14 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
         <section className="xl:col-span-2 bg-white rounded-lg border border-gray-200">
           <div className="flex items-center justify-between p-5 border-b border-gray-100">
             <h2 className="font-semibold text-lg">Manutenções em andamento</h2>
-            <Link href="/manutencoes" className="text-sm text-indigo-600 hover:text-indigo-700 whitespace-nowrap">Ver todas →</Link>
+            <Link href="/manutencoes" className="group text-sm text-indigo-600 hover:text-indigo-700 whitespace-nowrap">Ver todas <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span></Link>
           </div>
           {pendentes.length === 0 ? (
             <p className="p-5 text-gray-500">Nenhuma manutenção em andamento.</p>
           ) : (
-            <ul className="divide-y divide-gray-100">
+            <ul className="cascata divide-y divide-gray-100" style={{ '--atraso': '150ms' } as React.CSSProperties}>
               {pendentes.slice(0, 8).map(m => (
-                <li key={m.id} className="p-5 flex flex-wrap items-start justify-between gap-3">
+                <li key={m.id} className="p-5 flex flex-wrap items-start justify-between gap-3 transition-colors duration-200 hover:bg-gray-50">
                   <div className="min-w-0">
                     <p className="font-medium text-gray-900">
                       {m.equipment?.name ?? 'Equipamento'} <span className="text-gray-500 font-normal">· {m.campus?.name}</span>
@@ -166,12 +176,12 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
         {/* Situação dos equipamentos */}
         <section className="bg-white rounded-lg border border-gray-200 p-5">
           <h2 className="font-semibold text-lg mb-4">Situação dos equipamentos</h2>
-          <ul className="space-y-3">
+          <ul className="cascata space-y-3" style={{ '--atraso': '200ms' } as React.CSSProperties}>
             {porStatus.map(({ status, total }) => (
               <li key={status}>
-                <Link href={`/equipamentos?status=${status}`} className="flex items-center justify-between hover:bg-gray-50 rounded-lg -mx-2 px-2 py-1">
+                <Link href={`/equipamentos?status=${status}`} className="group flex items-center justify-between hover:bg-gray-50 rounded-lg -mx-2 px-2 py-1 transition-colors duration-200">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[status]}`}>{STATUS_LABELS[status]}</span>
-                  <span className="font-semibold">{total}</span>
+                  <span className="font-semibold transition-transform duration-300 group-hover:-translate-x-1">{total}</span>
                 </Link>
               </li>
             ))}
@@ -202,7 +212,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
                   <div className="flex items-center gap-3">
                     <span className="w-6 text-right">{c.total}</span>
                     <div className="flex-1 max-w-[160px] h-2 bg-gray-100 rounded-full">
-                      <div className="h-2 bg-indigo-500 rounded-full" style={{ width: `${(c.total / maiorTotal) * 100}%` }} />
+                      <div className="barra h-2 bg-indigo-500 rounded-full" style={{ width: `${(c.total / maiorTotal) * 100}%` }} />
                     </div>
                   </div>
                 </td>

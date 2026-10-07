@@ -109,7 +109,7 @@ export default async function Logs({ searchParams }: { searchParams: Filtros }) 
       </form>
 
       {error ? (
-        <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
+        <div className="aviso aviso-erro p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
           Erro ao carregar os logs: {error.message}
           {error.message.includes('activity_logs') && ' (a tabela activity_logs ainda não foi criada no Supabase)'}
         </div>

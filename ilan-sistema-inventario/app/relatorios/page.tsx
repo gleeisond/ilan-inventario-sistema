@@ -13,16 +13,20 @@ import {
   periodoPadrao,
 } from '@/lib/relatorios'
 import BotaoImprimir from './BotaoImprimir'
+import NumeroAnimado from '@/components/NumeroAnimado'
+import TextoRevelado from '@/components/TextoRevelado'
 
 export const dynamic = 'force-dynamic'
 
 const campoClass = 'px-3 py-2 border border-gray-300 rounded-lg'
 
-function Indicador({ titulo, valor, detalhe }: { titulo: string; valor: string | number; detalhe?: string }) {
+function Indicador({ titulo, valor, detalhe, moeda }: { titulo: string; valor: string | number; detalhe?: string; moeda?: boolean }) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
+    <div className="cartao bg-white rounded-lg border border-gray-200 p-4">
       <p className="text-sm text-gray-600">{titulo}</p>
-      <p className="text-2xl font-bold mt-1">{valor}</p>
+      <p className="text-2xl font-bold mt-1">
+        {typeof valor === 'number' ? <NumeroAnimado valor={valor} formato={moeda ? 'moeda' : undefined} /> : valor}
+      </p>
       {detalhe && <p className="text-xs text-gray-500 mt-1">{detalhe}</p>}
     </div>
   )
@@ -98,7 +102,9 @@ export default async function Relatorios({ searchParams }: { searchParams: Filtr
     <div className="p-4 md:p-8 space-y-8 print:p-0">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Relatórios</h1>
+          <h1 className="text-2xl font-bold">
+            <TextoRevelado texto="Relatórios" />
+          </h1>
           <p className="text-gray-600 mt-1">
             {campusNome ?? 'Todos os campus'} · manutenções de {formatarData(de)} a {formatarData(ate)}
           </p>
@@ -139,14 +145,14 @@ export default async function Relatorios({ searchParams }: { searchParams: Filtr
       </form>
 
       {erro && (
-        <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">Erro ao gerar o relatório: {erro.message}</div>
+        <div className="aviso aviso-erro p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">Erro ao gerar o relatório: {erro.message}</div>
       )}
 
       <section className="space-y-4">
         <h2 className="text-lg font-semibold">Inventário</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="cascata grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Indicador titulo="Equipamentos em uso" valor={emUso.length} />
-          <Indicador titulo="Patrimônio" valor={formatarMoeda(patrimonio)} />
+          <Indicador titulo="Patrimônio" valor={patrimonio} moeda />
           <Indicador
             titulo="Com problema"
             valor={emUso.filter(e => e.status === 'danificado' || e.status === 'em_manutencao').length}
@@ -154,7 +160,7 @@ export default async function Relatorios({ searchParams }: { searchParams: Filtr
           />
           <Indicador titulo="Descartados" valor={equipamentos.length - emUso.length} />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="cascata grid grid-cols-1 lg:grid-cols-2 gap-4">
           {!searchParams.campus && <TabelaResumo titulo="Por campus" linhas={porCampus} comValor />}
           <TabelaResumo titulo="Por categoria" linhas={porCategoria} comValor />
           <TabelaResumo titulo="Por situação" linhas={porStatus} comValor />
@@ -164,13 +170,13 @@ export default async function Relatorios({ searchParams }: { searchParams: Filtr
 
       <section className="space-y-4">
         <h2 className="text-lg font-semibold">Manutenções no período</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="cascata grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Indicador titulo="Chamados abertos" valor={manutencoes.length} detalhe={`${emAberto.length} ainda em andamento`} />
           <Indicador titulo="Entregues" valor={entregues.length} />
-          <Indicador titulo="Custo total" valor={formatarMoeda(custoTotal)} />
+          <Indicador titulo="Custo total" valor={custoTotal} moeda />
           <Indicador titulo="Tempo médio de conserto" valor={mediaDias === null ? '—' : `${mediaDias} ${mediaDias === 1 ? 'dia' : 'dias'}`} detalhe="da abertura até a entrega" />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="cascata grid grid-cols-1 lg:grid-cols-2 gap-4">
           <TabelaResumo titulo="Por status" linhas={manutPorStatus} comValor />
           {!searchParams.campus && <TabelaResumo titulo="Por campus" linhas={manutPorCampus} comValor />}
           {maisConsertados.length > 0 && <TabelaResumo titulo="Equipamentos que mais voltaram para conserto" linhas={maisConsertados} comValor />}
