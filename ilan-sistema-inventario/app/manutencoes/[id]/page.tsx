@@ -15,7 +15,10 @@ import {
 } from '@/lib/manutencoes'
 import { ActionType, MaintenanceStatus, PriorityLevel } from '@/types/database'
 import { getUsuarioAtual, exigirLogin } from '@/lib/auth'
-import { atualizarManutencao } from '../actions'
+import { atualizarManutencao, avancarEtapa } from '../actions'
+import { ETAPAS, acoesDisponiveis, etapaAtual, podeAgir, responsavelPor } from '@/lib/fluxoReparo'
+import { PERFIL_LABELS } from '@/lib/usuarios'
+import EtapaReparo from '@/components/EtapaReparo'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,7 +38,8 @@ type Chamado = {
   created_at: string
   updated_at: string
   equipment: { name: string; brand: string | null } | null
-  campus: { name: string } | null
+  campus_id: string
+  campus: { name: string; region_id: string } | null
   created_by: { name: string } | null
 }
 
@@ -73,7 +77,7 @@ export default async function DetalheManutencao({
     supabase
       .from('maintenance_requests')
       .select(
-        'id, equipment_id, problem_description, status, priority, scheduled_completion_date, actual_completion_date, cost, notes, assigned_to_id, created_at, updated_at, equipment:equipment_id (name, brand), campus:campus_id (name), created_by:created_by_id (name)'
+        'id, equipment_id, problem_description, status, priority, scheduled_completion_date, actual_completion_date, cost, notes, assigned_to_id, created_at, updated_at, campus_id, equipment:equipment_id (name, brand), campus:campus_id (name, region_id), created_by:created_by_id (name)'
       )
       .eq('id', params.id)
       .maybeSingle(),
@@ -100,6 +104,12 @@ export default async function DetalheManutencao({
   const m = data as unknown as Chamado
   const registros = (logsData ?? []) as unknown as Registro[]
   const atraso = STATUS_FINALIZADOS.includes(m.status) ? null : diasDeAtraso(m.scheduled_completion_date)
+  const etapa = etapaAtual(m.status)
+  const responsavel = responsavelPor(m.status)
+  const acoes = acoesDisponiveis(m.status)
+  const minhaVez = podeAgir(usuarioLogado, { status: m.status, campus_id: m.campus_id, campus_region_id: m.campus?.region_id ?? null })
+  const corrigeStatus = !usuarioLogado || usuarioLogado.role === 'admin'
+  const editaCusto = !usuarioLogado || usuarioLogado.role === 'admin' || usuarioLogado.role === 'rodrigo'
 
   return (
     <div className="p-4 md:p-8 max-w-5xl">
@@ -131,6 +141,38 @@ export default async function DetalheManutencao({
         <div className="mb-4 aviso aviso-erro p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">{searchParams.erro}</div>
       )}
 
+      <section className="bg-white rounded-lg border border-gray-200 p-4 md:p-6 mb-6">
+        <h2 className="font-semibold mb-4">Fluxo do reparo</h2>
+        <ol className="grid grid-cols-1 sm:grid-cols-7 gap-3 sm:gap-2">
+          {ETAPAS.map((e, i) => {
+            const situacao = etapa === null ? 'encerrada' : i < etapa ? 'feita' : i === etapa ? 'atual' : 'pendente'
+            return (
+              <li key={e.titulo} className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-2">
+                <span
+                  className={`shrink-0 w-7 h-7 rounded-full grid place-items-center text-xs font-bold ${
+                    situacao === 'feita'
+                      ? 'bg-green-600 text-white'
+                      : situacao === 'atual'
+                        ? 'bg-indigo-600 text-white ring-4 ring-indigo-100'
+                        : 'bg-gray-100 text-gray-500'
+                  }`}
+                  aria-label={situacao === 'feita' ? 'feita' : situacao === 'atual' ? 'etapa atual' : undefined}
+                >
+                  {situacao === 'feita' ? '✓' : i + 1}
+                </span>
+                <span className="text-sm leading-tight">
+                  <span className={`block ${situacao === 'atual' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>{e.titulo}</span>
+                  <span className="block text-xs text-gray-500">{PERFIL_LABELS[e.quem]}</span>
+                </span>
+              </li>
+            )
+          })}
+        </ol>
+        {etapa === null && (
+          <p className="mt-4 text-sm text-gray-600">Chamado encerrado: {MANUTENCAO_STATUS_LABELS[m.status].toLowerCase()}.</p>
+        )}
+      </section>
+
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3 space-y-6">
           <section className="bg-white rounded-lg border border-gray-200 p-6">
@@ -151,11 +193,11 @@ export default async function DetalheManutencao({
                 </dd>
               </div>
               <div>
-                <dt className="text-gray-500">Entregue em</dt>
+                <dt className="text-gray-500">Concluído em</dt>
                 <dd>{formatarData(m.actual_completion_date)}</dd>
               </div>
               <div>
-                <dt className="text-gray-500">Custo</dt>
+                <dt className="text-gray-500">{m.status === 'aguardando_aprovacao' ? 'Orçamento aguardando aprovação' : 'Custo'}</dt>
                 <dd>{formatarMoeda(m.cost)}</dd>
               </div>
             </dl>
@@ -181,69 +223,102 @@ export default async function DetalheManutencao({
           </section>
         </div>
 
-        {/* key muda a cada gravação para o formulário voltar limpo (sem o comentário anterior) */}
-        <form key={m.updated_at} action={atualizarManutencao} className="lg:col-span-2 bg-white rounded-lg border border-gray-200 p-6 space-y-4 h-fit">
-          <h2 className="font-semibold">Atualizar chamado</h2>
-          <input type="hidden" name="id" value={m.id} />
+        <div className="lg:col-span-2 space-y-6 order-first lg:order-none">
+          {responsavel && (
+            <section className={`rounded-lg border p-6 ${minhaVez ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-gray-200'}`}>
+              <h2 className="font-semibold">Próxima etapa</h2>
+              <p className="text-sm text-gray-600 mt-1 mb-4">
+                {minhaVez && usuarioLogado?.role === responsavel
+                  ? 'É a sua vez.'
+                  : `Aguardando ${PERFIL_LABELS[responsavel].toLowerCase()}${responsavel === 'pastor' || responsavel === 'lider_midia' ? ` de ${m.campus?.name ?? 'campus'}` : ''}.`}
+              </p>
+              {minhaVez ? (
+                <EtapaReparo
+                  key={m.updated_at}
+                  chamadoId={m.id}
+                  status={m.status}
+                  acoes={acoes}
+                  pessoas={usuarioLogado ? null : usuarios ?? []}
+                  custoAtual={m.cost === null ? '' : String(m.cost).replace('.', ',')}
+                  enviar={avancarEtapa}
+                />
+              ) : (
+                <p className="text-sm text-gray-500">Você acompanha por aqui; quem age nessa etapa é outra pessoa.</p>
+              )}
+            </section>
+          )}
 
-          <Campo label="Status">
-            <select name="status" defaultValue={m.status} className={inputClass}>
-              {Object.entries(MANUTENCAO_STATUS_LABELS).map(([valor, rotulo]) => (
-                <option key={valor} value={valor}>{rotulo}</option>
-              ))}
-            </select>
-          </Campo>
-          {!usuarioLogado && (
-            <Campo label="Quem está registrando (obrigatório ao mudar o status)">
-              <select name="performed_by_id" defaultValue="" className={inputClass}>
-                <option value="">Selecione</option>
+          {/* key muda a cada gravação para o formulário voltar limpo (sem o comentário anterior) */}
+          <form key={m.updated_at} action={atualizarManutencao} className="bg-white rounded-lg border border-gray-200 p-6 space-y-4 h-fit">
+            <h2 className="font-semibold">Dados do chamado</h2>
+            <input type="hidden" name="id" value={m.id} />
+
+            {corrigeStatus && (
+              <details className="rounded-lg border border-gray-200 p-3">
+                <summary className="text-sm font-medium text-gray-700 cursor-pointer">Corrigir status à mão</summary>
+                <div className="space-y-4 mt-3">
+                  <Campo label="Status">
+                    <select name="status" defaultValue={m.status} className={inputClass}>
+                      {Object.entries(MANUTENCAO_STATUS_LABELS).map(([valor, rotulo]) => (
+                        <option key={valor} value={valor}>{rotulo}</option>
+                      ))}
+                    </select>
+                  </Campo>
+                  {!usuarioLogado && (
+                    <Campo label="Quem está registrando (obrigatório ao mudar o status)">
+                      <select name="performed_by_id" defaultValue="" className={inputClass}>
+                        <option value="">Selecione</option>
+                        {usuarios?.map(u => (
+                          <option key={u.id} value={u.id}>{u.name}</option>
+                        ))}
+                      </select>
+                    </Campo>
+                  )}
+                  <Campo label="Motivo da correção">
+                    <input name="comentario" placeholder="Ex: etapa marcada por engano" className={inputClass} />
+                  </Campo>
+                </div>
+              </details>
+            )}
+
+            <Campo label="Prioridade">
+              <select name="priority" defaultValue={m.priority} className={inputClass}>
+                {Object.entries(PRIORIDADE_LABELS).map(([valor, rotulo]) => (
+                  <option key={valor} value={valor}>{rotulo}</option>
+                ))}
+              </select>
+            </Campo>
+            <Campo label="Responsável pelo conserto">
+              <select name="assigned_to_id" defaultValue={m.assigned_to_id ?? ''} className={inputClass}>
+                <option value="">Ninguém ainda</option>
                 {usuarios?.map(u => (
                   <option key={u.id} value={u.id}>{u.name}</option>
                 ))}
               </select>
             </Campo>
-          )}
-          <Campo label="Comentário sobre a mudança">
-            <input name="comentario" placeholder="Ex: trocada a fonte" className={inputClass} />
-          </Campo>
+            <Campo label="Previsão de conclusão">
+              <input name="scheduled_completion_date" type="date" defaultValue={m.scheduled_completion_date ?? ''} className={inputClass} />
+            </Campo>
+            {editaCusto && (
+              <Campo label="Custo (R$)">
+                <input
+                  name="cost"
+                  inputMode="decimal"
+                  placeholder="Ex: 350,00"
+                  defaultValue={m.cost === null ? '' : String(m.cost).replace('.', ',')}
+                  className={inputClass}
+                />
+              </Campo>
+            )}
+            <Campo label="Observações">
+              <textarea name="notes" rows={3} defaultValue={m.notes ?? ''} className={inputClass} />
+            </Campo>
 
-          <hr className="border-gray-100" />
-
-          <Campo label="Prioridade">
-            <select name="priority" defaultValue={m.priority} className={inputClass}>
-              {Object.entries(PRIORIDADE_LABELS).map(([valor, rotulo]) => (
-                <option key={valor} value={valor}>{rotulo}</option>
-              ))}
-            </select>
-          </Campo>
-          <Campo label="Responsável pelo conserto">
-            <select name="assigned_to_id" defaultValue={m.assigned_to_id ?? ''} className={inputClass}>
-              <option value="">Ninguém ainda</option>
-              {usuarios?.map(u => (
-                <option key={u.id} value={u.id}>{u.name}</option>
-              ))}
-            </select>
-          </Campo>
-          <Campo label="Previsão de conclusão">
-            <input name="scheduled_completion_date" type="date" defaultValue={m.scheduled_completion_date ?? ''} className={inputClass} />
-          </Campo>
-          <Campo label="Custo (R$)">
-            <input
-              name="cost"
-              inputMode="decimal"
-              placeholder="Ex: 350,00"
-              defaultValue={m.cost === null ? '' : String(m.cost).replace('.', ',')}
-              className={inputClass}
-            />
-          </Campo>
-          <Campo label="Observações">
-            <textarea name="notes" rows={3} defaultValue={m.notes ?? ''} className={inputClass} />
-          </Campo>
-
-          <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition">
-            Salvar
-          </button>
-        </form>
+            <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition">
+              Salvar
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   )

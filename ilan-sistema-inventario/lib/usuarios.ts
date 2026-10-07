@@ -6,19 +6,19 @@ import { UserRole } from '@/types/database'
 export const PERFIS: UserRole[] = ['admin', 'rodrigo', 'lider_regional', 'pastor', 'lider_midia']
 
 export const PERFIL_LABELS: Record<UserRole, string> = {
-  admin: 'Administrador',
-  rodrigo: 'Assistência técnica',
+  admin: 'ADM Ilan',
+  rodrigo: 'Ilan Tech Pro',
   lider_regional: 'Líder regional',
-  pastor: 'Pastor',
-  lider_midia: 'Líder de mídia',
+  pastor: 'Pastor de campus',
+  lider_midia: 'Líder de campus',
 }
 
 export const PERFIL_DESCRICOES: Record<UserRole, string> = {
-  admin: 'Acesso total: todos os campus, usuários e configurações.',
-  rodrigo: 'Recebe os equipamentos e atualiza o andamento das manutenções de todos os campus.',
-  lider_regional: 'Acompanha os campus da sua região.',
-  pastor: 'Acompanha o inventário e as manutenções do seu campus.',
-  lider_midia: 'Cuida do inventário do seu campus e abre chamados de manutenção.',
+  admin: 'Acesso total. Aprova ou reprova os orçamentos de reparo e pode agir em qualquer etapa.',
+  rodrigo: 'Recebe os equipamentos, faz o diagnóstico, pede aprovação dos custos e conserta ou descarta.',
+  lider_regional: 'Faz a triagem dos defeitos dos campus da sua região: envia para a Ilan Tech Pro ou resolve no campus.',
+  pastor: 'Leva o equipamento até a Ilan Tech Pro e traz de volta ao campus depois do conserto.',
+  lider_midia: 'Cuida do inventário do seu campus, abre os chamados e instala o equipamento quando ele volta.',
 }
 
 export const PERFIL_COLORS: Record<UserRole, string> = {

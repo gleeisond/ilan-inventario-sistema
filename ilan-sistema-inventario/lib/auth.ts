@@ -22,7 +22,7 @@ export function emailParaLogin(email: string) {
 
 export const FORMATO_LOGIN = /^[a-z0-9._-]{3,40}$/
 
-export type UsuarioAtual = { id: string; name: string; role: UserRole; campus_id: string | null }
+export type UsuarioAtual = { id: string; name: string; role: UserRole; campus_id: string | null; region_id: string | null }
 
 // cache: layout, menu e página leem o mesmo usuário numa só consulta por requisição
 export const getUsuarioAtual = cache(async (): Promise<UsuarioAtual | null> => {
@@ -30,11 +30,11 @@ export const getUsuarioAtual = cache(async (): Promise<UsuarioAtual | null> => {
   if (!sessao) return null
   const { data } = await getSupabase()
     .from('users')
-    .select('id, name, role, campus_id, is_active')
+    .select('id, name, role, campus_id, region_id, is_active')
     .eq('id', sessao.uid)
     .maybeSingle()
   if (!data || !data.is_active) return null
-  return { id: data.id, name: data.name, role: data.role, campus_id: data.campus_id }
+  return { id: data.id, name: data.name, role: data.role, campus_id: data.campus_id, region_id: data.region_id }
 })
 
 // Ids dos usuários que já têm senha (conta no Supabase Auth). Null se a chave de admin não estiver configurada.
@@ -69,6 +69,7 @@ export type AcaoLog =
   | 'equipamento_criado'
   | 'manutencao_aberta'
   | 'manutencao_atualizada'
+  | 'manutencao_etapa'
   | 'usuario_criado'
   | 'usuario_editado'
   | 'senha_definida'

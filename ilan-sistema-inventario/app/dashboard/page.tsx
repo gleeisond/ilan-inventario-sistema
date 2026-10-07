@@ -13,7 +13,8 @@ import {
 import NumeroAnimado from '@/components/NumeroAnimado'
 import TextoRevelado from '@/components/TextoRevelado'
 import { EquipmentStatus, MaintenanceStatus, PriorityLevel } from '@/types/database'
-import { exigirLogin } from '@/lib/auth'
+import { exigirLogin, getUsuarioAtual } from '@/lib/auth'
+import { aguardaUsuario } from '@/lib/fluxoReparo'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,7 +28,7 @@ type Manutencao = {
   scheduled_completion_date: string | null
   campus_id: string
   equipment: { name: string } | null
-  campus: { name: string } | null
+  campus: { name: string; region_id: string } | null
 }
 
 function Indicador({ titulo, valor, detalhe, destaque }: { titulo: string; valor: string | number; detalhe?: string; destaque?: string }) {
@@ -50,7 +51,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
     supabase.from('equipment').select('id, status, value, campus_id'),
     supabase
       .from('maintenance_requests')
-      .select('id, status, priority, problem_description, scheduled_completion_date, campus_id, equipment:equipment_id (name), campus:campus_id (name)'),
+      .select('id, status, priority, problem_description, scheduled_completion_date, campus_id, equipment:equipment_id (name), campus:campus_id (name, region_id)'),
     supabase.from('campus').select('id, name').order('name'),
   ])
 
@@ -86,6 +87,10 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
   const atrasadas = pendentes.filter(m => (m.atraso ?? 0) > 0)
   const prontas = pendentes.filter(m => m.status === 'pronto')
   const criticas = pendentes.filter(m => m.priority === 'critica' || m.priority === 'alta')
+  const usuario = await getUsuarioAtual()
+  const aguardandoVoce = usuario
+    ? pendentes.filter(m => aguardaUsuario(usuario, { status: m.status, campus_id: m.campus_id, campus_region_id: m.campus?.region_id ?? null })).length
+    : 0
 
   // Resumo por campus
   const porCampus = campusList
@@ -119,6 +124,18 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
         </p>
       </div>
 
+      {aguardandoVoce > 0 && (
+        <Link
+          href="/manutencoes?situacao=minhas"
+          className="flex items-center justify-between gap-3 p-4 rounded-lg bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100 transition"
+        >
+          <span>
+            <strong>{aguardandoVoce}</strong> {aguardandoVoce === 1 ? 'chamado de reparo aguarda' : 'chamados de reparo aguardam'} você
+          </span>
+          <span className="font-medium">Ver →</span>
+        </Link>
+      )}
+
       {/* Indicadores */}
       <section className="cascata grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Indicador titulo="Equipamentos em uso" valor={emUso.length} detalhe={`${formatarMoeda(valorTotal)} em patrimônio`} />
@@ -132,7 +149,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
         <Indicador
           titulo="Atrasadas"
           valor={atrasadas.length}
-          detalhe={prontas.length ? `${prontas.length} pronta(s) para buscar` : 'passaram da data prevista'}
+          detalhe={prontas.length ? `${prontas.length} pronta(s) para retirada` : 'passaram da data prevista'}
           destaque={atrasadas.length ? 'text-red-700' : 'text-gray-900'}
         />
       </section>

@@ -13,7 +13,9 @@ import {
   formatarData,
 } from '@/lib/manutencoes'
 import { MaintenanceStatus, PriorityLevel } from '@/types/database'
-import { exigirLogin } from '@/lib/auth'
+import { exigirLogin, getUsuarioAtual } from '@/lib/auth'
+import { aguardaUsuario, responsavelPor } from '@/lib/fluxoReparo'
+import { PERFIL_LABELS } from '@/lib/usuarios'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,8 +30,8 @@ type ManutencaoLinha = {
   cost: number | null
   created_at: string
   equipment: { name: string } | null
-  campus: { name: string } | null
-  assigned_to: { name: string } | null
+  campus_id: string
+  campus: { name: string; region_id: string } | null
 }
 
 const selectClass = 'px-3 py-2 border border-gray-300 rounded-lg'
@@ -37,16 +39,19 @@ const selectClass = 'px-3 py-2 border border-gray-300 rounded-lg'
 export default async function Manutencoes({ searchParams }: { searchParams: Filtros }) {
   await exigirLogin()
   const supabase = getSupabase()
+  const usuario = await getUsuarioAtual()
   const situacao = searchParams.situacao ?? 'abertas'
+  const ehMinha = (m: ManutencaoLinha) =>
+    Boolean(usuario) && aguardaUsuario(usuario!, { status: m.status, campus_id: m.campus_id, campus_region_id: m.campus?.region_id ?? null })
 
   let query = supabase
     .from('maintenance_requests')
     .select(
-      'id, problem_description, status, priority, scheduled_completion_date, cost, created_at, equipment:equipment_id (name), campus:campus_id (name), assigned_to:assigned_to_id (name)'
+      'id, problem_description, status, priority, scheduled_completion_date, cost, created_at, campus_id, equipment:equipment_id (name), campus:campus_id (name, region_id)'
     )
     .order('created_at', { ascending: false })
 
-  if (situacao === 'abertas') query = query.not('status', 'in', `(${STATUS_FINALIZADOS.join(',')})`)
+  if (situacao === 'abertas' || situacao === 'minhas') query = query.not('status', 'in', `(${STATUS_FINALIZADOS.join(',')})`)
   else if (situacao === 'atrasadas') {
     const hoje = new Date().toISOString().slice(0, 10)
     query = query.not('status', 'in', `(${STATUS_FINALIZADOS.join(',')})`).lt('scheduled_completion_date', hoje)
@@ -54,12 +59,21 @@ export default async function Manutencoes({ searchParams }: { searchParams: Filt
   if (searchParams.campus) query = query.eq('campus_id', searchParams.campus)
   if (searchParams.prioridade) query = query.eq('priority', searchParams.prioridade)
 
-  const [{ data, error }, { data: campusList }] = await Promise.all([
+  const [{ data, error }, { data: campusList }, { data: abertasData }] = await Promise.all([
     query,
     supabase.from('campus').select('id, name').order('name'),
+    // Para contar o que aguarda o usuário logado, independente dos filtros
+    usuario
+      ? supabase
+          .from('maintenance_requests')
+          .select('status, campus_id, campus:campus_id (region_id)')
+          .not('status', 'in', `(${STATUS_FINALIZADOS.join(',')})`)
+      : Promise.resolve({ data: [] }),
   ])
+  const aguardandoVoce = ((abertasData ?? []) as unknown as ManutencaoLinha[]).filter(ehMinha).length
 
   const manutencoes = ((data ?? []) as unknown as ManutencaoLinha[])
+    .filter(m => situacao !== 'minhas' || ehMinha(m))
     .map(m => ({ ...m, atraso: STATUS_FINALIZADOS.includes(m.status) ? null : diasDeAtraso(m.scheduled_completion_date) }))
     .sort((a, b) =>
       // Em aberto: mais urgentes primeiro. Finalizadas mantêm a ordem por data.
@@ -92,10 +106,23 @@ export default async function Manutencoes({ searchParams }: { searchParams: Filt
         </div>
       )}
 
+      {usuario && aguardandoVoce > 0 && situacao !== 'minhas' && (
+        <Link
+          href="/manutencoes?situacao=minhas"
+          className="mb-4 flex items-center justify-between gap-3 p-3 rounded-lg text-sm bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100 transition"
+        >
+          <span>
+            <strong>{aguardandoVoce}</strong> {aguardandoVoce === 1 ? 'chamado aguarda' : 'chamados aguardam'} você
+          </span>
+          <span className="font-medium">Ver →</span>
+        </Link>
+      )}
+
       <form className="bg-white rounded-lg border border-gray-200 p-4 mb-6 flex flex-wrap gap-3 items-end">
         <label className="flex flex-col text-sm text-gray-700 gap-1">
           Situação
           <select name="situacao" defaultValue={situacao} className={selectClass}>
+            {usuario && <option value="minhas">Aguardando você</option>}
             <option value="abertas">Em aberto</option>
             <option value="atrasadas">Atrasadas</option>
             <option value="todas">Todas</option>
@@ -138,7 +165,7 @@ export default async function Manutencoes({ searchParams }: { searchParams: Filt
         </div>
       ) : manutencoes.length === 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-gray-500">
-          {temFiltro ? 'Nenhum chamado encontrado com esses filtros.' : 'Nenhuma manutenção em aberto.'}
+          {situacao === 'minhas' ? 'Nada aguardando você agora.' : temFiltro ? 'Nenhum chamado encontrado com esses filtros.' : 'Nenhuma manutenção em aberto.'}
         </div>
       ) : (
         <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
@@ -150,7 +177,7 @@ export default async function Manutencoes({ searchParams }: { searchParams: Filt
                 <th className="px-4 py-3 font-semibold">Prioridade</th>
                 <th className="px-4 py-3 font-semibold">Status</th>
                 <th className="px-4 py-3 font-semibold">Previsão</th>
-                <th className="px-4 py-3 font-semibold">Responsável</th>
+                <th className="px-4 py-3 font-semibold">Aguardando</th>
                 <th className="px-4 py-3 font-semibold text-right">Custo</th>
               </tr>
             </thead>
@@ -182,7 +209,16 @@ export default async function Manutencoes({ searchParams }: { searchParams: Filt
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-3">{m.assigned_to?.name ?? '—'}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    {ehMinha(m) ? (
+                      <span className="font-medium text-indigo-700">Você</span>
+                    ) : (
+                      (() => {
+                        const quem = responsavelPor(m.status)
+                        return quem ? PERFIL_LABELS[quem] : '—'
+                      })()
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">{m.cost === null ? '—' : formatarMoeda(m.cost)}</td>
                 </tr>
               ))}

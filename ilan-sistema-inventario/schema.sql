@@ -43,7 +43,13 @@ DO $$ BEGIN
     'aguardando_pecas',
     'pronto',
     'entregue',
-    'cancelado'
+    'cancelado',
+    'aguardando_envio',
+    'aguardando_aprovacao',
+    'reprovado',
+    'aguardando_instalacao',
+    'concluido',
+    'descartado'
   );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
@@ -65,7 +71,17 @@ DO $$ BEGIN
     'peca_recebida',
     'conserto_completo',
     'pronto_para_entrega',
-    'entregue'
+    'entregue',
+    'enviado_assistencia',
+    'resolvido_no_campus',
+    'orcamento_solicitado',
+    'orcamento_aprovado',
+    'orcamento_reprovado',
+    'descartado',
+    'devolvido_sem_conserto',
+    'retirado_assistencia',
+    'instalado',
+    'reaberto'
   );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
