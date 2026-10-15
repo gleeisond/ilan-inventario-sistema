@@ -240,19 +240,9 @@ ALTER TABLE maintenance_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE maintenance_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE maintenance_notifications ENABLE ROW LEVEL SECURITY;
 
--- Políticas básicas (você vai detalhar depois)
--- Admin vê tudo
-CREATE POLICY admin_all ON users AS (true)
-  USING (auth.uid() IN (SELECT id FROM users WHERE role = 'admin'));
-
-CREATE POLICY admin_all_equipment ON equipment AS (true)
-  USING (auth.uid() IN (SELECT id FROM users WHERE role = 'admin'));
-
--- Líderes veem equipamentos do seu campus
-CREATE POLICY lider_see_own_campus ON equipment
-  USING (campus_id IN (
-    SELECT campus_id FROM users WHERE id = auth.uid()
-  ) OR auth.uid() IN (SELECT id FROM users WHERE role = 'admin'));
+-- As políticas de acesso ficam em sql/001_equipamentos_rls_historico.sql.
+-- Rode esse arquivo logo depois deste schema e do seed_data.sql:
+-- sem ele, o RLS ligado acima bloqueia todas as consultas do app.
 
 -- ====================================
 -- 8. VIEWS ÚTEIS

@@ -1,8 +1,8 @@
 export default function Dashboard() {
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
-      <p className="text-gray-600 mt-2">Painel Principal</p>
+    <div className="mx-auto max-w-6xl">
+      <h1 className="font-display text-3xl font-bold tracking-tight text-tinta">Painel</h1>
+      <p className="mt-2 text-cinza">Em breve: resumo do patrimônio e das manutenções.</p>
     </div>
   )
 }
