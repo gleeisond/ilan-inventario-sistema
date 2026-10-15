@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Genesis41</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMi4wIDMyLjAiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgcm9sZT0iaW1nIj48dGl0bGU+R2VuZXNpczQxPC90aXRsZT48cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI3IiBmaWxsPSIjMTExNDFBIi8+PHBhdGggZD0iTTIyLjcgOC45IEgxMy4xIFE4LjkgOC45IDguOSAxMy4xIFYxOC45IFE4LjkgMjMuMSAxMy4xIDIzLjEgSDE4LjkgUTIzLjEgMjMuMSAyMy4xIDE4LjkgVjE2IEgxNyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRTBBRTRFIiBzdHJva2Utd2lkdGg9IjMuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+Cg==">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: página de produto; topo e rodapé em grafite (a cor da marca), seções claras no meio, e o painel do produto como peça central do topo */
+:root {
+  --grafite: #11141A; --ouro: #E0AE4E; --ouro-escuro: #A97A18; --papel: #F4F3EF; --tinta: #16181D; --nevoa: #F2F1EC;
+  --bg: var(--papel); --surface: #FFFFFF; --fg: var(--tinta); --muted: #5A5D66; --line: #E1E0DA; --accent: var(--ouro-escuro);
+  --cell-line: var(--tinta); --cell-on: var(--ouro-escuro);
+  --f-display: 'Sora', 'Trebuchet MS', sans-serif;
+  --f-body: 'Figtree', 'Helvetica Neue', Arial, sans-serif;
+  --f-mono: 'IBM Plex Mono', 'Courier New', monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #0D1014; --surface: #161A21; --fg: #ECEBE6; --muted: #A3A6AE; --line: #262A33; --accent: #E0AE4E; --cell-line: #ECEBE6; --cell-on: #E0AE4E; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #0D1014; --surface: #161A21; --fg: #ECEBE6; --muted: #A3A6AE; --line: #262A33; --accent: #E0AE4E; --cell-line: #ECEBE6; --cell-on: #E0AE4E; color-scheme: dark; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 17px; line-height: 1.55; }
+.wrap { max-width: 1160px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--f-display); margin: 0; letter-spacing: -0.025em; text-wrap: balance; line-height: 1.08; }
+h2 { font-size: clamp(30px, 4.2vw, 46px); font-weight: 700; }
+h3 { font-size: 20px; font-weight: 700; letter-spacing: -0.015em; }
+p { margin: 0; max-width: 62ch; }
+a { color: inherit; }
+.label { font-family: var(--f-mono); font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.btn { display: inline-flex; align-items: center; gap: 10px; font-family: var(--f-body); font-weight: 600; font-size: 16px; padding: 13px 20px; border-radius: 8px; text-decoration: none; border: 1px solid transparent; cursor: pointer; }
+.btn.gold { background: #E0AE4E; color: #11141A; }
+.btn.gold:hover { background: #EBBE63; }
+.btn.ghost { border-color: #3A3F4A; color: #F2F1EC; }
+.btn.ghost:hover { border-color: #E0AE4E; }
+.btn:focus-visible, a:focus-visible, button:focus-visible { outline: 2px solid #E0AE4E; outline-offset: 3px; }
+
+/* Topo */
+.top { background: #11141A; color: #F2F1EC; }
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: rgba(17, 20, 26, 0.92); backdrop-filter: blur(8px); border-bottom: 1px solid #22262E; }
+.nav .wrap { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-block: 14px; }
+.nav img { height: 28px; max-width: 46vw; width: auto; display: block; }
+.nav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 26px; font-size: 15px; }
+.nav ul a { text-decoration: none; color: #C9CBD1; }
+.nav ul a:hover { color: #F2F1EC; }
+.nav .btn { padding: 9px 16px; font-size: 15px; }
+.hero { padding-block: 72px 88px; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 56px; align-items: center; }
+.hero h1 { font-size: clamp(40px, 6.2vw, 72px); font-weight: 700; letter-spacing: -0.04em; color: #F2F1EC; }
+.hero h1 span { color: #E0AE4E; }
+.hero .sub { font-size: clamp(18px, 2vw, 21px); color: #B9BCC4; margin-top: 22px; max-width: 34em; }
+.hero .ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+.hero .status { margin-top: 28px; display: flex; align-items: center; gap: 12px; font-family: var(--f-mono); font-size: 13px; color: #A3A6AE; }
+.bits { display: inline-flex; gap: 4px; }
+.bits i { width: 12px; height: 12px; border-radius: 3px; border: 1.5px solid #F2F1EC; display: block; }
+.bits i.g { background: #F2F1EC; }
+.bits i.on { background: #E0AE4E; border-color: #E0AE4E; }
+@media (prefers-reduced-motion: no-preference) {
+  .bits.anim i { animation: blink 1.4s ease-in-out infinite; }
+  .bits.anim i:nth-child(2) { animation-delay: .1s } .bits.anim i:nth-child(3) { animation-delay: .2s } .bits.anim i:nth-child(4) { animation-delay: .3s }
+  .bits.anim i:nth-child(5) { animation-delay: .4s } .bits.anim i:nth-child(6) { animation-delay: .5s } .bits.anim i:nth-child(7) { animation-delay: .6s }
+  @keyframes blink { 0%, 100% { opacity: 1 } 50% { opacity: .3 } }
+}
+
+/* Painel do produto */
+.app { background: #F4F3EF; color: #16181D; border-radius: 12px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,.45), 0 0 0 1px #2A2E37; display: grid; grid-template-columns: 168px minmax(0, 1fr); min-height: 420px; }
+.app-side { background: #11141A; color: #C9CBD1; padding: 18px 14px; display: grid; align-content: start; gap: 4px; border-right: 1px solid #22262E; }
+.app-side img { height: 22px; width: auto; margin: 2px 6px 18px; }
+.app-side span { font-size: 13px; padding: 7px 10px; border-radius: 6px; }
+.app-side span.on { background: #1D222B; color: #F2F1EC; box-shadow: inset 2px 0 0 #E0AE4E; }
+.app-main { padding: 20px; display: grid; gap: 14px; align-content: start; min-width: 0; }
+.app-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.app-head b { font-family: var(--f-display); font-size: 18px; letter-spacing: -0.02em; }
+.app-head span { font-size: 12px; color: #5A5D66; }
+.kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.kpi { background: #FFFFFF; border: 1px solid #E1E0DA; border-radius: 8px; padding: 12px; min-width: 0; }
+.kpi .l { font-size: 11px; color: #5A5D66; text-transform: uppercase; letter-spacing: .05em; font-family: var(--f-mono); }
+.kpi .v { font-family: var(--f-mono); font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 4px; white-space: nowrap; }
+.list { background: #FFFFFF; border: 1px solid #E1E0DA; border-radius: 8px; }
+.li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 11px 14px; border-bottom: 1px solid #EDECE7; font-size: 13px; }
+.li:last-child { border-bottom: none; }
+.li .d { color: #5A5D66; font-size: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.li .v { font-family: var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; }
+.chip { font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 999px; }
+.chip.ok { background: #DCEEE4; color: #1F5A40; }
+.chip.wait { background: #F6E9C9; color: #6B4C0B; }
+.ex { font-family: var(--f-mono); font-size: 11px; color: #8A8D95; text-align: right; }
+
+/* Seções */
+section { padding-block: 88px; }
+section + section { border-top: 1px solid var(--line); }
+.head { display: grid; gap: 14px; margin-bottom: 44px; max-width: 760px; }
+.head p { color: var(--muted); font-size: 19px; }
+.pains { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.pain { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 26px; display: grid; gap: 10px; align-content: start; }
+.pain .was { font-family: var(--f-mono); font-size: 13px; color: var(--muted); text-decoration: line-through; }
+.pain p { color: var(--muted); font-size: 16px; }
+
+.modules { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.mod { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 28px; display: grid; gap: 12px; align-content: start; }
+.mod .tag { justify-self: start; font-family: var(--f-mono); font-size: 12px; letter-spacing: .05em; text-transform: uppercase; padding: 3px 10px; border-radius: 999px; }
+.mod .tag.live { background: var(--accent); color: var(--bg); }
+.mod .tag.soon { border: 1px solid var(--line); color: var(--muted); }
+.mod p { color: var(--muted); font-size: 16px; }
+.mod ul { margin: 4px 0 0; padding-left: 18px; color: var(--muted); font-size: 15px; display: grid; gap: 4px; }
+
+.flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.step { padding: 30px 28px; display: grid; gap: 10px; align-content: start; position: relative; }
+.step + .step { border-left: 1px solid var(--line); }
+.step .n { font-family: var(--f-mono); font-size: 14px; color: var(--accent); }
+.step p { color: var(--muted); font-size: 16px; }
+.step .who { font-family: var(--f-mono); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+
+.roles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.role { border-top: 2px solid var(--fg); padding-top: 18px; display: grid; gap: 8px; align-content: start; }
+.role p { color: var(--muted); font-size: 15px; }
+
+.trust { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start; }
+.trust ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; border-top: 1px solid var(--line); }
+.trust li { padding: 18px 0; border-bottom: 1px solid var(--line); display: grid; gap: 4px; }
+.trust li p { color: var(--muted); font-size: 15px; }
+.log { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 22px; font-family: var(--f-mono); font-size: 13px; display: grid; gap: 0; overflow-x: auto; }
+.log div { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 14px; padding: 10px 0; border-bottom: 1px dashed var(--line); min-width: 340px; }
+.log div:last-child { border-bottom: none; }
+.log .t { color: var(--muted); }
+.log .a { color: var(--accent); }
+
+/* História */
+.story { background: #11141A; color: #F2F1EC; border-top: none; }
+.story-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: center; }
+.story .label { color: #E0AE4E; }
+.story h2 { color: #F2F1EC; }
+.story p { color: #B9BCC4; font-size: 18px; }
+.story .verse { border-left: 2px solid #E0AE4E; padding-left: 18px; color: #F2F1EC; font-size: 19px; }
+.story .verse cite { display: block; font-style: normal; font-family: var(--f-mono); font-size: 13px; color: #E0AE4E; margin-top: 8px; }
+.decode { display: grid; gap: 18px; }
+.decode-row { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; max-width: 460px; }
+.dc { display: grid; gap: 6px; justify-items: center; }
+.dc .sq { width: 100%; aspect-ratio: 1; border-radius: 22%; border: 4px solid #F2F1EC; max-width: 60px; }
+.dc .sq.on { background: #E0AE4E; border-color: #E0AE4E; }
+.dc .sq.g { background: #F2F1EC; display: grid; place-items: center; }
+.dc .sq.g svg { width: 58%; height: 58%; }
+.dc .d { font-family: var(--f-mono); font-size: 16px; font-weight: 600; }
+.dc .pv { font-family: var(--f-mono); font-size: 12px; color: #8A8D95; }
+.dc .pv.on { color: #E0AE4E; }
+.decode .sum { font-family: var(--f-mono); font-size: 16px; color: #F2F1EC; }
+.decode .sum b { color: #E0AE4E; font-weight: 600; }
+
+/* Piloto */
+.pilot { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 32px; align-items: stretch; }
+.pilot-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 32px; display: grid; gap: 16px; align-content: start; }
+.pilot-card ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.pilot-card li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: baseline; }
+.pilot-card li .k { font-family: var(--f-mono); color: var(--accent); font-weight: 600; }
+.contact { background: #11141A; color: #F2F1EC; border-radius: 10px; padding: 32px; display: grid; gap: 18px; align-content: start; }
+.contact .label { color: #E0AE4E; }
+.contact p { color: #B9BCC4; }
+.contact .line { display: grid; gap: 4px; padding-top: 14px; border-top: 1px solid #2A2E37; }
+.contact .line .k { font-family: var(--f-mono); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: #8A8D95; }
+.contact .line .v { font-family: var(--f-mono); font-size: 17px; color: #F2F1EC; user-select: all; }
+.contact button { justify-self: start; background: transparent; border: 1px solid #3A3F4A; color: #F2F1EC; border-radius: 6px; padding: 6px 12px; font-family: var(--f-mono); font-size: 13px; cursor: pointer; }
+.contact button:hover { border-color: #E0AE4E; }
+
+footer.site { background: #11141A; color: #A3A6AE; padding-block: 56px calc(48px + env(safe-area-inset-bottom, 0px)); }
+.foot-grid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 32px; align-items: end; }
+.foot-grid img { width: 200px; height: auto; display: block; margin-bottom: 18px; }
+.foot-grid p { font-size: 14px; }
+.foot-bin { font-family: var(--f-mono); font-size: 13px; color: #E0AE4E; text-align: right; }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: #F2F1EC; color: #11141A; font-family: var(--f-mono); font-size: 13px; padding: 8px 14px; border-radius: 4px; z-index: 20; }
+
+@media (max-width: 960px) {
+  .hero-grid, .story-grid, .trust, .pilot { grid-template-columns: minmax(0, 1fr); }
+  .roles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .nav ul { display: none; }
+}
+@media (max-width: 680px) {
+  .pains, .modules, .flow, .roles { grid-template-columns: minmax(0, 1fr); }
+  .step + .step { border-left: none; border-top: 1px solid var(--line); }
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .nav .btn { display: none; }
+  .hero .ctas .btn { flex: 1 1 auto; justify-content: center; }
+  .app-side { display: none; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpi:last-child { grid-column: span 2; }
+  .foot-grid { grid-template-columns: minmax(0, 1fr); } .foot-bin { text-align: left; }
+}
+</style>
+
+<div class="top">
+  <nav class="nav" aria-label="Principal">
+    <div class="wrap">
+      <a href="#inicio" aria-label="Genesis41, início"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMTI5Ny42IDEyMjcuMCIgd2lkdGg9IjExMjk4IiBoZWlnaHQ9IjEyMjciIHJvbGU9ImltZyI+PHRpdGxlPkdlbmVzaXM0MTwvdGl0bGU+PG1hc2sgaWQ9ImhuZW0wIj48cmVjdCB4PSIxMjAuMDAiIHk9IjE1OS4wMCIgd2lkdGg9IjczMC4wMCIgaGVpZ2h0PSI3MzAuMDAiIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJNNjM4LjMwIDM2My40MCBINDE5LjMwIFEzMjQuNDAgMzYzLjQwIDMyNC40MCA0NTguMzAgVjU4OS43MCBRMzI0LjQwIDY4NC42MCA0MTkuMzAgNjg0LjYwIEg1NTAuNzAgUTY0NS42MCA2ODQuNjAgNjQ1LjYwIDU4OS43MCBWNTI0LjAwIEg1MDYuOTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSI4My45NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9tYXNrPjxyZWN0IHg9IjEyMC4wMCIgeT0iMTU5LjAwIiB3aWR0aD0iNzMwLjAwIiBoZWlnaHQ9IjczMC4wMCIgcng9IjE0Ni4wMCIgZmlsbD0iI0YyRjFFQyIgbWFzaz0idXJsKCNobmVtMCkiLz48cmVjdCB4PSIxMDEwLjYwIiB5PSIxNTkuMDAiIHdpZHRoPSI3MzAuMDAiIGhlaWdodD0iNzMwLjAwIiByeD0iMTQ2LjAwIiBmaWxsPSIjRTBBRTRFIi8+PHJlY3QgeD0iMTk0MS4zNSIgeT0iMTk5LjE1IiB3aWR0aD0iNjQ5LjcwIiBoZWlnaHQ9IjY0OS43MCIgcng9IjEwNS44NSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRjJGMUVDIiBzdHJva2Utd2lkdGg9IjgwLjMwIi8+PHJlY3QgeD0iMjc5MS44MCIgeT0iMTU5LjAwIiB3aWR0aD0iNzMwLjAwIiBoZWlnaHQ9IjczMC4wMCIgcng9IjE0Ni4wMCIgZmlsbD0iI0UwQUU0RSIvPjxyZWN0IHg9IjM3MjIuNTUiIHk9IjE5OS4xNSIgd2lkdGg9IjY0OS43MCIgaGVpZ2h0PSI2NDkuNzAiIHJ4PSIxMDUuODUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0YyRjFFQyIgc3Ryb2tlLXdpZHRoPSI4MC4zMCIvPjxyZWN0IHg9IjQ2MTMuMTUiIHk9IjE5OS4xNSIgd2lkdGg9IjY0OS43MCIgaGVpZ2h0PSI2NDkuNzAiIHJ4PSIxMDUuODUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0YyRjFFQyIgc3Ryb2tlLXdpZHRoPSI4MC4zMCIvPjxyZWN0IHg9IjU0NjMuNjAiIHk9IjE1OS4wMCIgd2lkdGg9IjczMC4wMCIgaGVpZ2h0PSI3MzAuMDAiIHJ4PSIxNDYuMDAiIGZpbGw9IiNFMEFFNEUiLz48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NDk0LjYgODg5LjApIj48cGF0aCBkPSJNMjg5IDIxOFEyNDkgMjE4IDIwNy4wIDIxNS4wUTE2NSAyMTIgMTMwIDIwN1Y3MlExNjUgNzcgMjA3LjUgODAuNVEyNTAgODQgMjg1IDg0UTM1MCA4NCAzOTAuNSA2OS4wUTQzMSA1NCA0NTAuMCAyMy41UTQ2OSAtNyA0NjkgLTU1Vi0xNjRMNDk4IC0yMjhRNDk2IC0xNTUgNDY5LjUgLTEwMy4wUTQ0MyAtNTEgMzk2LjAgLTIzLjVRMzQ5IDQgMjg0IDRRMjI4IDQgMTgyLjUgLTE2LjVRMTM3IC0zNyAxMDUuMCAtNzQuMFE3MyAtMTExIDU2LjAgLTE2MC41UTM5IC0yMTAgMzkgLTI2OFYtMjkxUTM5IC0zNDkgNTcuMCAtMzk5LjBRNzUgLTQ0OSAxMDkuMCAtNDg2LjBRMTQzIC01MjMgMTkwLjAgLTU0My41UTIzNyAtNTY0IDI5NCAtNTY0UTM2MCAtNTY0IDQwOC41IC01MzUuMFE0NTcgLTUwNiA0ODUuMCAtNDUwLjBRNTEzIC0zOTQgNTE1IC0zMTVMNDkzIC0zMDlWLTU0OEg2MjBWLTY1UTYyMCAzNiA1ODQuMCA5OC4wUTU0OCAxNjAgNDc0LjUgMTg5LjBRNDAxIDIxOCAyODkgMjE4Wk0zMzQgLTEzMVEzNzEgLTEzMSA0MDEuMCAtMTQ3LjVRNDMxIC0xNjQgNDQ4LjUgLTE5NS4wUTQ2NiAtMjI2IDQ2NiAtMjcwVi0yOTlRNDY2IC0zNDIgNDQ3LjUgLTM3MS41UTQyOSAtNDAxIDM5OS4wIC00MTYuNVEzNjkgLTQzMiAzMzUgLTQzMlEyOTUgLTQzMiAyNjQuMCAtNDEzLjBRMjMzIC0zOTQgMjE2LjAgLTM2MC4wUTE5OSAtMzI2IDE5OSAtMjgwUTE5OSAtMjMzIDIxNi41IC0xOTkuNVEyMzQgLTE2NiAyNjQuNSAtMTQ4LjVRMjk1IC0xMzEgMzM0IC0xMzFaTTk2NS4wIDE5UTg5NS4wIDE5IDg0MS41IC01LjBRNzg4LjAgLTI5IDc1Mi41IC02OS41UTcxNy4wIC0xMTAgNjk4LjUgLTE2MC41UTY4MC4wIC0yMTEgNjgwLjAgLTI2NFYtMjg0UTY4MC4wIC0zMzkgNjk4LjUgLTM4OS41UTcxNy4wIC00NDAgNzUyLjAgLTQ4MC4wUTc4Ny4wIC01MjAgODM5LjUgLTU0My41UTg5Mi4wIC01NjcgOTU5LjAgLTU2N1ExMDQ3LjAgLTU2NyAxMTA3LjUgLTUyNy41UTExNjguMCAtNDg4IDEyMDAuMCAtNDI0LjVRMTIzMi4wIC0zNjEgMTIzMi4wIC0yODZWLTIzMkg3NDcuMFYtMzIzSDExMzUuMEwxMDgzLjAgLTI4MVExMDgzLjAgLTMzMCAxMDY5LjAgLTM2NS4wUTEwNTUuMCAtNDAwIDEwMjcuNSAtNDE4LjVRMTAwMC4wIC00MzcgOTU5LjAgLTQzN1E5MTcuMCAtNDM3IDg4OC4wIC00MTguMFE4NTkuMCAtMzk5IDg0NC4wIC0zNjIuNVE4MjkuMCAtMzI2IDgyOS4wIC0yNzNRODI5LjAgLTIyNCA4NDMuMCAtMTg3LjVRODU3LjAgLTE1MSA4ODcuMCAtMTMxLjBROTE3LjAgLTExMSA5NjUuMCAtMTExUTEwMDkuMCAtMTExIDEwMzcuMCAtMTI4LjBRMTA2NS4wIC0xNDUgMTA3NS4wIC0xNzBIMTIyMi4wUTEyMTAuMCAtMTE1IDExNzUuMCAtNzIuMFExMTQwLjAgLTI5IDEwODcuMCAtNS4wUTEwMzQuMCAxOSA5NjUuMCAxOVpNMTI5My4wIDBWLTU0OEgxNDIwLjBWLTMxM0gxNDExLjBRMTQxMS4wIC0zOTcgMTQzMi41IC00NTMuMFExNDU0LjAgLTUwOSAxNDk4LjAgLTUzNy4wUTE1NDIuMCAtNTY1IDE2MDUuMCAtNTY1SDE2MTIuMFExNzA4LjAgLTU2NSAxNzU4LjUgLTUwMi41UTE4MDkuMCAtNDQwIDE4MDkuMCAtMzEzVjBIMTY0OS4wVi0zMjJRMTY0OS4wIC0zNjYgMTYyMy4wIC0zOTQuMFExNTk3LjAgLTQyMiAxNTUzLjAgLTQyMlExNTA4LjAgLTQyMiAxNDgwLjUgLTM5My41UTE0NTMuMCAtMzY1IDE0NTMuMCAtMzE5VjBaTTIxNTEuMCAxOVEyMDgxLjAgMTkgMjAyNy41IC01LjBRMTk3NC4wIC0yOSAxOTM4LjUgLTY5LjVRMTkwMy4wIC0xMTAgMTg4NC41IC0xNjAuNVExODY2LjAgLTIxMSAxODY2LjAgLTI2NFYtMjg0UTE4NjYuMCAtMzM5IDE4ODQuNSAtMzg5LjVRMTkwMy4wIC00NDAgMTkzOC4wIC00ODAuMFExOTczLjAgLTUyMCAyMDI1LjUgLTU0My41UTIwNzguMCAtNTY3IDIxNDUuMCAtNTY3UTIyMzMuMCAtNTY3IDIyOTMuNSAtNTI3LjVRMjM1NC4wIC00ODggMjM4Ni4wIC00MjQuNVEyNDE4LjAgLTM2MSAyNDE4LjAgLTI4NlYtMjMySDE5MzMuMFYtMzIzSDIzMjEuMEwyMjY5LjAgLTI4MVEyMjY5LjAgLTMzMCAyMjU1LjAgLTM2NS4wUTIyNDEuMCAtNDAwIDIyMTMuNSAtNDE4LjVRMjE4Ni4wIC00MzcgMjE0NS4wIC00MzdRMjEwMy4wIC00MzcgMjA3NC4wIC00MTguMFEyMDQ1LjAgLTM5OSAyMDMwLjAgLTM2Mi41UTIwMTUuMCAtMzI2IDIwMTUuMCAtMjczUTIwMTUuMCAtMjI0IDIwMjkuMCAtMTg3LjVRMjA0My4wIC0xNTEgMjA3My4wIC0xMzEuMFEyMTAzLjAgLTExMSAyMTUxLjAgLTExMVEyMTk1LjAgLTExMSAyMjIzLjAgLTEyOC4wUTIyNTEuMCAtMTQ1IDIyNjEuMCAtMTcwSDI0MDguMFEyMzk2LjAgLTExNSAyMzYxLjAgLTcyLjBRMjMyNi4wIC0yOSAyMjczLjAgLTUuMFEyMjIwLjAgMTkgMjE1MS4wIDE5Wk0yNjg3LjAgMTdRMjU3MC4wIDE3IDI1MDQuMCAtMzEuMFEyNDM4LjAgLTc5IDI0MzQuMCAtMTY2SDI1NzYuMFEyNTgwLjAgLTE0MCAyNjA3LjUgLTExOS41UTI2MzUuMCAtOTkgMjY5MC4wIC05OVEyNzMyLjAgLTk5IDI3NTkuNSAtMTEzLjVRMjc4Ny4wIC0xMjggMjc4Ny4wIC0xNTVRMjc4Ny4wIC0xNzkgMjc2Ni4wIC0xOTMuNVEyNzQ1LjAgLTIwOCAyNjkxLjAgLTIxNEwyNjQ4LjAgLTIxOFEyNTQ5LjAgLTIyOCAyNDk5LjUgLTI3My4wUTI0NTAuMCAtMzE4IDI0NTAuMCAtMzg4UTI0NTAuMCAtNDQ2IDI0NzkuMCAtNDg1LjBRMjUwOC4wIC01MjQgMjU1OS41IC01NDQuMFEyNjExLjAgLTU2NCAyNjc3LjAgLTU2NFEyNzgzLjAgLTU2NCAyODQ4LjAgLTUxNy41UTI5MTMuMCAtNDcxIDI5MTYuMCAtMzgzSDI3NzQuMFEyNzcwLjAgLTQxMCAyNzQ2LjAgLTQyOC41UTI3MjIuMCAtNDQ3IDI2NzUuMCAtNDQ3UTI2MzguMCAtNDQ3IDI2MTYuMCAtNDMzLjBRMjU5NC4wIC00MTkgMjU5NC4wIC0zOTVRMjU5NC4wIC0zNzIgMjYxMy4wIC0zNjAuMFEyNjMyLjAgLTM0OCAyNjc1LjAgLTM0M0wyNzE4LjAgLTMzOVEyODE5LjAgLTMyOCAyODc1LjAgLTI4My4wUTI5MzEuMCAtMjM4IDI5MzEuMCAtMTYyUTI5MzEuMCAtMTA3IDI5MDEuMCAtNjYuNVEyODcxLjAgLTI2IDI4MTYuMCAtNC41UTI3NjEuMCAxNyAyNjg3LjAgMTdaTTMwMTYuMCAwVi01NDhIMzE3Ni4wVjBaTTI5NDMuMCAtNDMwVi01NDhIMzE3Ni4wVi00MzBaTTMwNzguMCAtNjAyUTMwMzMuMCAtNjAyIDMwMTEuNSAtNjI1LjVRMjk5MC4wIC02NDkgMjk5MC4wIC02ODVRMjk5MC4wIC03MjIgMzAxMS41IC03NDUuNVEzMDMzLjAgLTc2OSAzMDc4LjAgLTc2OVEzMTIzLjAgLTc2OSAzMTQ0LjUgLTc0NS41UTMxNjYuMCAtNzIyIDMxNjYuMCAtNjg1UTMxNjYuMCAtNjQ5IDMxNDQuNSAtNjI1LjVRMzEyMy4wIC02MDIgMzA3OC4wIC02MDJaTTM0ODcuMCAxN1EzMzcwLjAgMTcgMzMwNC4wIC0zMS4wUTMyMzguMCAtNzkgMzIzNC4wIC0xNjZIMzM3Ni4wUTMzODAuMCAtMTQwIDM0MDcuNSAtMTE5LjVRMzQzNS4wIC05OSAzNDkwLjAgLTk5UTM1MzIuMCAtOTkgMzU1OS41IC0xMTMuNVEzNTg3LjAgLTEyOCAzNTg3LjAgLTE1NVEzNTg3LjAgLTE3OSAzNTY2LjAgLTE5My41UTM1NDUuMCAtMjA4IDM0OTEuMCAtMjE0TDM0NDguMCAtMjE4UTMzNDkuMCAtMjI4IDMyOTkuNSAtMjczLjBRMzI1MC4wIC0zMTggMzI1MC4wIC0zODhRMzI1MC4wIC00NDYgMzI3OS4wIC00ODUuMFEzMzA4LjAgLTUyNCAzMzU5LjUgLTU0NC4wUTM0MTEuMCAtNTY0IDM0NzcuMCAtNTY0UTM1ODMuMCAtNTY0IDM2NDguMCAtNTE3LjVRMzcxMy4wIC00NzEgMzcxNi4wIC0zODNIMzU3NC4wUTM1NzAuMCAtNDEwIDM1NDYuMCAtNDI4LjVRMzUyMi4wIC00NDcgMzQ3NS4wIC00NDdRMzQzOC4wIC00NDcgMzQxNi4wIC00MzMuMFEzMzk0LjAgLTQxOSAzMzk0LjAgLTM5NVEzMzk0LjAgLTM3MiAzNDEzLjAgLTM2MC4wUTM0MzIuMCAtMzQ4IDM0NzUuMCAtMzQzTDM1MTguMCAtMzM5UTM2MTkuMCAtMzI4IDM2NzUuMCAtMjgzLjBRMzczMS4wIC0yMzggMzczMS4wIC0xNjJRMzczMS4wIC0xMDcgMzcwMS4wIC02Ni41UTM2NzEuMCAtMjYgMzYxNi4wIC00LjVRMzU2MS4wIDE3IDM0ODcuMCAxN1oiIGZpbGw9IiNGMkYxRUMiLz48cGF0aCBkPSJNMzc1MC4wIC0xNDBWLTMxMUw0MDI3LjAgLTc1MUw0MTU0LjAgLTY2OEwzOTE3LjAgLTI5MUwzOTMxLjAgLTI3MEg0MzY4LjBWLTE0MFpNNDEzMy4wIDBWLTUyNkg0Mjg0LjBWMFpNNDUyMC4wIDBWLTYyMkw0NTY0LjAgLTU4OEg0Mzc3LjBWLTczMEg0NjgzLjBWMFoiIGZpbGw9IiNFMEFFNEUiLz48L2c+PC9zdmc+Cg==" alt="Genesis41"></a>
+      <ul>
+        <li><a href="#modulos">Módulos</a></li>
+        <li><a href="#como-funciona">Como funciona</a></li>
+        <li><a href="#para-quem">Para quem</a></li>
+        <li><a href="#gn41">Por que Gn 41</a></li>
+      </ul>
+      <a class="btn gold" href="#piloto">Participar do piloto</a>
+    </div>
+  </nav>
+
+  <header class="hero" id="inicio">
+    <div class="wrap hero-grid">
+      <div>
+        <h1>O celeiro digital da <span>sua igreja.</span></h1>
+        <p class="sub">Patrimônio, finanças e prestação de contas num só lugar. Com a precisão de um escritório contábil e a simplicidade de um aplicativo.</p>
+        <div class="ctas">
+          <a class="btn gold" href="#piloto">Quero participar do piloto</a>
+          <a class="btn ghost" href="#como-funciona">Ver como funciona</a>
+        </div>
+        <div class="status"><span class="bits anim" aria-hidden="true"><i class="g"></i><i class="on"></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i></span><span>Em fase piloto · vagas limitadas</span></div>
+      </div>
+
+      <div class="app" role="img" aria-label="Exemplo do painel do Genesis41 com saldo do mês e lançamentos conferidos pelo contador">
+        <div class="app-side">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMi4wIDMyLjAiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgcm9sZT0iaW1nIj48dGl0bGU+R2VuZXNpczQxPC90aXRsZT48cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI3IiBmaWxsPSIjMTExNDFBIi8+PHBhdGggZD0iTTIyLjcgOC45IEgxMy4xIFE4LjkgOC45IDguOSAxMy4xIFYxOC45IFE4LjkgMjMuMSAxMy4xIDIzLjEgSDE4LjkgUTIzLjEgMjMuMSAyMy4xIDE4LjkgVjE2IEgxNyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRTBBRTRFIiBzdHJva2Utd2lkdGg9IjMuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+Cg==" alt="" style="height:28px;width:28px">
+          <span class="on">Painel</span><span>Tesouraria</span><span>Patrimônio</span><span>Relatórios</span><span>Pessoas</span>
+        </div>
+        <div class="app-main">
+          <div class="app-head"><b>Outubro · Sede</b><span>Atualizado agora</span></div>
+          <div class="kpis">
+            <div class="kpi"><div class="l">Entradas</div><div class="v">R$ 52.910</div></div>
+            <div class="kpi"><div class="l">Saídas</div><div class="v">(R$ 18.240)</div></div>
+            <div class="kpi"><div class="l">Bens ativos</div><div class="v">184</div></div>
+          </div>
+          <div class="list">
+            <div class="li"><span>Dízimos · culto de domingo</span><span class="v">R$ 12.480,00</span><span class="d">13/10 <span class="chip ok">Conferido</span></span></div>
+            <div class="li"><span>Conta de energia</span><span class="v">(R$ 1.250,00)</span><span class="d">10/10 <span class="chip ok">Conferido</span></span></div>
+            <div class="li"><span>Conserto do projetor · PAT-0057</span><span class="v">(R$ 680,00)</span><span class="d">08/10 <span class="chip wait">Aguardando contador</span></span></div>
+            <div class="li"><span>Oferta missionária</span><span class="v">R$ 3.200,00</span><span class="d">06/10 <span class="chip ok">Conferido</span></span></div>
+          </div>
+          <div class="ex">Dados de exemplo</div>
+        </div>
+      </div>
+    </div>
+  </header>
+</div>
+
+<main>
+  <section>
+    <div class="wrap">
+      <div class="head"><span class="label">O problema</span><h2>Dinheiro de igreja ainda vive em planilha, caderno e WhatsApp.</h2><p>O tesoureiro faz o melhor que pode, o contador recebe tudo desorganizado e o pastor decide sem números confiáveis.</p></div>
+      <div class="pains">
+        <div class="pain"><span class="was">planilha solta</span><h3>Um lugar só</h3><p>Entradas, saídas e bens da igreja no mesmo sistema, acessível pelo celular.</p></div>
+        <div class="pain"><span class="was">comprovante no WhatsApp</span><h3>Tudo com comprovante</h3><p>Cada lançamento leva a foto do recibo junto. Nada se perde na conversa.</p></div>
+        <div class="pain"><span class="was">fechamento no susto</span><h3>Mês fechado em dia</h3><p>O contador confere ao longo do mês, sem acumular tudo para o último dia.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="modulos">
+    <div class="wrap">
+      <div class="head"><span class="label">Módulos</span><h2>Começa pelo que já funciona e cresce com a igreja.</h2><p>O piloto começa pelo Patrimônio, que já está em desenvolvimento. Os outros módulos estão sendo desenhados junto com contadores especializados em igrejas.</p></div>
+      <div class="modules">
+        <div class="mod"><span class="tag live">No piloto</span><h3>Patrimônio</h3><p>Todos os bens da igreja, com valor, local e responsável.</p><ul><li>Cadastro de equipamentos por campus</li><li>Pedidos de manutenção com acompanhamento</li><li>Histórico completo de cada bem</li></ul></div>
+        <div class="mod"><span class="tag soon">Em desenvolvimento</span><h3>Tesouraria</h3><p>Dízimos, ofertas e despesas do dia a dia, com comprovante.</p><ul><li>Lançamentos pelo celular</li><li>Caixa e contas bancárias</li><li>Conferência pelo contador</li></ul></div>
+        <div class="mod"><span class="tag soon">Em desenvolvimento</span><h3>Contabilidade</h3><p>Os lançamentos chegam organizados para o escritório contábil.</p><ul><li>Plano de contas para igrejas</li><li>Exportação para o sistema do contador</li><li>Depreciação dos bens</li></ul></div>
+        <div class="mod"><span class="tag soon">Em desenvolvimento</span><h3>Prestação de contas</h3><p>Relatórios claros para pastor, conselho fiscal e membros.</p><ul><li>Balancete do mês em uma tela</li><li>Relatório para assembleia</li><li>Acesso só de leitura para o conselho</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="como-funciona">
+    <div class="wrap">
+      <div class="head"><span class="label">Como funciona</span><h2>Cada pessoa faz a sua parte, e todos veem o mesmo número.</h2></div>
+      <div class="flow">
+        <div class="step"><span class="n">1</span><span class="who">Tesoureiro</span><h3>Lança</h3><p>Registra a entrada ou a despesa pelo celular, com a foto do comprovante.</p></div>
+        <div class="step"><span class="n">2</span><span class="who">Contador</span><h3>Confere</h3><p>O escritório contábil revisa e marca o lançamento como conferido.</p></div>
+        <div class="step"><span class="n">3</span><span class="who">Pastor e conselho</span><h3>Acompanham</h3><p>Veem o saldo e os relatórios do mês, sempre atualizados.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="para-quem">
+    <div class="wrap">
+      <div class="head"><span class="label">Para quem</span><h2>Cada um vê o que é da sua responsabilidade.</h2></div>
+      <div class="roles">
+        <div class="role"><h3>Pastor</h3><p>A visão completa da igreja, sem precisar pedir planilha para ninguém.</p></div>
+        <div class="role"><h3>Tesoureiro</h3><p>Lança rápido, anexa comprovante e sabe o que ainda falta.</p></div>
+        <div class="role"><h3>Contador</h3><p>Recebe tudo organizado e confere sem retrabalho.</p></div>
+        <div class="role"><h3>Conselho fiscal</h3><p>Acesso só de leitura, para acompanhar com transparência.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap trust">
+      <div>
+        <div class="head" style="margin-bottom:28px"><span class="label">Confiança</span><h2>Nada some sem deixar rastro.</h2></div>
+        <ul>
+          <li><h3>Acesso por perfil</h3><p>Tesoureiro, contador, pastor e conselho têm permissões diferentes.</p></li>
+          <li><h3>Histórico de tudo</h3><p>Cada alteração guarda quem fez, quando, o valor antigo e o novo.</p></li>
+          <li><h3>Na nuvem</h3><p>Acesso pelo navegador ou pelo celular, sem instalar nada.</p></li>
+        </ul>
+      </div>
+      <div class="log" role="img" aria-label="Exemplo do histórico de alterações de um lançamento">
+        <div><span class="t">13/10 19:42</span><span>Tesoureiro lançou <span class="a">R$ 12.480,00</span> · dízimos</span></div>
+        <div><span class="t">13/10 19:43</span><span>Comprovante anexado · foto_envelope.jpg</span></div>
+        <div><span class="t">14/10 09:10</span><span>Contador alterou a conta: 3.1.1 → 3.1.2</span></div>
+        <div><span class="t">14/10 09:11</span><span>Contador marcou como <span class="a">conferido</span></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="story" id="gn41">
+    <div class="wrap story-grid">
+      <div style="display:grid;gap:22px">
+        <span class="label">Por que Gn 41</span>
+        <h2>José guardou o trigo. Nós guardamos os números.</h2>
+        <p class="verse">José ajuntou o trigo dos sete anos de fartura e o guardou nas cidades, para que houvesse reserva nos anos de escassez.<cite>Paráfrase de Gênesis 41:47–49</cite></p>
+        <p>O símbolo do Genesis41 é o número 41 escrito em binário de sete dígitos. Sete casas, como os sete anos do sonho, e o G de Genesis no lugar do zero inicial.</p>
+      </div>
+      <div class="decode">
+        <div class="decode-row" role="img" aria-label="As sete casas do símbolo: G, 1, 0, 1, 0, 0, 1, que somam 41">
+          <div class="dc"><div class="sq g"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M14.2 5.6 H8.2 Q5.6 5.6 5.6 8.2 V11.8 Q5.6 14.4 8.2 14.4 H11.8 Q14.4 14.4 14.4 11.8 V10 H10.6" fill="none" stroke="#11141A" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="d">0</span><span class="pv">64</span></div>
+          <div class="dc"><div class="sq on"></div><span class="d">1</span><span class="pv on">32</span></div>
+          <div class="dc"><div class="sq"></div><span class="d">0</span><span class="pv">16</span></div>
+          <div class="dc"><div class="sq on"></div><span class="d">1</span><span class="pv on">8</span></div>
+          <div class="dc"><div class="sq"></div><span class="d">0</span><span class="pv">4</span></div>
+          <div class="dc"><div class="sq"></div><span class="d">0</span><span class="pv">2</span></div>
+          <div class="dc"><div class="sq on"></div><span class="d">1</span><span class="pv on">1</span></div>
+        </div>
+        <p class="sum"><b>32</b> + <b>8</b> + <b>1</b> = <b>41</b></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="piloto">
+    <div class="wrap">
+      <div class="head"><span class="label">Piloto</span><h2>Estamos escolhendo as primeiras igrejas.</h2><p>Durante o piloto, a igreja usa o sistema de verdade e ajuda a definir o que vem a seguir.</p></div>
+      <div class="pilot">
+        <div class="pilot-card">
+          <h3>Como funciona o piloto</h3>
+          <ul>
+            <li><span class="k">01</span><span>A igreja começa pelo módulo de Patrimônio.</span></li>
+            <li><span class="k">02</span><span>Configuramos tudo junto com o tesoureiro e o contador.</span></li>
+            <li><span class="k">03</span><span>Encontros curtos a cada semana para ouvir o que precisa melhorar.</span></li>
+            <li><span class="k">04</span><span>As igrejas do piloto têm condições especiais no lançamento.</span></li>
+          </ul>
+        </div>
+        <div class="contact">
+          <span class="label">Fale com a gente</span>
+          <p>Conte quantos campus e quantos bens a sua igreja tem. Respondemos em até um dia útil.</p>
+          <div class="line"><span class="k">WhatsApp</span><span class="v" id="wa">[(00) 00000-0000]</span></div>
+          <div class="line"><span class="k">E-mail</span><span class="v" id="em">[contato@genesis41.com.br]</span></div>
+          <button type="button" data-copy-target="em">Copiar e-mail</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap foot-grid">
+    <div>
+      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MDUwLjggMjA3Ny4wIiB3aWR0aD0iNjA1MSIgaGVpZ2h0PSIyMDc3IiByb2xlPSJpbWciPjx0aXRsZT5HZW5lc2lzNDE8L3RpdGxlPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2NC40IDg4OS4wKSI+PHBhdGggZD0iTTI4OSAyMThRMjQ5IDIxOCAyMDcuMCAyMTUuMFExNjUgMjEyIDEzMCAyMDdWNzJRMTY1IDc3IDIwNy41IDgwLjVRMjUwIDg0IDI4NSA4NFEzNTAgODQgMzkwLjUgNjkuMFE0MzEgNTQgNDUwLjAgMjMuNVE0NjkgLTcgNDY5IC01NVYtMTY0TDQ5OCAtMjI4UTQ5NiAtMTU1IDQ2OS41IC0xMDMuMFE0NDMgLTUxIDM5Ni4wIC0yMy41UTM0OSA0IDI4NCA0UTIyOCA0IDE4Mi41IC0xNi41UTEzNyAtMzcgMTA1LjAgLTc0LjBRNzMgLTExMSA1Ni4wIC0xNjAuNVEzOSAtMjEwIDM5IC0yNjhWLTI5MVEzOSAtMzQ5IDU3LjAgLTM5OS4wUTc1IC00NDkgMTA5LjAgLTQ4Ni4wUTE0MyAtNTIzIDE5MC4wIC01NDMuNVEyMzcgLTU2NCAyOTQgLTU2NFEzNjAgLTU2NCA0MDguNSAtNTM1LjBRNDU3IC01MDYgNDg1LjAgLTQ1MC4wUTUxMyAtMzk0IDUxNSAtMzE1TDQ5MyAtMzA5Vi01NDhINjIwVi02NVE2MjAgMzYgNTg0LjAgOTguMFE1NDggMTYwIDQ3NC41IDE4OS4wUTQwMSAyMTggMjg5IDIxOFpNMzM0IC0xMzFRMzcxIC0xMzEgNDAxLjAgLTE0Ny41UTQzMSAtMTY0IDQ0OC41IC0xOTUuMFE0NjYgLTIyNiA0NjYgLTI3MFYtMjk5UTQ2NiAtMzQyIDQ0Ny41IC0zNzEuNVE0MjkgLTQwMSAzOTkuMCAtNDE2LjVRMzY5IC00MzIgMzM1IC00MzJRMjk1IC00MzIgMjY0LjAgLTQxMy4wUTIzMyAtMzk0IDIxNi4wIC0zNjAuMFExOTkgLTMyNiAxOTkgLTI4MFExOTkgLTIzMyAyMTYuNSAtMTk5LjVRMjM0IC0xNjYgMjY0LjUgLTE0OC41UTI5NSAtMTMxIDMzNCAtMTMxWk05NjUuMCAxOVE4OTUuMCAxOSA4NDEuNSAtNS4wUTc4OC4wIC0yOSA3NTIuNSAtNjkuNVE3MTcuMCAtMTEwIDY5OC41IC0xNjAuNVE2ODAuMCAtMjExIDY4MC4wIC0yNjRWLTI4NFE2ODAuMCAtMzM5IDY5OC41IC0zODkuNVE3MTcuMCAtNDQwIDc1Mi4wIC00ODAuMFE3ODcuMCAtNTIwIDgzOS41IC01NDMuNVE4OTIuMCAtNTY3IDk1OS4wIC01NjdRMTA0Ny4wIC01NjcgMTEwNy41IC01MjcuNVExMTY4LjAgLTQ4OCAxMjAwLjAgLTQyNC41UTEyMzIuMCAtMzYxIDEyMzIuMCAtMjg2Vi0yMzJINzQ3LjBWLTMyM0gxMTM1LjBMMTA4My4wIC0yODFRMTA4My4wIC0zMzAgMTA2OS4wIC0zNjUuMFExMDU1LjAgLTQwMCAxMDI3LjUgLTQxOC41UTEwMDAuMCAtNDM3IDk1OS4wIC00MzdROTE3LjAgLTQzNyA4ODguMCAtNDE4LjBRODU5LjAgLTM5OSA4NDQuMCAtMzYyLjVRODI5LjAgLTMyNiA4MjkuMCAtMjczUTgyOS4wIC0yMjQgODQzLjAgLTE4Ny41UTg1Ny4wIC0xNTEgODg3LjAgLTEzMS4wUTkxNy4wIC0xMTEgOTY1LjAgLTExMVExMDA5LjAgLTExMSAxMDM3LjAgLTEyOC4wUTEwNjUuMCAtMTQ1IDEwNzUuMCAtMTcwSDEyMjIuMFExMjEwLjAgLTExNSAxMTc1LjAgLTcyLjBRMTE0MC4wIC0yOSAxMDg3LjAgLTUuMFExMDM0LjAgMTkgOTY1LjAgMTlaTTEyOTMuMCAwVi01NDhIMTQyMC4wVi0zMTNIMTQxMS4wUTE0MTEuMCAtMzk3IDE0MzIuNSAtNDUzLjBRMTQ1NC4wIC01MDkgMTQ5OC4wIC01MzcuMFExNTQyLjAgLTU2NSAxNjA1LjAgLTU2NUgxNjEyLjBRMTcwOC4wIC01NjUgMTc1OC41IC01MDIuNVExODA5LjAgLTQ0MCAxODA5LjAgLTMxM1YwSDE2NDkuMFYtMzIyUTE2NDkuMCAtMzY2IDE2MjMuMCAtMzk0LjBRMTU5Ny4wIC00MjIgMTU1My4wIC00MjJRMTUwOC4wIC00MjIgMTQ4MC41IC0zOTMuNVExNDUzLjAgLTM2NSAxNDUzLjAgLTMxOVYwWk0yMTUxLjAgMTlRMjA4MS4wIDE5IDIwMjcuNSAtNS4wUTE5NzQuMCAtMjkgMTkzOC41IC02OS41UTE5MDMuMCAtMTEwIDE4ODQuNSAtMTYwLjVRMTg2Ni4wIC0yMTEgMTg2Ni4wIC0yNjRWLTI4NFExODY2LjAgLTMzOSAxODg0LjUgLTM4OS41UTE5MDMuMCAtNDQwIDE5MzguMCAtNDgwLjBRMTk3My4wIC01MjAgMjAyNS41IC01NDMuNVEyMDc4LjAgLTU2NyAyMTQ1LjAgLTU2N1EyMjMzLjAgLTU2NyAyMjkzLjUgLTUyNy41UTIzNTQuMCAtNDg4IDIzODYuMCAtNDI0LjVRMjQxOC4wIC0zNjEgMjQxOC4wIC0yODZWLTIzMkgxOTMzLjBWLTMyM0gyMzIxLjBMMjI2OS4wIC0yODFRMjI2OS4wIC0zMzAgMjI1NS4wIC0zNjUuMFEyMjQxLjAgLTQwMCAyMjEzLjUgLTQxOC41UTIxODYuMCAtNDM3IDIxNDUuMCAtNDM3UTIxMDMuMCAtNDM3IDIwNzQuMCAtNDE4LjBRMjA0NS4wIC0zOTkgMjAzMC4wIC0zNjIuNVEyMDE1LjAgLTMyNiAyMDE1LjAgLTI3M1EyMDE1LjAgLTIyNCAyMDI5LjAgLTE4Ny41UTIwNDMuMCAtMTUxIDIwNzMuMCAtMTMxLjBRMjEwMy4wIC0xMTEgMjE1MS4wIC0xMTFRMjE5NS4wIC0xMTEgMjIyMy4wIC0xMjguMFEyMjUxLjAgLTE0NSAyMjYxLjAgLTE3MEgyNDA4LjBRMjM5Ni4wIC0xMTUgMjM2MS4wIC03Mi4wUTIzMjYuMCAtMjkgMjI3My4wIC01LjBRMjIyMC4wIDE5IDIxNTEuMCAxOVpNMjY4Ny4wIDE3UTI1NzAuMCAxNyAyNTA0LjAgLTMxLjBRMjQzOC4wIC03OSAyNDM0LjAgLTE2NkgyNTc2LjBRMjU4MC4wIC0xNDAgMjYwNy41IC0xMTkuNVEyNjM1LjAgLTk5IDI2OTAuMCAtOTlRMjczMi4wIC05OSAyNzU5LjUgLTExMy41UTI3ODcuMCAtMTI4IDI3ODcuMCAtMTU1UTI3ODcuMCAtMTc5IDI3NjYuMCAtMTkzLjVRMjc0NS4wIC0yMDggMjY5MS4wIC0yMTRMMjY0OC4wIC0yMThRMjU0OS4wIC0yMjggMjQ5OS41IC0yNzMuMFEyNDUwLjAgLTMxOCAyNDUwLjAgLTM4OFEyNDUwLjAgLTQ0NiAyNDc5LjAgLTQ4NS4wUTI1MDguMCAtNTI0IDI1NTkuNSAtNTQ0LjBRMjYxMS4wIC01NjQgMjY3Ny4wIC01NjRRMjc4My4wIC01NjQgMjg0OC4wIC01MTcuNVEyOTEzLjAgLTQ3MSAyOTE2LjAgLTM4M0gyNzc0LjBRMjc3MC4wIC00MTAgMjc0Ni4wIC00MjguNVEyNzIyLjAgLTQ0NyAyNjc1LjAgLTQ0N1EyNjM4LjAgLTQ0NyAyNjE2LjAgLTQzMy4wUTI1OTQuMCAtNDE5IDI1OTQuMCAtMzk1UTI1OTQuMCAtMzcyIDI2MTMuMCAtMzYwLjBRMjYzMi4wIC0zNDggMjY3NS4wIC0zNDNMMjcxOC4wIC0zMzlRMjgxOS4wIC0zMjggMjg3NS4wIC0yODMuMFEyOTMxLjAgLTIzOCAyOTMxLjAgLTE2MlEyOTMxLjAgLTEwNyAyOTAxLjAgLTY2LjVRMjg3MS4wIC0yNiAyODE2LjAgLTQuNVEyNzYxLjAgMTcgMjY4Ny4wIDE3Wk0zMDE2LjAgMFYtNTQ4SDMxNzYuMFYwWk0yOTQzLjAgLTQzMFYtNTQ4SDMxNzYuMFYtNDMwWk0zMDc4LjAgLTYwMlEzMDMzLjAgLTYwMiAzMDExLjUgLTYyNS41UTI5OTAuMCAtNjQ5IDI5OTAuMCAtNjg1UTI5OTAuMCAtNzIyIDMwMTEuNSAtNzQ1LjVRMzAzMy4wIC03NjkgMzA3OC4wIC03NjlRMzEyMy4wIC03NjkgMzE0NC41IC03NDUuNVEzMTY2LjAgLTcyMiAzMTY2LjAgLTY4NVEzMTY2LjAgLTY0OSAzMTQ0LjUgLTYyNS41UTMxMjMuMCAtNjAyIDMwNzguMCAtNjAyWk0zNDg3LjAgMTdRMzM3MC4wIDE3IDMzMDQuMCAtMzEuMFEzMjM4LjAgLTc5IDMyMzQuMCAtMTY2SDMzNzYuMFEzMzgwLjAgLTE0MCAzNDA3LjUgLTExOS41UTM0MzUuMCAtOTkgMzQ5MC4wIC05OVEzNTMyLjAgLTk5IDM1NTkuNSAtMTEzLjVRMzU4Ny4wIC0xMjggMzU4Ny4wIC0xNTVRMzU4Ny4wIC0xNzkgMzU2Ni4wIC0xOTMuNVEzNTQ1LjAgLTIwOCAzNDkxLjAgLTIxNEwzNDQ4LjAgLTIxOFEzMzQ5LjAgLTIyOCAzMjk5LjUgLTI3My4wUTMyNTAuMCAtMzE4IDMyNTAuMCAtMzg4UTMyNTAuMCAtNDQ2IDMyNzkuMCAtNDg1LjBRMzMwOC4wIC01MjQgMzM1OS41IC01NDQuMFEzNDExLjAgLTU2NCAzNDc3LjAgLTU2NFEzNTgzLjAgLTU2NCAzNjQ4LjAgLTUxNy41UTM3MTMuMCAtNDcxIDM3MTYuMCAtMzgzSDM1NzQuMFEzNTcwLjAgLTQxMCAzNTQ2LjAgLTQyOC41UTM1MjIuMCAtNDQ3IDM0NzUuMCAtNDQ3UTM0MzguMCAtNDQ3IDM0MTYuMCAtNDMzLjBRMzM5NC4wIC00MTkgMzM5NC4wIC0zOTVRMzM5NC4wIC0zNzIgMzQxMy4wIC0zNjAuMFEzNDMyLjAgLTM0OCAzNDc1LjAgLTM0M0wzNTE4LjAgLTMzOVEzNjE5LjAgLTMyOCAzNjc1LjAgLTI4My4wUTM3MzEuMCAtMjM4IDM3MzEuMCAtMTYyUTM3MzEuMCAtMTA3IDM3MDEuMCAtNjYuNVEzNjcxLjAgLTI2IDM2MTYuMCAtNC41UTM1NjEuMCAxNyAzNDg3LjAgMTdaIiBmaWxsPSIjRjJGMUVDIi8+PHBhdGggZD0iTTM3NTAuMCAtMTQwVi0zMTFMNDAyNy4wIC03NTFMNDE1NC4wIC02NjhMMzkxNy4wIC0yOTFMMzkzMS4wIC0yNzBINDM2OC4wVi0xNDBaTTQxMzMuMCAwVi01MjZINDI4NC4wVjBaTTQ1MjAuMCAwVi02MjJMNDU2NC4wIC01ODhINDM3Ny4wVi03MzBINDY4My4wVjBaIiBmaWxsPSIjRTBBRTRFIi8+PC9nPjxtYXNrIGlkPSJhbmVnYXRpdm9tMCI+PHJlY3QgeD0iMTIwLjAwIiB5PSIxMjI3LjAwIiB3aWR0aD0iNzMwLjAwIiBoZWlnaHQ9IjczMC4wMCIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik02MzguMzAgMTQzMS40MCBINDE5LjMwIFEzMjQuNDAgMTQzMS40MCAzMjQuNDAgMTUyNi4zMCBWMTY1Ny43MCBRMzI0LjQwIDE3NTIuNjAgNDE5LjMwIDE3NTIuNjAgSDU1MC43MCBRNjQ1LjYwIDE3NTIuNjAgNjQ1LjYwIDE2NTcuNzAgVjE1OTIuMDAgSDUwNi45MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjgzLjk1IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L21hc2s+PHJlY3QgeD0iMTIwLjAwIiB5PSIxMjI3LjAwIiB3aWR0aD0iNzMwLjAwIiBoZWlnaHQ9IjczMC4wMCIgcng9IjE0Ni4wMCIgZmlsbD0iI0YyRjFFQyIgbWFzaz0idXJsKCNhbmVnYXRpdm9tMCkiLz48cmVjdCB4PSI5NjYuODAiIHk9IjEyMjcuMDAiIHdpZHRoPSI3MzAuMDAiIGhlaWdodD0iNzMwLjAwIiByeD0iMTQ2LjAwIiBmaWxsPSIjRTBBRTRFIi8+PHJlY3QgeD0iMTg1My43NSIgeT0iMTI2Ny4xNSIgd2lkdGg9IjY0OS43MCIgaGVpZ2h0PSI2NDkuNzAiIHJ4PSIxMDUuODUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0YyRjFFQyIgc3Ryb2tlLXdpZHRoPSI4MC4zMCIvPjxyZWN0IHg9IjI2NjAuNDAiIHk9IjEyMjcuMDAiIHdpZHRoPSI3MzAuMDAiIGhlaWdodD0iNzMwLjAwIiByeD0iMTQ2LjAwIiBmaWxsPSIjRTBBRTRFIi8+PHJlY3QgeD0iMzU0Ny4zNSIgeT0iMTI2Ny4xNSIgd2lkdGg9IjY0OS43MCIgaGVpZ2h0PSI2NDkuNzAiIHJ4PSIxMDUuODUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0YyRjFFQyIgc3Ryb2tlLXdpZHRoPSI4MC4zMCIvPjxyZWN0IHg9IjQzOTQuMTUiIHk9IjEyNjcuMTUiIHdpZHRoPSI2NDkuNzAiIGhlaWdodD0iNjQ5LjcwIiByeD0iMTA1Ljg1IiBmaWxsPSJub25lIiBzdHJva2U9IiNGMkYxRUMiIHN0cm9rZS13aWR0aD0iODAuMzAiLz48cmVjdCB4PSI1MjAwLjgwIiB5PSIxMjI3LjAwIiB3aWR0aD0iNzMwLjAwIiBoZWlnaHQ9IjczMC4wMCIgcng9IjE0Ni4wMCIgZmlsbD0iI0UwQUU0RSIvPjwvc3ZnPgo=" alt="Genesis41">
+      <p>Um produto Nex4 em parceria com [escritório contábil parceiro].</p>
+    </div>
+    <div class="foot-bin">0101001 · Gn 41</div>
+  </div>
+</footer>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(function () {
+  var toast = document.getElementById('toast'), timer;
+  function show(m) { toast.textContent = m; toast.hidden = false; clearTimeout(timer); timer = setTimeout(function () { toast.hidden = true; }, 1600); }
+  document.querySelectorAll('[data-copy-target]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var el = document.getElementById(b.getAttribute('data-copy-target'));
+      var v = el.textContent.trim();
+      function sel() { var r = document.createRange(); r.selectNodeContents(el); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); show('Selecionado. Use Ctrl+C para copiar'); }
+      try { navigator.clipboard.writeText(v).then(function () { show('E-mail copiado'); }, sel); } catch (e) { sel(); }
+    });
+  });
+})();
+</script>
+
+</html>

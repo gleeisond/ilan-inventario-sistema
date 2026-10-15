@@ -1,0 +1,359 @@
+<title>Genesis41 · Manual de Marca</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: manual de marca em capítulos numerados (a ordem é a de leitura de um manual), capa escura e páginas claras */
+:root {
+  --grafite: #11141A;  /* cor principal da marca */
+  --ouro: #E0AE4E;     /* acento sobre fundo escuro */
+  --ouro-escuro: #A97A18; /* acento sobre fundo claro */
+  --papel: #F4F3EF;    /* fundo claro */
+  --tinta: #16181D;    /* texto sobre claro */
+  --nevoa: #F2F1EC;    /* texto sobre escuro */
+  --bg: var(--papel); --surface: #FFFFFF; --fg: var(--tinta); --muted: #5A5D66; --line: #E1E0DA;
+  --accent: var(--ouro-escuro); --cell-line: var(--tinta); --cell-on: var(--ouro-escuro);
+  --f-display: 'Sora', 'Trebuchet MS', sans-serif;
+  --f-body: 'Figtree', 'Helvetica Neue', Arial, sans-serif;
+  --f-mono: 'IBM Plex Mono', 'Courier New', monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #0D1014; --surface: #161A21; --fg: #ECEBE6; --muted: #A3A6AE; --line: #262A33; --accent: #E0AE4E; --cell-line: #ECEBE6; --cell-on: #E0AE4E; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #0D1014; --surface: #161A21; --fg: #ECEBE6; --muted: #A3A6AE; --line: #262A33; --accent: #E0AE4E; --cell-line: #ECEBE6; --cell-on: #E0AE4E; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 17px; line-height: 1.55; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--f-display); margin: 0; letter-spacing: -0.02em; text-wrap: balance; line-height: 1.1; }
+h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 700; }
+h3 { font-size: 19px; font-weight: 700; }
+p { margin: 0; max-width: 64ch; }
+code { font-family: var(--f-mono); }
+.label { font-family: var(--f-mono); font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+.muted { color: var(--muted); }
+
+/* Capa */
+.cover { background: #11141A; color: #F2F1EC; padding-block: 96px 72px; }
+.cover .wrap { display: grid; gap: 48px; }
+.cover img.logo { width: min(100%, 560px); height: auto; }
+.cover .meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; border-top: 1px solid #2A2E37; padding-top: 22px; font-family: var(--f-mono); font-size: 14px; color: #A3A6AE; }
+.cover .meta b { color: #E0AE4E; font-weight: 600; }
+.toc { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 15px; }
+.toc a { color: #F2F1EC; text-decoration: none; border-bottom: 1px solid #3A3F4A; }
+.toc a:hover, .toc a:focus-visible { border-color: #E0AE4E; outline: none; }
+
+/* Capítulos */
+.chapter { padding-block: 72px; border-top: 1px solid var(--line); }
+.chapter-head { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 8px 24px; margin-bottom: 36px; }
+.chapter-head .num { font-family: var(--f-mono); font-size: 15px; color: var(--accent); padding-top: 10px; }
+.chapter-head p { color: var(--muted); font-size: 18px; grid-column: 2; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+
+/* Conceito */
+.math { padding: 28px; display: grid; gap: 20px; }
+.math-scroll { overflow-x: auto; }
+.cells { display: grid; grid-template-columns: repeat(7, 60px); gap: 10px; width: max-content; }
+.cell { display: grid; gap: 8px; justify-items: center; }
+.cell .sq { width: 60px; height: 60px; border-radius: 12px; border: 6px solid var(--cell-line); }
+.cell .sq.on { background: var(--cell-on); border-color: var(--cell-on); }
+.cell .sq.g { background: var(--cell-line); border-color: var(--cell-line); display: grid; place-items: center; }
+.cell .sq.g svg { width: 34px; height: 34px; }
+.cell .d { font-family: var(--f-mono); font-size: 20px; font-weight: 600; }
+.cell .pv { font-family: var(--f-mono); font-size: 13px; color: var(--muted); }
+.cell .pv.on { color: var(--accent); }
+.sum { font-family: var(--f-mono); font-size: 18px; }
+.sum b { color: var(--accent); }
+.three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
+.three > div { padding: 22px; display: grid; gap: 6px; align-content: start; }
+.three p { color: var(--muted); font-size: 15px; }
+
+/* Assinaturas */
+.logos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.tile { border-radius: 6px; display: grid; place-items: center; padding: 40px 28px 48px; position: relative; min-height: 220px; border: 1px solid var(--line); }
+.tile img { max-width: 100%; height: auto; }
+.tile .cap { position: absolute; left: 14px; bottom: 12px; font-family: var(--f-mono); font-size: 12px; }
+.tile.light { background: #F4F3EF; } .tile.light .cap { color: #5A5D66; }
+.tile.dark { background: #11141A; border-color: #11141A; } .tile.dark .cap { color: #A3A6AE; }
+.tile.gold { background: #E0AE4E; border-color: #E0AE4E; } .tile.gold .cap { color: #3B2A08; }
+.tile.full { grid-column: 1 / -1; }
+.icons { display: flex; align-items: end; gap: 20px; flex-wrap: wrap; justify-content: center; }
+
+/* Proteção */
+.protect { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px; }
+.clear { padding: 32px; display: grid; place-items: center; }
+.clear-box { position: relative; padding: 9%; outline: 2px dashed var(--accent); outline-offset: -2px; background: repeating-linear-gradient(45deg, transparent 0 8px, color-mix(in srgb, var(--accent) 12%, transparent) 8px 9px); }
+.clear-box img { display: block; width: min(100%, 360px); height: auto; background: #F4F3EF; }
+.rules { padding: 24px; display: grid; gap: 18px; align-content: start; }
+.rules div { display: grid; gap: 4px; }
+.rules p { color: var(--muted); font-size: 15px; }
+.rules .v { font-family: var(--f-mono); font-size: 15px; color: var(--fg); }
+
+/* Usos incorretos */
+.donts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.dont { display: grid; gap: 10px; }
+.dont .box { border-radius: 6px; border: 1px solid var(--line); height: 140px; display: grid; place-items: center; overflow: hidden; background: #F4F3EF; position: relative; }
+.dont .box::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top right, transparent calc(50% - 1.5px), #B3402B calc(50% - 1.5px), #B3402B calc(50% + 1.5px), transparent calc(50% + 1.5px)); opacity: .75; }
+.dont p { font-size: 14px; color: var(--muted); }
+.dont b { color: var(--fg); display: block; font-size: 15px; }
+
+/* Cores */
+.colors { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.sw { border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--surface); display: grid; }
+.sw .chip { height: 110px; }
+.sw .info { padding: 14px 16px; display: grid; gap: 3px; }
+.sw .nm { font-family: var(--f-display); font-weight: 700; font-size: 18px; }
+.sw .role { color: var(--muted); font-size: 14px; }
+.sw .codes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.sw button { font-family: var(--f-mono); font-size: 12px; background: transparent; color: var(--fg); border: 1px solid var(--line); border-radius: 4px; padding: 4px 8px; cursor: pointer; }
+.sw button:hover { border-color: var(--accent); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ratio { margin-top: 20px; display: flex; height: 18px; border-radius: 4px; overflow: hidden; border: 1px solid var(--line); }
+.ratio-legend { margin-top: 10px; font-family: var(--f-mono); font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.semantic { margin-top: 16px; padding: 20px 22px; display: grid; gap: 12px; }
+.sem-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 14px; }
+.pill { padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+.pill.ok { background: #DCEEE4; color: #1F5A40; }
+.pill.wait { background: #F6E9C9; color: #6B4C0B; }
+.pill.info { background: #E3E6EC; color: #2F3542; }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+/* Tipografia */
+.type { display: grid; gap: 12px; }
+.face { padding: 24px; display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 16px 28px; align-items: center; }
+.face .s { font-size: clamp(36px, 6vw, 60px); line-height: 1.05; overflow-wrap: anywhere; }
+.face .info { display: grid; gap: 4px; }
+.face .info p { color: var(--muted); font-size: 14px; }
+.fa .s { font-family: var(--f-display); font-weight: 700; letter-spacing: -0.045em; }
+.fb .s { font-family: var(--f-body); font-weight: 500; }
+.fc .s { font-family: var(--f-mono); font-weight: 600; font-variant-numeric: tabular-nums; }
+.scale { margin-top: 16px; padding: 22px 24px; display: grid; gap: 14px; }
+.scale div { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 16px; align-items: baseline; }
+.scale .k { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+
+/* Elementos */
+.elements { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.el { padding: 24px; display: grid; gap: 14px; align-content: start; }
+.el p { color: var(--muted); font-size: 15px; }
+.loader { display: flex; gap: 6px; }
+.loader i { width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--cell-line); display: block; }
+.loader i.g { background: var(--cell-line); }
+.loader i.on { background: var(--cell-on); border-color: var(--cell-on); }
+@media (prefers-reduced-motion: no-preference) {
+  .loader i { animation: blink 1.4s ease-in-out infinite; }
+  .loader i:nth-child(2) { animation-delay: .1s } .loader i:nth-child(3) { animation-delay: .2s } .loader i:nth-child(4) { animation-delay: .3s }
+  .loader i:nth-child(5) { animation-delay: .4s } .loader i:nth-child(6) { animation-delay: .5s } .loader i:nth-child(7) { animation-delay: .6s }
+  @keyframes blink { 0%, 100% { opacity: 1 } 50% { opacity: .3 } }
+}
+.pattern { height: 96px; border-radius: 4px; background-color: #11141A;
+  background-image: radial-gradient(circle at 50% 50%, #E0AE4E 0 3px, transparent 3.5px), radial-gradient(circle at 50% 50%, #2E333D 0 3px, transparent 3.5px);
+  background-size: 28px 28px, 14px 14px; background-position: 0 0, 7px 7px; }
+.divider { display: flex; align-items: center; gap: 10px; color: var(--muted); font-family: var(--f-mono); font-size: 13px; }
+.divider::before, .divider::after { content: ""; height: 1px; background: var(--line); flex: 1; }
+
+/* Voz */
+.voice-p { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-bottom: 28px; }
+.voice-p p { color: var(--muted); font-size: 16px; margin-top: 6px; }
+.voice { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.vcol { padding: 22px; display: grid; gap: 12px; align-content: start; }
+.vcol ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.vcol li { padding-left: 14px; border-left: 2px solid var(--line); }
+.vcol.yes li { border-left-color: var(--accent); }
+.vcol.no li { color: var(--muted); }
+
+/* Arquivos */
+.files { overflow-x: auto; }
+.files table { width: 100%; border-collapse: collapse; min-width: 560px; font-size: 15px; }
+.files th, .files td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.files th { font-family: var(--f-display); font-size: 14px; }
+.files td:first-child { font-family: var(--f-mono); font-size: 13px; }
+.files tr:last-child td { border-bottom: none; }
+
+footer { padding-block: 40px 64px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); font-family: var(--f-mono); font-size: 13px; padding: 8px 14px; border-radius: 4px; }
+
+@media (max-width: 900px) {
+  .three, .elements, .voice-p, .colors { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .donts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .protect, .face { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+  .three, .elements, .voice-p, .colors, .logos, .voice, .donts { grid-template-columns: minmax(0, 1fr); }
+  .chapter-head { grid-template-columns: minmax(0, 1fr); } .chapter-head p { grid-column: 1; } .chapter-head .num { padding-top: 0; }
+  .scale div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+}
+</style>
+
+<header class="cover">
+  <div class="wrap">
+    <img class="logo" src="{{IMG:genesis41-logo-negativo}}" alt="Genesis41">
+    <div class="meta"><span>Manual de identidade visual · <b>v1.0</b></span><span>Outubro de 2026</span></div>
+    <nav class="toc" aria-label="Capítulos">
+      <a href="#conceito">01 Conceito</a><a href="#assinaturas">02 Assinaturas</a><a href="#protecao">03 Proteção</a><a href="#incorreto">04 Usos incorretos</a>
+      <a href="#cores">05 Cores</a><a href="#tipografia">06 Tipografia</a><a href="#elementos">07 Elementos</a><a href="#voz">08 Tom de voz</a><a href="#arquivos">09 Arquivos</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="chapter" id="conceito">
+    <div class="chapter-head"><span class="num">01</span><h2>O celeiro digital</h2>
+      <p>Em Gênesis 41, José guarda o trigo dos sete anos de fartura para atravessar os sete anos de escassez. O Genesis41 faz o mesmo trabalho com outra ferramenta: o que antes ficava no celeiro, hoje fica no banco de dados.</p></div>
+    <div class="panel math">
+      <span class="label">O símbolo é um número</span>
+      <div class="math-scroll">
+        <div class="cells" role="img" aria-label="Sete casas: G no lugar do zero, depois 1, 0, 1, 0, 0, 1, com valores 64, 32, 16, 8, 4, 2, 1">
+          <div class="cell"><div class="sq g"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M14.2 5.6 H8.2 Q5.6 5.6 5.6 8.2 V11.8 Q5.6 14.4 8.2 14.4 H11.8 Q14.4 14.4 14.4 11.8 V10 H10.6" fill="none" stroke="var(--bg)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="d">0</span><span class="pv">64</span></div>
+          <div class="cell"><div class="sq on"></div><span class="d">1</span><span class="pv on">32</span></div>
+          <div class="cell"><div class="sq"></div><span class="d">0</span><span class="pv">16</span></div>
+          <div class="cell"><div class="sq on"></div><span class="d">1</span><span class="pv on">8</span></div>
+          <div class="cell"><div class="sq"></div><span class="d">0</span><span class="pv">4</span></div>
+          <div class="cell"><div class="sq"></div><span class="d">0</span><span class="pv">2</span></div>
+          <div class="cell"><div class="sq on"></div><span class="d">1</span><span class="pv on">1</span></div>
+        </div>
+      </div>
+      <p class="sum"><b>32</b> + <b>8</b> + <b>1</b> = <b>41</b> · em binário de 7 dígitos: <b>0101001</b></p>
+    </div>
+    <div class="three">
+      <div class="panel"><h3>Sete casas</h3><p>Os sete anos de fartura e os sete de escassez. O 41 escrito em 7 dígitos ocupa exatamente sete casas, sem nenhuma sobrando.</p></div>
+      <div class="panel"><h3>O G no lugar do zero</h3><p>O primeiro dígito é um zero. O G de Genesis ocupa essa casa e abre a sequência.</p></div>
+      <div class="panel"><h3>O 7 da computação</h3><p>O ASCII, o código de texto dos computadores, usa 7 bits. Nele, o número 41 é o caractere <code>)</code>, o parêntese que fecha.</p></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="assinaturas">
+    <div class="chapter-head"><span class="num">02</span><h2>Assinaturas</h2>
+      <p>A versão empilhada é a principal. A horizontal serve para espaços baixos, como cabeçalhos. O ícone aparece sozinho só onde o nome já está por perto.</p></div>
+    <div class="logos">
+      <div class="tile light full"><img src="{{IMG:genesis41-logo-positivo}}" alt="Assinatura principal positiva" style="width:min(100%,460px)"><span class="cap">Principal · positiva</span></div>
+      <div class="tile dark"><img src="{{IMG:genesis41-logo-negativo}}" alt="Assinatura principal negativa" style="width:min(100%,300px)"><span class="cap">Principal · negativa</span></div>
+      <div class="tile light"><img src="{{IMG:genesis41-logo-mono-preto}}" alt="Assinatura monocromática preta" style="width:min(100%,300px)"><span class="cap">Monocromática · preta</span></div>
+      <div class="tile light"><img src="{{IMG:genesis41-logo-horizontal-positivo}}" alt="Assinatura horizontal positiva" style="width:min(100%,400px)"><span class="cap">Horizontal · positiva</span></div>
+      <div class="tile dark"><img src="{{IMG:genesis41-logo-horizontal-negativo}}" alt="Assinatura horizontal negativa" style="width:min(100%,400px)"><span class="cap">Horizontal · negativa</span></div>
+      <div class="tile gold"><img src="{{IMG:genesis41-logo-mono-preto}}" alt="Assinatura monocromática sobre ouro" style="width:min(100%,280px)"><span class="cap">Sobre ouro · só monocromática</span></div>
+      <div class="tile light"><div class="icons"><img src="{{IMG:genesis41-icone-app}}" alt="Ícone de aplicativo" width="112" height="112"><img src="{{IMG:genesis41-icone-app}}" alt="" width="56" height="56"><img src="{{IMG:genesis41-favicon}}" alt="Favicon" width="32" height="32"><img src="{{IMG:genesis41-favicon}}" alt="" width="16" height="16"></div><span class="cap">Ícone de app e favicon</span></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="protecao">
+    <div class="chapter-head"><span class="num">03</span><h2>Área de proteção e tamanho mínimo</h2>
+      <p>A medida de tudo é uma casa do binário. Ela define o respiro em volta da marca e o menor tamanho em que o binário ainda é lido.</p></div>
+    <div class="protect">
+      <div class="panel clear"><div class="clear-box"><img src="{{IMG:genesis41-logo-positivo}}" alt="Assinatura com a área de proteção marcada em volta"></div></div>
+      <div class="panel rules">
+        <div><span class="label">Respiro</span><span class="v">1 casa em todos os lados</span><p>Nenhum texto, borda ou imagem entra na área tracejada.</p></div>
+        <div><span class="label">Mínimo · empilhada</span><span class="v">140 px de largura · 30 mm impresso</span><p>Abaixo disso, as casas ficam pequenas demais.</p></div>
+        <div><span class="label">Mínimo · horizontal</span><span class="v">28 px de altura</span><p>Para cabeçalho de site e assinatura de e-mail.</p></div>
+        <div><span class="label">Menor que isso</span><span class="v">Use o ícone ou o favicon</span><p>O favicon é só o G, que funciona até 16 px.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="chapter" id="incorreto">
+    <div class="chapter-head"><span class="num">04</span><h2>Usos incorretos</h2>
+      <p>O símbolo é um número. Mudar a ordem das casas não é uma questão de estilo, porque muda o número e quebra o significado.</p></div>
+    <div class="donts">
+      <div class="dont"><div class="box"><svg viewBox="0 0 176 20" width="150" aria-label="Exemplo errado: casas em outra ordem"><rect x="0" width="20" height="20" rx="4" fill="#16181D"/><rect x="26" width="20" height="20" rx="4" fill="#A97A18"/><rect x="53.1" y="1.1" width="17.8" height="17.8" rx="3" fill="none" stroke="#16181D" stroke-width="2.2"/><rect x="78" width="20" height="20" rx="4" fill="#A97A18"/><rect x="104" width="20" height="20" rx="4" fill="#A97A18"/><rect x="131.1" y="1.1" width="17.8" height="17.8" rx="3" fill="none" stroke="#16181D" stroke-width="2.2"/><rect x="157.1" y="1.1" width="17.8" height="17.8" rx="3" fill="none" stroke="#16181D" stroke-width="2.2"/></svg></div><p><b>Trocar a ordem</b>Vira outro número (0101100 = 44).</p></div>
+      <div class="dont"><div class="box"><img src="{{IMG:genesis41-logo-positivo}}" alt="Exemplo errado: marca esticada" style="width:170px;height:60px;object-fit:fill"></div><p><b>Distorcer</b>Nunca esticar ou achatar.</p></div>
+      <div class="dont"><div class="box" style="background:#E0AE4E"><img src="{{IMG:genesis41-logo-positivo}}" alt="Exemplo errado: versão colorida sobre ouro" style="width:150px"></div><p><b>Colorida sobre ouro</b>As casas douradas desaparecem. Use a monocromática.</p></div>
+      <div class="dont"><div class="box"><img src="{{IMG:genesis41-logo-positivo}}" alt="Exemplo errado: marca girada" style="width:140px;transform:rotate(-12deg)"></div><p><b>Girar</b>A marca fica sempre na horizontal.</p></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="cores">
+    <div class="chapter-head"><span class="num">05</span><h2>Cores</h2>
+      <p>Grafite e ouro: a tela escura de quem programa e o trigo guardado no celeiro. O ouro tem duas versões, uma para fundo escuro e outra mais escura para fundo claro, para manter a leitura. Toque no código para copiar.</p></div>
+    <div class="colors">
+      <div class="sw"><div class="chip" style="background:#11141A"></div><div class="info"><span class="nm">Grafite</span><span class="role">Cor principal: fundos, ícone, menus</span><div class="codes"><button type="button" data-copy="#11141A">#11141A</button><button type="button" data-copy="rgb(17, 20, 26)">RGB 17 20 26</button></div></div></div>
+      <div class="sw"><div class="chip" style="background:#E0AE4E"></div><div class="info"><span class="nm">Ouro</span><span class="role">Acento sobre fundos escuros</span><div class="codes"><button type="button" data-copy="#E0AE4E">#E0AE4E</button><button type="button" data-copy="rgb(224, 174, 78)">RGB 224 174 78</button></div></div></div>
+      <div class="sw"><div class="chip" style="background:#A97A18"></div><div class="info"><span class="nm">Ouro escuro</span><span class="role">Acento sobre fundos claros</span><div class="codes"><button type="button" data-copy="#A97A18">#A97A18</button><button type="button" data-copy="rgb(169, 122, 24)">RGB 169 122 24</button></div></div></div>
+      <div class="sw"><div class="chip" style="background:#F4F3EF"></div><div class="info"><span class="nm">Papel</span><span class="role">Fundo claro</span><div class="codes"><button type="button" data-copy="#F4F3EF">#F4F3EF</button><button type="button" data-copy="rgb(244, 243, 239)">RGB 244 243 239</button></div></div></div>
+      <div class="sw"><div class="chip" style="background:#16181D"></div><div class="info"><span class="nm">Tinta</span><span class="role">Texto sobre fundo claro</span><div class="codes"><button type="button" data-copy="#16181D">#16181D</button><button type="button" data-copy="rgb(22, 24, 29)">RGB 22 24 29</button></div></div></div>
+      <div class="sw"><div class="chip" style="background:#F2F1EC;border-bottom:1px solid var(--line)"></div><div class="info"><span class="nm">Névoa</span><span class="role">Texto sobre fundo escuro</span><div class="codes"><button type="button" data-copy="#F2F1EC">#F2F1EC</button><button type="button" data-copy="rgb(242, 241, 236)">RGB 242 241 236</button></div></div></div>
+    </div>
+    <div class="ratio" aria-hidden="true"><span style="flex:45;background:#F4F3EF"></span><span style="flex:30;background:#11141A"></span><span style="flex:18;background:#16181D"></span><span style="flex:7;background:#E0AE4E"></span></div>
+    <div class="ratio-legend"><span>Papel 45%</span><span>Grafite 30%</span><span>Tinta 18%</span><span>Ouro 7%</span></div>
+    <div class="panel semantic">
+      <h3>Cores de estado dentro do sistema</h3>
+      <p class="muted" style="font-size:15px">Separadas da marca. Valores negativos não usam vermelho: aparecem entre parênteses, no padrão contábil.</p>
+      <div class="sem-row"><span class="pill ok">Conferido</span><span class="pill wait">Aguardando contador</span><span class="pill info">Rascunho</span><span class="num">R$ 12.480,00</span><span class="num">(R$ 1.250,00)</span></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="tipografia">
+    <div class="chapter-head"><span class="num">06</span><h2>Tipografia</h2>
+      <p>Três famílias gratuitas do Google Fonts, cada uma com uma função. Valores em dinheiro usam sempre a monoespaçada, para os números ficarem alinhados em coluna.</p></div>
+    <div class="type">
+      <div class="panel face fa"><div class="s">genesis41</div><div class="info"><h3>Sora · Bold</h3><p>Logo, títulos e números de destaque. Espaçamento entre letras de −4,5% no logo.</p></div></div>
+      <div class="panel face fb"><div class="s">Dízimos de outubro</div><div class="info"><h3>Figtree</h3><p>Textos, menus, botões e formulários.</p></div></div>
+      <div class="panel face fc"><div class="s">R$ 48.320,00</div><div class="info"><h3>IBM Plex Mono</h3><p>Valores, datas, códigos de patrimônio e o binário.</p></div></div>
+    </div>
+    <div class="panel scale">
+      <div><span class="k">Título 1 · 56</span><span style="font-family:var(--f-display);font-weight:700;font-size:clamp(32px,5vw,56px);letter-spacing:-0.03em;line-height:1.05">Gestão fiel</span></div>
+      <div><span class="k">Título 2 · 36</span><span style="font-family:var(--f-display);font-weight:700;font-size:clamp(24px,3.4vw,36px);letter-spacing:-0.02em">Patrimônio da igreja</span></div>
+      <div><span class="k">Título 3 · 20</span><span style="font-family:var(--f-display);font-weight:700;font-size:20px">Lançamentos do mês</span></div>
+      <div><span class="k">Texto · 17</span><span style="font-size:17px">Cada lançamento fica registrado com data, valor e responsável.</span></div>
+      <div><span class="k">Rótulo · 13</span><span style="font-family:var(--f-mono);font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent)">Saldo do mês</span></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="elementos">
+    <div class="chapter-head"><span class="num">07</span><h2>Elementos gráficos</h2>
+      <p>As casas do binário também viram recursos de interface e de comunicação. Elas sempre aparecem na ordem do 41.</p></div>
+    <div class="elements">
+      <div class="panel el"><div class="loader" aria-hidden="true"><i class="g"></i><i class="on"></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i></div><h3>Carregamento</h3><p>As sete casas piscam em sequência enquanto o sistema carrega. É a assinatura do produto em movimento.</p></div>
+      <div class="panel el"><div class="pattern" aria-hidden="true"></div><h3>Textura</h3><p>Pontos em grade sobre grafite, para fundos de capa, redes sociais e apresentações. Usar com moderação.</p></div>
+      <div class="panel el"><div class="divider">0101001</div><h3>Separador</h3><p>O 41 em binário, em monoespaçada, como divisor de seções em documentos e no site.</p></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="voz">
+    <div class="chapter-head"><span class="num">08</span><h2>Tom de voz</h2>
+      <p>Quem usa o sistema costuma ser tesoureiro voluntário, não contador. O texto precisa ser claro como um extrato.</p></div>
+    <div class="voice-p">
+      <div><h3>Claro</h3><p>Sem jargão contábil sem explicação. Uma ideia por frase.</p></div>
+      <div><h3>Sereno</h3><p>Dinheiro de igreja é assunto sensível. Sem alarme e sem urgência artificial.</p></div>
+      <div><h3>Fiel, sem sermão</h3><p>A referência bíblica está no nome e no símbolo. O texto do sistema não precisa pregar.</p></div>
+    </div>
+    <div class="voice">
+      <div class="panel vcol yes"><span class="label">Assim</span><ul><li>“3 despesas de setembro estão sem comprovante.”</li><li>“Lançamento salvo. O contador já pode conferir.”</li><li>“O projetor está em manutenção há 32 dias.”</li></ul></div>
+      <div class="panel vcol no"><span class="label">Assim não</span><ul><li>“ATENÇÃO!!! Pendências críticas detectadas!”</li><li>“Operação efetuada com sucesso no módulo financeiro.”</li><li>“Deus abençoe sua gestão! 🙏”</li></ul></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="arquivos">
+    <div class="chapter-head"><span class="num">09</span><h2>Arquivos da marca</h2>
+      <p>Todos em SVG, com o nome já convertido em curvas: abrem do mesmo jeito em qualquer computador, mesmo sem a fonte instalada. Estão na pasta <code>marca/</code> do repositório.</p></div>
+    <div class="panel files">
+      <table>
+        <tr><th>Arquivo</th><th>Uso</th></tr>
+        <tr><td>genesis41-logo-positivo.svg</td><td>Principal, sobre fundos claros</td></tr>
+        <tr><td>genesis41-logo-negativo.svg</td><td>Principal, sobre fundos escuros</td></tr>
+        <tr><td>genesis41-logo-mono-preto.svg</td><td>Uma cor: carimbo, fax, impressão em preto, fundo ouro</td></tr>
+        <tr><td>genesis41-logo-mono-branco.svg</td><td>Uma cor sobre fotos e fundos escuros</td></tr>
+        <tr><td>genesis41-logo-horizontal-positivo.svg</td><td>Cabeçalhos e assinatura de e-mail, fundo claro</td></tr>
+        <tr><td>genesis41-logo-horizontal-negativo.svg</td><td>Cabeçalhos e assinatura de e-mail, fundo escuro</td></tr>
+        <tr><td>genesis41-simbolo-positivo.svg</td><td>Só as sete casas, fundo claro</td></tr>
+        <tr><td>genesis41-simbolo-negativo.svg</td><td>Só as sete casas, fundo escuro</td></tr>
+        <tr><td>genesis41-icone-app.svg</td><td>Aplicativo, perfil de redes sociais, WhatsApp</td></tr>
+        <tr><td>genesis41-favicon.svg</td><td>Aba do navegador</td></tr>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap"><span>Genesis41 · Manual de identidade visual v1.0</span><span>Antes do registro: busca no INPI e no Registro.br</span></footer>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(function () {
+  var toast = document.getElementById('toast'), timer;
+  function show(m) { toast.textContent = m; toast.hidden = false; clearTimeout(timer); timer = setTimeout(function () { toast.hidden = true; }, 1600); }
+  function select(el) { var r = document.createRange(); r.selectNodeContents(el); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); show('Selecionado. Use Ctrl+C para copiar'); }
+  document.querySelectorAll('[data-copy]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var v = b.getAttribute('data-copy');
+      try { navigator.clipboard.writeText(v).then(function () { show(v + ' copiado'); }, function () { select(b); }); } catch (e) { select(b); }
+    });
+  });
+})();
+</script>

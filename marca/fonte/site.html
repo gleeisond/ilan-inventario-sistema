@@ -1,0 +1,379 @@
+<title>Genesis41</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="icon" href="{{IMG:genesis41-favicon}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: página de produto; topo e rodapé em grafite (a cor da marca), seções claras no meio, e o painel do produto como peça central do topo */
+:root {
+  --grafite: #11141A; --ouro: #E0AE4E; --ouro-escuro: #A97A18; --papel: #F4F3EF; --tinta: #16181D; --nevoa: #F2F1EC;
+  --bg: var(--papel); --surface: #FFFFFF; --fg: var(--tinta); --muted: #5A5D66; --line: #E1E0DA; --accent: var(--ouro-escuro);
+  --cell-line: var(--tinta); --cell-on: var(--ouro-escuro);
+  --f-display: 'Sora', 'Trebuchet MS', sans-serif;
+  --f-body: 'Figtree', 'Helvetica Neue', Arial, sans-serif;
+  --f-mono: 'IBM Plex Mono', 'Courier New', monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #0D1014; --surface: #161A21; --fg: #ECEBE6; --muted: #A3A6AE; --line: #262A33; --accent: #E0AE4E; --cell-line: #ECEBE6; --cell-on: #E0AE4E; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #0D1014; --surface: #161A21; --fg: #ECEBE6; --muted: #A3A6AE; --line: #262A33; --accent: #E0AE4E; --cell-line: #ECEBE6; --cell-on: #E0AE4E; color-scheme: dark; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 17px; line-height: 1.55; }
+.wrap { max-width: 1160px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--f-display); margin: 0; letter-spacing: -0.025em; text-wrap: balance; line-height: 1.08; }
+h2 { font-size: clamp(30px, 4.2vw, 46px); font-weight: 700; }
+h3 { font-size: 20px; font-weight: 700; letter-spacing: -0.015em; }
+p { margin: 0; max-width: 62ch; }
+a { color: inherit; }
+.label { font-family: var(--f-mono); font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.btn { display: inline-flex; align-items: center; gap: 10px; font-family: var(--f-body); font-weight: 600; font-size: 16px; padding: 13px 20px; border-radius: 8px; text-decoration: none; border: 1px solid transparent; cursor: pointer; }
+.btn.gold { background: #E0AE4E; color: #11141A; }
+.btn.gold:hover { background: #EBBE63; }
+.btn.ghost { border-color: #3A3F4A; color: #F2F1EC; }
+.btn.ghost:hover { border-color: #E0AE4E; }
+.btn:focus-visible, a:focus-visible, button:focus-visible { outline: 2px solid #E0AE4E; outline-offset: 3px; }
+
+/* Topo */
+.top { background: #11141A; color: #F2F1EC; }
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: rgba(17, 20, 26, 0.92); backdrop-filter: blur(8px); border-bottom: 1px solid #22262E; }
+.nav .wrap { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-block: 14px; }
+.nav img { height: 28px; max-width: 46vw; width: auto; display: block; }
+.nav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 26px; font-size: 15px; }
+.nav ul a { text-decoration: none; color: #C9CBD1; }
+.nav ul a:hover { color: #F2F1EC; }
+.nav .btn { padding: 9px 16px; font-size: 15px; }
+.hero { padding-block: 72px 88px; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 56px; align-items: center; }
+.hero h1 { font-size: clamp(40px, 6.2vw, 72px); font-weight: 700; letter-spacing: -0.04em; color: #F2F1EC; }
+.hero h1 span { color: #E0AE4E; }
+.hero .sub { font-size: clamp(18px, 2vw, 21px); color: #B9BCC4; margin-top: 22px; max-width: 34em; }
+.hero .ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+.hero .status { margin-top: 28px; display: flex; align-items: center; gap: 12px; font-family: var(--f-mono); font-size: 13px; color: #A3A6AE; }
+.bits { display: inline-flex; gap: 4px; }
+.bits i { width: 12px; height: 12px; border-radius: 3px; border: 1.5px solid #F2F1EC; display: block; }
+.bits i.g { background: #F2F1EC; }
+.bits i.on { background: #E0AE4E; border-color: #E0AE4E; }
+@media (prefers-reduced-motion: no-preference) {
+  .bits.anim i { animation: blink 1.4s ease-in-out infinite; }
+  .bits.anim i:nth-child(2) { animation-delay: .1s } .bits.anim i:nth-child(3) { animation-delay: .2s } .bits.anim i:nth-child(4) { animation-delay: .3s }
+  .bits.anim i:nth-child(5) { animation-delay: .4s } .bits.anim i:nth-child(6) { animation-delay: .5s } .bits.anim i:nth-child(7) { animation-delay: .6s }
+  @keyframes blink { 0%, 100% { opacity: 1 } 50% { opacity: .3 } }
+}
+
+/* Painel do produto */
+.app { background: #F4F3EF; color: #16181D; border-radius: 12px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,.45), 0 0 0 1px #2A2E37; display: grid; grid-template-columns: 168px minmax(0, 1fr); min-height: 420px; }
+.app-side { background: #11141A; color: #C9CBD1; padding: 18px 14px; display: grid; align-content: start; gap: 4px; border-right: 1px solid #22262E; }
+.app-side img { height: 22px; width: auto; margin: 2px 6px 18px; }
+.app-side span { font-size: 13px; padding: 7px 10px; border-radius: 6px; }
+.app-side span.on { background: #1D222B; color: #F2F1EC; box-shadow: inset 2px 0 0 #E0AE4E; }
+.app-main { padding: 20px; display: grid; gap: 14px; align-content: start; min-width: 0; }
+.app-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.app-head b { font-family: var(--f-display); font-size: 18px; letter-spacing: -0.02em; }
+.app-head span { font-size: 12px; color: #5A5D66; }
+.kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.kpi { background: #FFFFFF; border: 1px solid #E1E0DA; border-radius: 8px; padding: 12px; min-width: 0; }
+.kpi .l { font-size: 11px; color: #5A5D66; text-transform: uppercase; letter-spacing: .05em; font-family: var(--f-mono); }
+.kpi .v { font-family: var(--f-mono); font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 4px; white-space: nowrap; }
+.list { background: #FFFFFF; border: 1px solid #E1E0DA; border-radius: 8px; }
+.li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 11px 14px; border-bottom: 1px solid #EDECE7; font-size: 13px; }
+.li:last-child { border-bottom: none; }
+.li .d { color: #5A5D66; font-size: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.li .v { font-family: var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; }
+.chip { font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 999px; }
+.chip.ok { background: #DCEEE4; color: #1F5A40; }
+.chip.wait { background: #F6E9C9; color: #6B4C0B; }
+.ex { font-family: var(--f-mono); font-size: 11px; color: #8A8D95; text-align: right; }
+
+/* Seções */
+section { padding-block: 88px; }
+section + section { border-top: 1px solid var(--line); }
+.head { display: grid; gap: 14px; margin-bottom: 44px; max-width: 760px; }
+.head p { color: var(--muted); font-size: 19px; }
+.pains { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.pain { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 26px; display: grid; gap: 10px; align-content: start; }
+.pain .was { font-family: var(--f-mono); font-size: 13px; color: var(--muted); text-decoration: line-through; }
+.pain p { color: var(--muted); font-size: 16px; }
+
+.modules { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.mod { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 28px; display: grid; gap: 12px; align-content: start; }
+.mod .tag { justify-self: start; font-family: var(--f-mono); font-size: 12px; letter-spacing: .05em; text-transform: uppercase; padding: 3px 10px; border-radius: 999px; }
+.mod .tag.live { background: var(--accent); color: var(--bg); }
+.mod .tag.soon { border: 1px solid var(--line); color: var(--muted); }
+.mod p { color: var(--muted); font-size: 16px; }
+.mod ul { margin: 4px 0 0; padding-left: 18px; color: var(--muted); font-size: 15px; display: grid; gap: 4px; }
+
+.flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.step { padding: 30px 28px; display: grid; gap: 10px; align-content: start; position: relative; }
+.step + .step { border-left: 1px solid var(--line); }
+.step .n { font-family: var(--f-mono); font-size: 14px; color: var(--accent); }
+.step p { color: var(--muted); font-size: 16px; }
+.step .who { font-family: var(--f-mono); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+
+.roles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.role { border-top: 2px solid var(--fg); padding-top: 18px; display: grid; gap: 8px; align-content: start; }
+.role p { color: var(--muted); font-size: 15px; }
+
+.trust { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start; }
+.trust ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; border-top: 1px solid var(--line); }
+.trust li { padding: 18px 0; border-bottom: 1px solid var(--line); display: grid; gap: 4px; }
+.trust li p { color: var(--muted); font-size: 15px; }
+.log { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 22px; font-family: var(--f-mono); font-size: 13px; display: grid; gap: 0; overflow-x: auto; }
+.log div { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 14px; padding: 10px 0; border-bottom: 1px dashed var(--line); min-width: 340px; }
+.log div:last-child { border-bottom: none; }
+.log .t { color: var(--muted); }
+.log .a { color: var(--accent); }
+
+/* História */
+.story { background: #11141A; color: #F2F1EC; border-top: none; }
+.story-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: center; }
+.story .label { color: #E0AE4E; }
+.story h2 { color: #F2F1EC; }
+.story p { color: #B9BCC4; font-size: 18px; }
+.story .verse { border-left: 2px solid #E0AE4E; padding-left: 18px; color: #F2F1EC; font-size: 19px; }
+.story .verse cite { display: block; font-style: normal; font-family: var(--f-mono); font-size: 13px; color: #E0AE4E; margin-top: 8px; }
+.decode { display: grid; gap: 18px; }
+.decode-row { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; max-width: 460px; }
+.dc { display: grid; gap: 6px; justify-items: center; }
+.dc .sq { width: 100%; aspect-ratio: 1; border-radius: 22%; border: 4px solid #F2F1EC; max-width: 60px; }
+.dc .sq.on { background: #E0AE4E; border-color: #E0AE4E; }
+.dc .sq.g { background: #F2F1EC; display: grid; place-items: center; }
+.dc .sq.g svg { width: 58%; height: 58%; }
+.dc .d { font-family: var(--f-mono); font-size: 16px; font-weight: 600; }
+.dc .pv { font-family: var(--f-mono); font-size: 12px; color: #8A8D95; }
+.dc .pv.on { color: #E0AE4E; }
+.decode .sum { font-family: var(--f-mono); font-size: 16px; color: #F2F1EC; }
+.decode .sum b { color: #E0AE4E; font-weight: 600; }
+
+/* Piloto */
+.pilot { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 32px; align-items: stretch; }
+.pilot-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 32px; display: grid; gap: 16px; align-content: start; }
+.pilot-card ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.pilot-card li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: baseline; }
+.pilot-card li .k { font-family: var(--f-mono); color: var(--accent); font-weight: 600; }
+.contact { background: #11141A; color: #F2F1EC; border-radius: 10px; padding: 32px; display: grid; gap: 18px; align-content: start; }
+.contact .label { color: #E0AE4E; }
+.contact p { color: #B9BCC4; }
+.contact .line { display: grid; gap: 4px; padding-top: 14px; border-top: 1px solid #2A2E37; }
+.contact .line .k { font-family: var(--f-mono); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: #8A8D95; }
+.contact .line .v { font-family: var(--f-mono); font-size: 17px; color: #F2F1EC; user-select: all; }
+.contact button { justify-self: start; background: transparent; border: 1px solid #3A3F4A; color: #F2F1EC; border-radius: 6px; padding: 6px 12px; font-family: var(--f-mono); font-size: 13px; cursor: pointer; }
+.contact button:hover { border-color: #E0AE4E; }
+
+footer.site { background: #11141A; color: #A3A6AE; padding-block: 56px calc(48px + env(safe-area-inset-bottom, 0px)); }
+.foot-grid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 32px; align-items: end; }
+.foot-grid img { width: 200px; height: auto; display: block; margin-bottom: 18px; }
+.foot-grid p { font-size: 14px; }
+.foot-bin { font-family: var(--f-mono); font-size: 13px; color: #E0AE4E; text-align: right; }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: #F2F1EC; color: #11141A; font-family: var(--f-mono); font-size: 13px; padding: 8px 14px; border-radius: 4px; z-index: 20; }
+
+@media (max-width: 960px) {
+  .hero-grid, .story-grid, .trust, .pilot { grid-template-columns: minmax(0, 1fr); }
+  .roles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .nav ul { display: none; }
+}
+@media (max-width: 680px) {
+  .pains, .modules, .flow, .roles { grid-template-columns: minmax(0, 1fr); }
+  .step + .step { border-left: none; border-top: 1px solid var(--line); }
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .nav .btn { display: none; }
+  .hero .ctas .btn { flex: 1 1 auto; justify-content: center; }
+  .app-side { display: none; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpi:last-child { grid-column: span 2; }
+  .foot-grid { grid-template-columns: minmax(0, 1fr); } .foot-bin { text-align: left; }
+}
+</style>
+
+<div class="top">
+  <nav class="nav" aria-label="Principal">
+    <div class="wrap">
+      <a href="#inicio" aria-label="Genesis41, início"><img src="{{IMG:genesis41-logo-horizontal-negativo}}" alt="Genesis41"></a>
+      <ul>
+        <li><a href="#modulos">Módulos</a></li>
+        <li><a href="#como-funciona">Como funciona</a></li>
+        <li><a href="#para-quem">Para quem</a></li>
+        <li><a href="#gn41">Por que Gn 41</a></li>
+      </ul>
+      <a class="btn gold" href="#piloto">Participar do piloto</a>
+    </div>
+  </nav>
+
+  <header class="hero" id="inicio">
+    <div class="wrap hero-grid">
+      <div>
+        <h1>O celeiro digital da <span>sua igreja.</span></h1>
+        <p class="sub">Patrimônio, finanças e prestação de contas num só lugar. Com a precisão de um escritório contábil e a simplicidade de um aplicativo.</p>
+        <div class="ctas">
+          <a class="btn gold" href="#piloto">Quero participar do piloto</a>
+          <a class="btn ghost" href="#como-funciona">Ver como funciona</a>
+        </div>
+        <div class="status"><span class="bits anim" aria-hidden="true"><i class="g"></i><i class="on"></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i></span><span>Em fase piloto · vagas limitadas</span></div>
+      </div>
+
+      <div class="app" role="img" aria-label="Exemplo do painel do Genesis41 com saldo do mês e lançamentos conferidos pelo contador">
+        <div class="app-side">
+          <img src="{{IMG:genesis41-favicon}}" alt="" style="height:28px;width:28px">
+          <span class="on">Painel</span><span>Tesouraria</span><span>Patrimônio</span><span>Relatórios</span><span>Pessoas</span>
+        </div>
+        <div class="app-main">
+          <div class="app-head"><b>Outubro · Sede</b><span>Atualizado agora</span></div>
+          <div class="kpis">
+            <div class="kpi"><div class="l">Entradas</div><div class="v">R$ 52.910</div></div>
+            <div class="kpi"><div class="l">Saídas</div><div class="v">(R$ 18.240)</div></div>
+            <div class="kpi"><div class="l">Bens ativos</div><div class="v">184</div></div>
+          </div>
+          <div class="list">
+            <div class="li"><span>Dízimos · culto de domingo</span><span class="v">R$ 12.480,00</span><span class="d">13/10 <span class="chip ok">Conferido</span></span></div>
+            <div class="li"><span>Conta de energia</span><span class="v">(R$ 1.250,00)</span><span class="d">10/10 <span class="chip ok">Conferido</span></span></div>
+            <div class="li"><span>Conserto do projetor · PAT-0057</span><span class="v">(R$ 680,00)</span><span class="d">08/10 <span class="chip wait">Aguardando contador</span></span></div>
+            <div class="li"><span>Oferta missionária</span><span class="v">R$ 3.200,00</span><span class="d">06/10 <span class="chip ok">Conferido</span></span></div>
+          </div>
+          <div class="ex">Dados de exemplo</div>
+        </div>
+      </div>
+    </div>
+  </header>
+</div>
+
+<main>
+  <section>
+    <div class="wrap">
+      <div class="head"><span class="label">O problema</span><h2>Dinheiro de igreja ainda vive em planilha, caderno e WhatsApp.</h2><p>O tesoureiro faz o melhor que pode, o contador recebe tudo desorganizado e o pastor decide sem números confiáveis.</p></div>
+      <div class="pains">
+        <div class="pain"><span class="was">planilha solta</span><h3>Um lugar só</h3><p>Entradas, saídas e bens da igreja no mesmo sistema, acessível pelo celular.</p></div>
+        <div class="pain"><span class="was">comprovante no WhatsApp</span><h3>Tudo com comprovante</h3><p>Cada lançamento leva a foto do recibo junto. Nada se perde na conversa.</p></div>
+        <div class="pain"><span class="was">fechamento no susto</span><h3>Mês fechado em dia</h3><p>O contador confere ao longo do mês, sem acumular tudo para o último dia.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="modulos">
+    <div class="wrap">
+      <div class="head"><span class="label">Módulos</span><h2>Começa pelo que já funciona e cresce com a igreja.</h2><p>O piloto começa pelo Patrimônio, que já está em desenvolvimento. Os outros módulos estão sendo desenhados junto com contadores especializados em igrejas.</p></div>
+      <div class="modules">
+        <div class="mod"><span class="tag live">No piloto</span><h3>Patrimônio</h3><p>Todos os bens da igreja, com valor, local e responsável.</p><ul><li>Cadastro de equipamentos por campus</li><li>Pedidos de manutenção com acompanhamento</li><li>Histórico completo de cada bem</li></ul></div>
+        <div class="mod"><span class="tag soon">Em desenvolvimento</span><h3>Tesouraria</h3><p>Dízimos, ofertas e despesas do dia a dia, com comprovante.</p><ul><li>Lançamentos pelo celular</li><li>Caixa e contas bancárias</li><li>Conferência pelo contador</li></ul></div>
+        <div class="mod"><span class="tag soon">Em desenvolvimento</span><h3>Contabilidade</h3><p>Os lançamentos chegam organizados para o escritório contábil.</p><ul><li>Plano de contas para igrejas</li><li>Exportação para o sistema do contador</li><li>Depreciação dos bens</li></ul></div>
+        <div class="mod"><span class="tag soon">Em desenvolvimento</span><h3>Prestação de contas</h3><p>Relatórios claros para pastor, conselho fiscal e membros.</p><ul><li>Balancete do mês em uma tela</li><li>Relatório para assembleia</li><li>Acesso só de leitura para o conselho</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="como-funciona">
+    <div class="wrap">
+      <div class="head"><span class="label">Como funciona</span><h2>Cada pessoa faz a sua parte, e todos veem o mesmo número.</h2></div>
+      <div class="flow">
+        <div class="step"><span class="n">1</span><span class="who">Tesoureiro</span><h3>Lança</h3><p>Registra a entrada ou a despesa pelo celular, com a foto do comprovante.</p></div>
+        <div class="step"><span class="n">2</span><span class="who">Contador</span><h3>Confere</h3><p>O escritório contábil revisa e marca o lançamento como conferido.</p></div>
+        <div class="step"><span class="n">3</span><span class="who">Pastor e conselho</span><h3>Acompanham</h3><p>Veem o saldo e os relatórios do mês, sempre atualizados.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="para-quem">
+    <div class="wrap">
+      <div class="head"><span class="label">Para quem</span><h2>Cada um vê o que é da sua responsabilidade.</h2></div>
+      <div class="roles">
+        <div class="role"><h3>Pastor</h3><p>A visão completa da igreja, sem precisar pedir planilha para ninguém.</p></div>
+        <div class="role"><h3>Tesoureiro</h3><p>Lança rápido, anexa comprovante e sabe o que ainda falta.</p></div>
+        <div class="role"><h3>Contador</h3><p>Recebe tudo organizado e confere sem retrabalho.</p></div>
+        <div class="role"><h3>Conselho fiscal</h3><p>Acesso só de leitura, para acompanhar com transparência.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap trust">
+      <div>
+        <div class="head" style="margin-bottom:28px"><span class="label">Confiança</span><h2>Nada some sem deixar rastro.</h2></div>
+        <ul>
+          <li><h3>Acesso por perfil</h3><p>Tesoureiro, contador, pastor e conselho têm permissões diferentes.</p></li>
+          <li><h3>Histórico de tudo</h3><p>Cada alteração guarda quem fez, quando, o valor antigo e o novo.</p></li>
+          <li><h3>Na nuvem</h3><p>Acesso pelo navegador ou pelo celular, sem instalar nada.</p></li>
+        </ul>
+      </div>
+      <div class="log" role="img" aria-label="Exemplo do histórico de alterações de um lançamento">
+        <div><span class="t">13/10 19:42</span><span>Tesoureiro lançou <span class="a">R$ 12.480,00</span> · dízimos</span></div>
+        <div><span class="t">13/10 19:43</span><span>Comprovante anexado · foto_envelope.jpg</span></div>
+        <div><span class="t">14/10 09:10</span><span>Contador alterou a conta: 3.1.1 → 3.1.2</span></div>
+        <div><span class="t">14/10 09:11</span><span>Contador marcou como <span class="a">conferido</span></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="story" id="gn41">
+    <div class="wrap story-grid">
+      <div style="display:grid;gap:22px">
+        <span class="label">Por que Gn 41</span>
+        <h2>José guardou o trigo. Nós guardamos os números.</h2>
+        <p class="verse">José ajuntou o trigo dos sete anos de fartura e o guardou nas cidades, para que houvesse reserva nos anos de escassez.<cite>Paráfrase de Gênesis 41:47–49</cite></p>
+        <p>O símbolo do Genesis41 é o número 41 escrito em binário de sete dígitos. Sete casas, como os sete anos do sonho, e o G de Genesis no lugar do zero inicial.</p>
+      </div>
+      <div class="decode">
+        <div class="decode-row" role="img" aria-label="As sete casas do símbolo: G, 1, 0, 1, 0, 0, 1, que somam 41">
+          <div class="dc"><div class="sq g"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M14.2 5.6 H8.2 Q5.6 5.6 5.6 8.2 V11.8 Q5.6 14.4 8.2 14.4 H11.8 Q14.4 14.4 14.4 11.8 V10 H10.6" fill="none" stroke="#11141A" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="d">0</span><span class="pv">64</span></div>
+          <div class="dc"><div class="sq on"></div><span class="d">1</span><span class="pv on">32</span></div>
+          <div class="dc"><div class="sq"></div><span class="d">0</span><span class="pv">16</span></div>
+          <div class="dc"><div class="sq on"></div><span class="d">1</span><span class="pv on">8</span></div>
+          <div class="dc"><div class="sq"></div><span class="d">0</span><span class="pv">4</span></div>
+          <div class="dc"><div class="sq"></div><span class="d">0</span><span class="pv">2</span></div>
+          <div class="dc"><div class="sq on"></div><span class="d">1</span><span class="pv on">1</span></div>
+        </div>
+        <p class="sum"><b>32</b> + <b>8</b> + <b>1</b> = <b>41</b></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="piloto">
+    <div class="wrap">
+      <div class="head"><span class="label">Piloto</span><h2>Estamos escolhendo as primeiras igrejas.</h2><p>Durante o piloto, a igreja usa o sistema de verdade e ajuda a definir o que vem a seguir.</p></div>
+      <div class="pilot">
+        <div class="pilot-card">
+          <h3>Como funciona o piloto</h3>
+          <ul>
+            <li><span class="k">01</span><span>A igreja começa pelo módulo de Patrimônio.</span></li>
+            <li><span class="k">02</span><span>Configuramos tudo junto com o tesoureiro e o contador.</span></li>
+            <li><span class="k">03</span><span>Encontros curtos a cada semana para ouvir o que precisa melhorar.</span></li>
+            <li><span class="k">04</span><span>As igrejas do piloto têm condições especiais no lançamento.</span></li>
+          </ul>
+        </div>
+        <div class="contact">
+          <span class="label">Fale com a gente</span>
+          <p>Conte quantos campus e quantos bens a sua igreja tem. Respondemos em até um dia útil.</p>
+          <div class="line"><span class="k">WhatsApp</span><span class="v" id="wa">[(00) 00000-0000]</span></div>
+          <div class="line"><span class="k">E-mail</span><span class="v" id="em">[contato@genesis41.com.br]</span></div>
+          <button type="button" data-copy-target="em">Copiar e-mail</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap foot-grid">
+    <div>
+      <img src="{{IMG:genesis41-logo-negativo}}" alt="Genesis41">
+      <p>Um produto Nex4 em parceria com [escritório contábil parceiro].</p>
+    </div>
+    <div class="foot-bin">0101001 · Gn 41</div>
+  </div>
+</footer>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(function () {
+  var toast = document.getElementById('toast'), timer;
+  function show(m) { toast.textContent = m; toast.hidden = false; clearTimeout(timer); timer = setTimeout(function () { toast.hidden = true; }, 1600); }
+  document.querySelectorAll('[data-copy-target]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var el = document.getElementById(b.getAttribute('data-copy-target'));
+      var v = el.textContent.trim();
+      function sel() { var r = document.createRange(); r.selectNodeContents(el); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); show('Selecionado. Use Ctrl+C para copiar'); }
+      try { navigator.clipboard.writeText(v).then(function () { show('E-mail copiado'); }, sel); } catch (e) { sel(); }
+    });
+  });
+})();
+</script>
