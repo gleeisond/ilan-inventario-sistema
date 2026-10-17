@@ -1,12 +1,14 @@
 import Link from 'next/link'
 import { getSupabase } from '@/lib/supabase'
-import { STATUS_COLORS, STATUS_LABELS, formatarMoeda } from '@/lib/equipamentos'
+import { STATUS_COLORS, STATUS_LABELS, formatarMoeda, podeEditarNoCampus, podeExcluirEquipamento } from '@/lib/equipamentos'
 import { EquipmentStatus } from '@/types/database'
 import { exigirLogin } from '@/lib/auth'
+import BotaoExcluir from '@/components/BotaoExcluir'
+import { alternarBaixa, excluirEquipamento } from './actions'
 
 export const dynamic = 'force-dynamic'
 
-type Filtros = { campus?: string; status?: string; categoria?: string; busca?: string; criado?: string }
+type Filtros = { campus?: string; status?: string; categoria?: string; busca?: string; ok?: string; erro?: string }
 
 type EquipamentoLinha = {
   id: string
@@ -16,17 +18,17 @@ type EquipamentoLinha = {
   value: number | null
   status: EquipmentStatus
   location: string | null
-  campus: { name: string } | null
+  campus: { id: string; name: string; region_id: string | null } | null
   responsible: { name: string } | null
 }
 
 export default async function Equipamentos({ searchParams }: { searchParams: Filtros }) {
-  await exigirLogin()
+  const usuario = await exigirLogin()
   const supabase = getSupabase()
 
   let query = supabase
     .from('equipment')
-    .select('id, name, brand, category, value, status, location, campus:campus_id (name), responsible:responsible_id (name)')
+    .select('id, name, brand, category, value, status, location, campus:campus_id (id, name, region_id), responsible:responsible_id (name)')
     .order('name')
 
   if (searchParams.campus) query = query.eq('campus_id', searchParams.campus)
@@ -46,6 +48,14 @@ export default async function Equipamentos({ searchParams }: { searchParams: Fil
   const equipamentos = (data ?? []) as unknown as EquipamentoLinha[]
   const valorTotal = equipamentos.reduce((soma, e) => soma + Number(e.value ?? 0), 0)
   const temFiltro = Boolean(searchParams.campus || searchParams.status || searchParams.categoria || searchParams.busca)
+  const podeExcluir = podeExcluirEquipamento(usuario)
+
+  // Depois de dar baixa ou reativar, volta para esta mesma lista, com os mesmos filtros
+  const filtrosAtuais = new URLSearchParams()
+  for (const campo of ['busca', 'campus', 'status', 'categoria'] as const) {
+    if (searchParams[campo]) filtrosAtuais.set(campo, searchParams[campo]!)
+  }
+  const retorno = '/equipamentos' + (filtrosAtuais.toString() ? `?${filtrosAtuais}` : '')
 
   return (
     <div className="p-4 md:p-8">
@@ -64,9 +74,14 @@ export default async function Equipamentos({ searchParams }: { searchParams: Fil
         </Link>
       </div>
 
-      {searchParams.criado && (
+      {searchParams.ok && (
         <div className="mb-4 aviso aviso-ok p-3 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200">
-          Equipamento cadastrado.
+          {searchParams.ok}
+        </div>
+      )}
+      {searchParams.erro && (
+        <div className="mb-4 aviso aviso-erro p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
+          {searchParams.erro}
         </div>
       )}
 
@@ -138,13 +153,20 @@ export default async function Equipamentos({ searchParams }: { searchParams: Fil
                 <th className="px-4 py-3 font-semibold">Responsável</th>
                 <th className="px-4 py-3 font-semibold">Status</th>
                 <th className="px-4 py-3 font-semibold text-right">Valor</th>
+                <th className="px-4 py-3 font-semibold text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {equipamentos.map(e => (
+              {equipamentos.map(e => {
+                const podeEditar = !e.campus || podeEditarNoCampus(usuario, e.campus)
+                return (
                 <tr key={e.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
-                    <div className="font-medium text-gray-900">{e.name}</div>
+                    {podeEditar ? (
+                      <Link href={`/equipamentos/${e.id}`} className="font-medium text-gray-900 hover:text-indigo-700">{e.name}</Link>
+                    ) : (
+                      <div className="font-medium text-gray-900">{e.name}</div>
+                    )}
                     {e.brand && <div className="text-gray-500">{e.brand}</div>}
                   </td>
                   <td className="px-4 py-3 capitalize">{e.category ?? '—'}</td>
@@ -157,8 +179,34 @@ export default async function Equipamentos({ searchParams }: { searchParams: Fil
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">{formatarMoeda(e.value)}</td>
+                  <td className="px-4 py-3">
+                    {podeEditar ? (
+                      <div className="flex items-center justify-end gap-4 whitespace-nowrap">
+                        <Link href={`/equipamentos/${e.id}`} className="text-indigo-600 hover:text-indigo-700">
+                          Editar
+                        </Link>
+                        <form action={alternarBaixa}>
+                          <input type="hidden" name="id" value={e.id} />
+                          <input type="hidden" name="retorno" value={retorno} />
+                          <button type="submit" className="text-gray-600 hover:text-gray-900">
+                            {e.status === 'descartado' ? 'Reativar' : 'Dar baixa'}
+                          </button>
+                        </form>
+                        {podeExcluir && (
+                          <form action={excluirEquipamento}>
+                            <input type="hidden" name="id" value={e.id} />
+                            <input type="hidden" name="retorno" value={retorno} />
+                            <BotaoExcluir nome={e.name} />
+                          </form>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="block text-right text-gray-400">—</span>
+                    )}
+                  </td>
                 </tr>
-              ))}
+                )
+              })}
             </tbody>
           </table>
         </div>

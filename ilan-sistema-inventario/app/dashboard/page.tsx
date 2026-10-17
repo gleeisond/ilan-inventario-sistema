@@ -12,13 +12,25 @@ import {
 } from '@/lib/manutencoes'
 import NumeroAnimado from '@/components/NumeroAnimado'
 import TextoRevelado from '@/components/TextoRevelado'
+import SeletorCampus from '@/components/SeletorCampus'
 import { EquipmentStatus, MaintenanceStatus, PriorityLevel } from '@/types/database'
-import { exigirLogin, getUsuarioAtual } from '@/lib/auth'
+import { exigirLogin } from '@/lib/auth'
 import { aguardaUsuario } from '@/lib/fluxoReparo'
 
 export const dynamic = 'force-dynamic'
 
-type Equipamento = { id: string; status: EquipmentStatus; value: number | null; campus_id: string }
+type Equipamento = {
+  id: string
+  name: string
+  category: string | null
+  location: string | null
+  status: EquipmentStatus
+  value: number | null
+  campus_id: string
+}
+
+// Na lista de um campus, o que precisa de atenção aparece primeiro
+const ORDEM_STATUS: Record<EquipmentStatus, number> = { danificado: 0, em_manutencao: 1, ativo: 2, descartado: 3 }
 
 type Manutencao = {
   id: string
@@ -43,12 +55,12 @@ function Indicador({ titulo, valor, detalhe, destaque }: { titulo: string; valor
   )
 }
 
-export default async function Dashboard({ searchParams }: { searchParams: { sem_permissao?: string } }) {
-  await exigirLogin()
+export default async function Dashboard({ searchParams }: { searchParams: { sem_permissao?: string; campus?: string } }) {
+  const usuario = await exigirLogin()
   const supabase = getSupabase()
 
   const [equipRes, manutRes, campusRes] = await Promise.all([
-    supabase.from('equipment').select('id, status, value, campus_id'),
+    supabase.from('equipment').select('id, name, category, location, status, value, campus_id').order('name'),
     supabase
       .from('maintenance_requests')
       .select('id, status, priority, problem_description, scheduled_completion_date, campus_id, equipment:equipment_id (name), campus:campus_id (name, region_id)'),
@@ -67,9 +79,17 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
     )
   }
 
-  const equipamentos = (equipRes.data ?? []) as Equipamento[]
-  const manutencoes = (manutRes.data ?? []) as unknown as Manutencao[]
   const campusList = campusRes.data ?? []
+
+  // Campus escolhido no menu. Líder de campus e pastor abrem direto no próprio campus.
+  const padrao = usuario && (usuario.role === 'lider_midia' || usuario.role === 'pastor') ? usuario.campus_id : null
+  const escolhido = searchParams.campus ?? padrao ?? 'todos'
+  const campusAtual = campusList.find(c => c.id === escolhido) ?? null
+  const doFiltro = <T extends { campus_id: string }>(lista: T[]) => (campusAtual ? lista.filter(i => i.campus_id === campusAtual.id) : lista)
+
+  const equipamentos = doFiltro((equipRes.data ?? []) as Equipamento[])
+  const manutencoes = doFiltro((manutRes.data ?? []) as unknown as Manutencao[])
+  const filtroCampus = campusAtual ? `&campus=${campusAtual.id}` : ''
 
   // Inventário
   const emUso = equipamentos.filter(e => e.status !== 'descartado')
@@ -87,7 +107,6 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
   const atrasadas = pendentes.filter(m => (m.atraso ?? 0) > 0)
   const prontas = pendentes.filter(m => m.status === 'pronto')
   const criticas = pendentes.filter(m => m.priority === 'critica' || m.priority === 'alta')
-  const usuario = await getUsuarioAtual()
   const aguardandoVoce = usuario
     ? pendentes.filter(m => aguardaUsuario(usuario, { status: m.status, campus_id: m.campus_id, campus_region_id: m.campus?.region_id ?? null })).length
     : 0
@@ -115,13 +134,18 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
           Essa área é só para administradores.
         </div>
       )}
-      <div>
-        <h1 className="text-2xl font-bold">
-          <TextoRevelado texto="Dashboard" />
-        </h1>
-        <p className="text-gray-600 mt-1">
-          <TextoRevelado texto={`Visão geral do inventário de mídia dos ${campusList.length} campus`} atraso={1} />
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">
+            <TextoRevelado texto={campusAtual ? `Dashboard · ${campusAtual.name}` : 'Dashboard'} key={campusAtual?.id ?? 'todos'} />
+          </h1>
+          <p className="text-gray-600 mt-1">
+            {campusAtual
+              ? `Status dos equipamentos e reparos do campus ${campusAtual.name}`
+              : `Visão geral do inventário de mídia dos ${campusList.length} campus`}
+          </p>
+        </div>
+        <SeletorCampus campus={campusList} atual={campusAtual?.id ?? 'todos'} />
       </div>
 
       {aguardandoVoce > 0 && (
@@ -159,7 +183,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
         <section className="xl:col-span-2 bg-white rounded-lg border border-gray-200">
           <div className="flex items-center justify-between p-5 border-b border-gray-100">
             <h2 className="font-semibold text-lg">Manutenções em andamento</h2>
-            <Link href="/manutencoes" className="group text-sm text-indigo-600 hover:text-indigo-700 whitespace-nowrap">Ver todas <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span></Link>
+            <Link href={`/manutencoes${campusAtual ? `?campus=${campusAtual.id}` : ''}`} className="group text-sm text-indigo-600 hover:text-indigo-700 whitespace-nowrap">Ver todas <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span></Link>
           </div>
           {pendentes.length === 0 ? (
             <p className="p-5 text-gray-500">Nenhuma manutenção em andamento.</p>
@@ -169,7 +193,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
                 <li key={m.id} className="p-5 flex flex-wrap items-start justify-between gap-3 transition-colors duration-200 hover:bg-gray-50">
                   <div className="min-w-0">
                     <p className="font-medium text-gray-900">
-                      {m.equipment?.name ?? 'Equipamento'} <span className="text-gray-500 font-normal">· {m.campus?.name}</span>
+                      {m.equipment?.name ?? 'Equipamento'} {!campusAtual && <span className="text-gray-500 font-normal">· {m.campus?.name}</span>}
                     </p>
                     <p className="text-sm text-gray-600 mt-1">{m.problem_description}</p>
                   </div>
@@ -196,7 +220,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
           <ul className="cascata space-y-3" style={{ '--atraso': '200ms' } as React.CSSProperties}>
             {porStatus.map(({ status, total }) => (
               <li key={status}>
-                <Link href={`/equipamentos?status=${status}`} className="group flex items-center justify-between hover:bg-gray-50 rounded-lg -mx-2 px-2 py-1 transition-colors duration-200">
+                <Link href={`/equipamentos?status=${status}${filtroCampus}`} className="group flex items-center justify-between hover:bg-gray-50 rounded-lg -mx-2 px-2 py-1 transition-colors duration-200">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[status]}`}>{STATUS_LABELS[status]}</span>
                   <span className="font-semibold transition-transform duration-300 group-hover:-translate-x-1">{total}</span>
                 </Link>
@@ -206,44 +230,85 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
         </section>
       </div>
 
-      {/* Por campus */}
-      <section className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
-        <h2 className="font-semibold text-lg p-5 border-b border-gray-100">Por campus</h2>
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left text-gray-600">
-            <tr>
-              <th className="px-5 py-3 font-semibold">Campus</th>
-              <th className="px-5 py-3 font-semibold">Equipamentos</th>
-              <th className="px-5 py-3 font-semibold">Com problema</th>
-              <th className="px-5 py-3 font-semibold">Manutenções abertas</th>
-              <th className="px-5 py-3 font-semibold text-right">Patrimônio</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {porCampus.map(c => (
-              <tr key={c.id} className="hover:bg-gray-50">
-                <td className="px-5 py-3">
-                  <Link href={`/equipamentos?campus=${c.id}`} className="font-medium text-gray-900 hover:text-indigo-700">{c.name}</Link>
-                </td>
-                <td className="px-5 py-3">
-                  <div className="flex items-center gap-3">
-                    <span className="w-6 text-right">{c.total}</span>
-                    <div className="flex-1 max-w-[160px] h-2 bg-gray-100 rounded-full">
-                      <div className="barra h-2 bg-indigo-500 rounded-full" style={{ width: `${(c.total / maiorTotal) * 100}%` }} />
-                    </div>
-                  </div>
-                </td>
-                <td className={`px-5 py-3 ${c.problemas ? 'text-yellow-700 font-medium' : 'text-gray-400'}`}>{c.problemas}</td>
-                <td className={`px-5 py-3 ${c.manutencoes ? 'font-medium' : 'text-gray-400'}`}>{c.manutencoes}</td>
-                <td className="px-5 py-3 text-right whitespace-nowrap">{formatarMoeda(c.valor)}</td>
+      {campusAtual ? (
+        <section className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
+          <div className="flex items-center justify-between p-5 border-b border-gray-100">
+            <h2 className="font-semibold text-lg">Equipamentos de {campusAtual.name}</h2>
+            <Link href={`/equipamentos?campus=${campusAtual.id}`} className="group text-sm text-indigo-600 hover:text-indigo-700 whitespace-nowrap">Gerenciar <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span></Link>
+          </div>
+          {equipamentos.length === 0 ? (
+            <p className="p-5 text-gray-500">Nenhum equipamento cadastrado neste campus.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 text-left text-gray-600">
+                <tr>
+                  <th className="px-5 py-3 font-semibold">Equipamento</th>
+                  <th className="hidden sm:table-cell px-5 py-3 font-semibold">Categoria</th>
+                  <th className="hidden sm:table-cell px-5 py-3 font-semibold">Local</th>
+                  <th className="px-5 py-3 font-semibold">Status</th>
+                  <th className="hidden sm:table-cell px-5 py-3 font-semibold text-right">Valor</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {[...equipamentos]
+                  .sort((a, b) => ORDEM_STATUS[a.status] - ORDEM_STATUS[b.status] || a.name.localeCompare(b.name, 'pt-BR'))
+                  .map(e => (
+                    <tr key={e.id} className="hover:bg-gray-50">
+                      <td className="px-5 py-3 font-medium text-gray-900">{e.name}</td>
+                      <td className="hidden sm:table-cell px-5 py-3 capitalize">{e.category ?? '—'}</td>
+                      <td className="hidden sm:table-cell px-5 py-3">{e.location ?? '—'}</td>
+                      <td className="px-5 py-3">
+                        <span className={`inline-block whitespace-nowrap px-2 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[e.status]}`}>
+                          {STATUS_LABELS[e.status]}
+                        </span>
+                      </td>
+                      <td className="hidden sm:table-cell px-5 py-3 text-right whitespace-nowrap">{formatarMoeda(e.value)}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          )}
+        </section>
+      ) : (
+        // Por campus
+        <section className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
+          <h2 className="font-semibold text-lg p-5 border-b border-gray-100">Por campus</h2>
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 text-left text-gray-600">
+              <tr>
+                <th className="px-5 py-3 font-semibold">Campus</th>
+                <th className="px-5 py-3 font-semibold">Equipamentos</th>
+                <th className="px-5 py-3 font-semibold">Com problema</th>
+                <th className="px-5 py-3 font-semibold">Manutenções abertas</th>
+                <th className="px-5 py-3 font-semibold text-right">Patrimônio</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        {porCampus.every(c => c.total === 0) && (
-          <p className="p-5 text-gray-500">Nenhum equipamento cadastrado ainda.</p>
-        )}
-      </section>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {porCampus.map(c => (
+                <tr key={c.id} className="hover:bg-gray-50">
+                  <td className="px-5 py-3">
+                    <Link href={`/dashboard?campus=${c.id}`} className="font-medium text-gray-900 hover:text-indigo-700">{c.name}</Link>
+                  </td>
+                  <td className="px-5 py-3">
+                    <div className="flex items-center gap-3">
+                      <span className="w-6 text-right">{c.total}</span>
+                      <div className="flex-1 max-w-[160px] h-2 bg-gray-100 rounded-full">
+                        <div className="barra h-2 bg-indigo-500 rounded-full" style={{ width: `${(c.total / maiorTotal) * 100}%` }} />
+                      </div>
+                    </div>
+                  </td>
+                  <td className={`px-5 py-3 ${c.problemas ? 'text-yellow-700 font-medium' : 'text-gray-400'}`}>{c.problemas}</td>
+                  <td className={`px-5 py-3 ${c.manutencoes ? 'font-medium' : 'text-gray-400'}`}>{c.manutencoes}</td>
+                  <td className="px-5 py-3 text-right whitespace-nowrap">{formatarMoeda(c.valor)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {porCampus.every(c => c.total === 0) && (
+            <p className="p-5 text-gray-500">Nenhum equipamento cadastrado ainda.</p>
+          )}
+        </section>
+      )}
     </div>
   )
 }

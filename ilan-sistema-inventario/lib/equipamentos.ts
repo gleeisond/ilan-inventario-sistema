@@ -1,7 +1,7 @@
 // lib/equipamentos.ts
 // Rótulos e cores compartilhados pelas telas de equipamentos
 
-import { EquipmentStatus } from '@/types/database'
+import { EquipmentStatus, UserRole } from '@/types/database'
 
 export const STATUS_LABELS: Record<EquipmentStatus, string> = {
   ativo: 'Ativo',
@@ -28,4 +28,24 @@ export function lerMoeda(valorTexto: string | null) {
   if (!valorTexto) return null
   const normalizado = valorTexto.includes(',') ? valorTexto.replace(/\./g, '').replace(',', '.') : valorTexto
   return Number(normalizado)
+}
+
+// ---------- Permissões ----------
+// Com o login desligado (usuario null) todos podem tudo, como no resto do sistema.
+// ADM Ilan mexe em qualquer campus; líder de campus e pastor só no próprio campus;
+// líder regional nos campus da sua região. O Ilan Tech Pro cuida do reparo, não do cadastro.
+
+type QuemMexe = { role: UserRole; campus_id: string | null; region_id: string | null } | null
+export type CampusDoEquipamento = { id: string; region_id: string | null }
+
+export function podeEditarNoCampus(usuario: QuemMexe, campus: CampusDoEquipamento) {
+  if (!usuario || usuario.role === 'admin') return true
+  if (usuario.role === 'lider_midia' || usuario.role === 'pastor') return usuario.campus_id === campus.id
+  if (usuario.role === 'lider_regional') return Boolean(usuario.region_id) && usuario.region_id === campus.region_id
+  return false
+}
+
+// Excluir apaga também o histórico do equipamento, então fica só com o ADM Ilan
+export function podeExcluirEquipamento(usuario: QuemMexe) {
+  return !usuario || usuario.role === 'admin'
 }
