@@ -3,11 +3,42 @@
 
 export type UserRole = 'lider_midia' | 'pastor' | 'rodrigo' | 'lider_regional' | 'admin'
 export type EquipmentStatus = 'ativo' | 'danificado' | 'em_manutencao' | 'descartado'
-export type MaintenanceStatus = 'aberto' | 'recebido' | 'em_diagnostico' | 'em_conserto' | 'aguardando_pecas' | 'pronto' | 'entregue' | 'cancelado'
+export type MaintenanceStatus =
+  | 'aberto'
+  | 'aguardando_envio'
+  | 'recebido'
+  | 'em_diagnostico'
+  | 'em_conserto'
+  | 'aguardando_pecas'
+  | 'aguardando_aprovacao'
+  | 'reprovado'
+  | 'pronto'
+  | 'aguardando_instalacao'
+  | 'concluido'
+  | 'descartado'
+  | 'entregue'
+  | 'cancelado'
 export type PriorityLevel = 'baixa' | 'media' | 'alta' | 'critica'
-export type ActionType = 'recebido' | 'diagnosticado' | 'conserto_iniciado' | 'peca_solicitada' | 'peca_recebida' | 'conserto_completo' | 'pronto_para_entrega' | 'entregue'
+export type ActionType =
+  | 'recebido'
+  | 'diagnosticado'
+  | 'conserto_iniciado'
+  | 'peca_solicitada'
+  | 'peca_recebida'
+  | 'conserto_completo'
+  | 'pronto_para_entrega'
+  | 'entregue'
+  | 'enviado_assistencia'
+  | 'resolvido_no_campus'
+  | 'orcamento_solicitado'
+  | 'orcamento_aprovado'
+  | 'orcamento_reprovado'
+  | 'descartado'
+  | 'devolvido_sem_conserto'
+  | 'retirado_assistencia'
+  | 'instalado'
+  | 'reaberto'
 export type NotificationType = 'pronto_para_buscar' | 'pronto' | 'aguardando_pecas' | 'atrasado' | 'nova_requisicao'
-export type EquipmentEventType = 'criado' | 'movido' | 'danificado' | 'consertado' | 'responsavel_alterado' | 'status_alterado' | 'editado'
 
 // Tabelas
 export interface Region {
@@ -97,25 +128,10 @@ export interface MaintenanceNotification {
 export interface EquipmentHistory {
   id: string
   equipment_id: string
-  event_type: EquipmentEventType
+  event_type: string
   description?: string
   changed_by_id: string
   old_value?: Record<string, any>
   new_value?: Record<string, any>
   created_at: string
 }
-
-// Consultas com relações
-export interface EquipmentWithRelations extends Equipment {
-  campus?: { name: string } | null
-  responsible?: { name: string } | null
-}
-
-export interface EquipmentHistoryWithUser extends EquipmentHistory {
-  changed_by?: { name: string } | null
-}
-
-export type EquipmentMaintenanceSummary = Pick<
-  MaintenanceRequest,
-  'id' | 'status' | 'priority' | 'problem_description' | 'cost' | 'created_at'
->

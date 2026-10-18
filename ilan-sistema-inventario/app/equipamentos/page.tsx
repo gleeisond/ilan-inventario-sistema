@@ -1,287 +1,215 @@
-'use client'
-// app/equipamentos/page.tsx
-// Lista de equipamentos com resumo, busca e filtros.
-import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useProfile } from '@/lib/profile'
-import { listCampuses, listEquipment } from '@/lib/equipamentos/repo'
-import { canCreateEquipment } from '@/lib/equipamentos/permissions'
-import { CATEGORIES, STATUS_LABEL } from '@/lib/equipamentos/labels'
-import { formatBRL } from '@/lib/format'
-import type { Campus, EquipmentStatus, EquipmentWithRelations } from '@/types/database'
-import StatusBadge from '@/components/equipamentos/StatusBadge'
-import ErrorBox from '@/components/equipamentos/ErrorBox'
+import { getSupabase } from '@/lib/supabase'
+import { STATUS_COLORS, STATUS_LABELS, formatarMoeda, podeEditarNoCampus, podeExcluirEquipamento } from '@/lib/equipamentos'
+import { EquipmentStatus } from '@/types/database'
+import { exigirLogin } from '@/lib/auth'
+import BotaoExcluir from '@/components/BotaoExcluir'
+import { alternarBaixa, excluirEquipamento } from './actions'
 
-// 'em_uso' = tudo menos os baixados, que é o que a pessoa quer ver no dia a dia.
-type StatusFilter = 'em_uso' | 'todos' | EquipmentStatus
+export const dynamic = 'force-dynamic'
 
-const inputClass =
-  'w-full rounded-md border border-linha bg-white px-3 py-2 text-sm text-tinta outline-none transition focus:border-tinta focus:ring-2 focus:ring-ouro/40'
+type Filtros = { campus?: string; status?: string; categoria?: string; busca?: string; ok?: string; erro?: string }
 
-function normalize(text: string): string {
-  return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+type EquipamentoLinha = {
+  id: string
+  name: string
+  brand: string | null
+  category: string | null
+  value: number | null
+  status: EquipmentStatus
+  location: string | null
+  campus: { id: string; name: string; region_id: string | null } | null
+  responsible: { name: string } | null
 }
 
-export default function EquipamentosPage() {
-  const profile = useProfile()
-  const router = useRouter()
-  const [items, setItems] = useState<EquipmentWithRelations[] | null>(null)
-  const [campuses, setCampuses] = useState<Campus[]>([])
-  const [error, setError] = useState<string | null>(null)
-  const [search, setSearch] = useState('')
-  const [status, setStatus] = useState<StatusFilter>('em_uso')
-  const [campusId, setCampusId] = useState('')
-  const [category, setCategory] = useState('')
+export default async function Equipamentos({ searchParams }: { searchParams: Filtros }) {
+  const usuario = await exigirLogin()
+  const supabase = getSupabase()
 
-  const load = useCallback(async () => {
-    setError(null)
-    try {
-      const [equipment, campusList] = await Promise.all([listEquipment(), listCampuses()])
-      setItems(equipment)
-      setCampuses(campusList)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Não foi possível carregar os equipamentos.')
-    }
-  }, [])
+  let query = supabase
+    .from('equipment')
+    .select('id, name, brand, category, value, status, location, campus:campus_id (id, name, region_id), responsible:responsible_id (name)')
+    .order('name')
 
-  useEffect(() => {
-    load()
-  }, [load])
-
-  // Só mostra o filtro de campus para quem enxerga mais de um.
-  const visibleCampuses = useMemo(() => {
-    const ids = new Set((items ?? []).map(e => e.campus_id))
-    return campuses.filter(c => ids.has(c.id))
-  }, [items, campuses])
-
-  const categories = useMemo(() => {
-    const used = new Set((items ?? []).map(e => e.category).filter(Boolean) as string[])
-    return [...CATEGORIES.filter(c => used.has(c)), ...[...used].filter(c => !CATEGORIES.includes(c)).sort()]
-  }, [items])
-
-  const filtered = useMemo(() => {
-    const term = normalize(search.trim())
-    return (items ?? []).filter(e => {
-      if (status === 'em_uso' && e.status === 'descartado') return false
-      if (status !== 'em_uso' && status !== 'todos' && e.status !== status) return false
-      if (campusId && e.campus_id !== campusId) return false
-      if (category && e.category !== category) return false
-      if (term) {
-        const haystack = normalize([e.name, e.brand, e.location, e.category, e.campus?.name].filter(Boolean).join(' '))
-        if (!haystack.includes(term)) return false
-      }
-      return true
-    })
-  }, [items, search, status, campusId, category])
-
-  const summary = useMemo(() => {
-    const inUse = filtered.filter(e => e.status !== 'descartado')
-    return {
-      count: inUse.length,
-      value: inUse.reduce((sum, e) => sum + (e.value ?? 0), 0),
-      maintenance: filtered.filter(e => e.status === 'em_manutencao').length,
-      damaged: filtered.filter(e => e.status === 'danificado').length,
-    }
-  }, [filtered])
-
-  const hasFilters = search !== '' || status !== 'em_uso' || campusId !== '' || category !== ''
-  const clearFilters = () => {
-    setSearch('')
-    setStatus('em_uso')
-    setCampusId('')
-    setCategory('')
+  if (searchParams.campus) query = query.eq('campus_id', searchParams.campus)
+  if (searchParams.status) query = query.eq('status', searchParams.status)
+  if (searchParams.categoria) query = query.eq('category', searchParams.categoria)
+  if (searchParams.busca) {
+    const termo = searchParams.busca.replace(/[,()%]/g, ' ').trim()
+    if (termo) query = query.or(`name.ilike.%${termo}%,brand.ilike.%${termo}%`)
   }
 
+  const [{ data, error }, { data: campusList }, { data: categorias }] = await Promise.all([
+    query,
+    supabase.from('campus').select('id, name').order('name'),
+    supabase.from('categories').select('name').order('name'),
+  ])
+
+  const equipamentos = (data ?? []) as unknown as EquipamentoLinha[]
+  const valorTotal = equipamentos.reduce((soma, e) => soma + Number(e.value ?? 0), 0)
+  const temFiltro = Boolean(searchParams.campus || searchParams.status || searchParams.categoria || searchParams.busca)
+  const podeExcluir = podeExcluirEquipamento(usuario)
+
+  // Depois de dar baixa ou reativar, volta para esta mesma lista, com os mesmos filtros
+  const filtrosAtuais = new URLSearchParams()
+  for (const campo of ['busca', 'campus', 'status', 'categoria'] as const) {
+    if (searchParams[campo]) filtrosAtuais.set(campo, searchParams[campo]!)
+  }
+  const retorno = '/equipamentos' + (filtrosAtuais.toString() ? `?${filtrosAtuais}` : '')
+
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="p-4 md:p-8">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
-          <p className="font-mono text-xs uppercase tracking-wider text-ouro-escuro">Patrimônio</p>
-          <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-tinta">Equipamentos</h1>
+          <h1 className="text-2xl font-bold">Equipamentos</h1>
+          <p className="text-gray-600 mt-1">
+            {equipamentos.length} {equipamentos.length === 1 ? 'equipamento' : 'equipamentos'} · {formatarMoeda(valorTotal)}
+          </p>
         </div>
-        {canCreateEquipment(profile) && (
-          <Link
-            href="/equipamentos/criar"
-            className="rounded-md bg-grafite px-4 py-2.5 text-sm font-semibold text-nevoa transition hover:bg-black focus:outline-none focus:ring-2 focus:ring-ouro"
-          >
-            Cadastrar equipamento
-          </Link>
-        )}
+        <Link
+          href="/equipamentos/criar"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition"
+        >
+          + Novo equipamento
+        </Link>
       </div>
 
-      {error && <ErrorBox message={error} onRetry={load} />}
+      {searchParams.ok && (
+        <div className="mb-4 aviso aviso-ok p-3 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200">
+          {searchParams.ok}
+        </div>
+      )}
+      {searchParams.erro && (
+        <div className="mb-4 aviso aviso-erro p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
+          {searchParams.erro}
+        </div>
+      )}
 
-      <section aria-label="Resumo" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {[
-          { label: 'Bens em uso', value: items ? String(summary.count) : '…' },
-          { label: 'Valor de compra', value: items ? formatBRL(summary.value) : '…' },
-          { label: 'Em manutenção', value: items ? String(summary.maintenance) : '…' },
-          { label: 'Danificados', value: items ? String(summary.damaged) : '…' },
-        ].map(card => (
-          <div key={card.label} className="rounded-lg border border-linha bg-white p-4">
-            <p className="font-mono text-[11px] uppercase tracking-wider text-cinza">{card.label}</p>
-            <p className="num mt-1 truncate text-lg font-semibold text-tinta md:text-xl">{card.value}</p>
-          </div>
-        ))}
-      </section>
-
-      <section aria-label="Filtros" className="grid gap-3 md:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))]">
-        <label className="flex flex-col gap-1 text-xs font-medium text-cinza">
+      {/* Filtros */}
+      <form className="bg-white rounded-lg border border-gray-200 p-4 mb-6 flex flex-wrap gap-3 items-end">
+        <label className="flex flex-col text-sm text-gray-700 gap-1">
           Buscar
           <input
-            id="busca"
-            type="search"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Nome, marca, local ou campus"
-            className={inputClass}
+            name="busca"
+            defaultValue={searchParams.busca}
+            placeholder="Nome ou marca"
+            className="px-3 py-2 border border-gray-300 rounded-lg"
           />
         </label>
-        <label className="flex flex-col gap-1 text-xs font-medium text-cinza">
+        <label className="flex flex-col text-sm text-gray-700 gap-1">
+          Campus
+          <select name="campus" defaultValue={searchParams.campus ?? ''} className="px-3 py-2 border border-gray-300 rounded-lg">
+            <option value="">Todos</option>
+            {campusList?.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col text-sm text-gray-700 gap-1">
           Status
-          <select id="filtro-status" value={status} onChange={e => setStatus(e.target.value as StatusFilter)} className={inputClass}>
-            <option value="em_uso">Em uso</option>
-            <option value="ativo">{STATUS_LABEL.ativo}</option>
-            <option value="em_manutencao">{STATUS_LABEL.em_manutencao}</option>
-            <option value="danificado">{STATUS_LABEL.danificado}</option>
-            <option value="descartado">{STATUS_LABEL.descartado}</option>
-            <option value="todos">Todos</option>
+          <select name="status" defaultValue={searchParams.status ?? ''} className="px-3 py-2 border border-gray-300 rounded-lg">
+            <option value="">Todos</option>
+            {Object.entries(STATUS_LABELS).map(([valor, rotulo]) => (
+              <option key={valor} value={valor}>{rotulo}</option>
+            ))}
           </select>
         </label>
-        {visibleCampuses.length > 1 ? (
-          <label className="flex flex-col gap-1 text-xs font-medium text-cinza">
-            Campus
-            <select id="filtro-campus" value={campusId} onChange={e => setCampusId(e.target.value)} className={inputClass}>
-              <option value="">Todos os campus</option>
-              {visibleCampuses.map(c => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </label>
-        ) : (
-          <div className="hidden md:block" />
-        )}
-        <label className="flex flex-col gap-1 text-xs font-medium text-cinza">
+        <label className="flex flex-col text-sm text-gray-700 gap-1">
           Categoria
-          <select id="filtro-categoria" value={category} onChange={e => setCategory(e.target.value)} className={inputClass}>
+          <select name="categoria" defaultValue={searchParams.categoria ?? ''} className="px-3 py-2 border border-gray-300 rounded-lg">
             <option value="">Todas</option>
-            {categories.map(c => (
-              <option key={c} value={c}>
-                {c}
-              </option>
+            {categorias?.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')).map(c => (
+              <option key={c.name} value={c.name}>{c.name}</option>
             ))}
           </select>
         </label>
-      </section>
-
-      {items === null && !error && (
-        <div className="flex flex-col gap-2" aria-label="Carregando equipamentos">
-          {[0, 1, 2, 3].map(i => (
-            <div key={i} className="h-14 animate-pulse rounded-lg bg-white/70" />
-          ))}
-        </div>
-      )}
-
-      {items !== null && items.length === 0 && (
-        <div className="rounded-lg border border-dashed border-linha bg-white p-10 text-center">
-          <h2 className="font-display text-lg font-bold text-tinta">Nenhum equipamento cadastrado ainda</h2>
-          <p className="mt-2 text-sm text-cinza">Cadastre o primeiro bem para começar o inventário do campus.</p>
-          {canCreateEquipment(profile) && (
-            <Link href="/equipamentos/criar" className="mt-4 inline-block rounded-md bg-grafite px-4 py-2 text-sm font-semibold text-nevoa">
-              Cadastrar equipamento
-            </Link>
-          )}
-        </div>
-      )}
-
-      {items !== null && items.length > 0 && filtered.length === 0 && (
-        <div className="rounded-lg border border-dashed border-linha bg-white p-8 text-center text-sm text-cinza">
-          Nenhum equipamento encontrado com esses filtros.{' '}
-          <button type="button" onClick={clearFilters} className="font-semibold text-tinta underline">
+        <button type="submit" className="bg-gray-900 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition">
+          Filtrar
+        </button>
+        {temFiltro && (
+          <Link href="/equipamentos" className="text-sm text-indigo-600 hover:text-indigo-700 py-2">
             Limpar filtros
-          </button>
+          </Link>
+        )}
+      </form>
+
+      {error ? (
+        <div className="aviso aviso-erro p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
+          Erro ao carregar equipamentos: {error.message}
         </div>
-      )}
-
-      {filtered.length > 0 && (
-        <>
-          <p className="-mb-3 text-xs text-cinza">
-            {filtered.length} {filtered.length === 1 ? 'equipamento' : 'equipamentos'}
-            {hasFilters && (
-              <>
-                {' · '}
-                <button type="button" onClick={clearFilters} className="underline">
-                  limpar filtros
-                </button>
-              </>
-            )}
-          </p>
-
-          {/* Tabela a partir do tablet */}
-          <div className="hidden overflow-x-auto rounded-lg border border-linha bg-white md:block">
-            <table className="w-full min-w-[720px] text-left text-sm">
-              <thead className="border-b border-linha text-xs uppercase tracking-wider text-cinza">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Equipamento</th>
-                  <th className="px-4 py-3 font-medium">Categoria</th>
-                  <th className="px-4 py-3 font-medium">Campus</th>
-                  <th className="px-4 py-3 font-medium">Local</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 text-right font-medium">Valor de compra</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map(e => (
-                  <tr
-                    key={e.id}
-                    onClick={() => router.push(`/equipamentos/${e.id}`)}
-                    className="cursor-pointer border-b border-[#EDECE7] last:border-0 hover:bg-papel/60"
-                  >
-                    <td className="px-4 py-3">
-                      <Link href={`/equipamentos/${e.id}`} onClick={ev => ev.stopPropagation()} className="font-semibold text-tinta hover:underline">
-                        {e.name}
-                      </Link>
-                      {e.brand && <p className="text-xs text-cinza">{e.brand}</p>}
-                    </td>
-                    <td className="px-4 py-3 text-cinza">{e.category ?? '—'}</td>
-                    <td className="px-4 py-3 text-cinza">{e.campus?.name ?? '—'}</td>
-                    <td className="px-4 py-3 text-cinza">{e.location ?? '—'}</td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={e.status} />
-                    </td>
-                    <td className="num px-4 py-3 text-right">{formatBRL(e.value)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Cartões no celular */}
-          <ul className="flex flex-col gap-2 md:hidden">
-            {filtered.map(e => (
-              <li key={e.id}>
-                <Link href={`/equipamentos/${e.id}`} className="flex flex-col gap-2 rounded-lg border border-linha bg-white p-4">
-                  <span className="flex items-start justify-between gap-3">
-                    <span className="min-w-0">
-                      <span className="block font-semibold text-tinta">{e.name}</span>
-                      <span className="block text-xs text-cinza">
-                        {[e.brand, e.campus?.name].filter(Boolean).join(' · ') || '—'}
-                      </span>
+      ) : equipamentos.length === 0 ? (
+        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-gray-500">
+          {temFiltro ? 'Nenhum equipamento encontrado com esses filtros.' : 'Nenhum equipamento cadastrado ainda.'}
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 text-left text-gray-600">
+              <tr>
+                <th className="px-4 py-3 font-semibold">Equipamento</th>
+                <th className="px-4 py-3 font-semibold">Categoria</th>
+                <th className="px-4 py-3 font-semibold">Campus</th>
+                <th className="px-4 py-3 font-semibold">Local</th>
+                <th className="px-4 py-3 font-semibold">Responsável</th>
+                <th className="px-4 py-3 font-semibold">Status</th>
+                <th className="px-4 py-3 font-semibold text-right">Valor</th>
+                <th className="px-4 py-3 font-semibold text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {equipamentos.map(e => {
+                const podeEditar = !e.campus || podeEditarNoCampus(usuario, e.campus)
+                return (
+                <tr key={e.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    {podeEditar ? (
+                      <Link href={`/equipamentos/${e.id}`} className="font-medium text-gray-900 hover:text-indigo-700">{e.name}</Link>
+                    ) : (
+                      <div className="font-medium text-gray-900">{e.name}</div>
+                    )}
+                    {e.brand && <div className="text-gray-500">{e.brand}</div>}
+                  </td>
+                  <td className="px-4 py-3 capitalize">{e.category ?? '—'}</td>
+                  <td className="px-4 py-3">{e.campus?.name ?? '—'}</td>
+                  <td className="px-4 py-3">{e.location ?? '—'}</td>
+                  <td className="px-4 py-3">{e.responsible?.name ?? '—'}</td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-block whitespace-nowrap px-2 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[e.status]}`}>
+                      {STATUS_LABELS[e.status]}
                     </span>
-                    <StatusBadge status={e.status} />
-                  </span>
-                  <span className="flex items-center justify-between text-xs text-cinza">
-                    <span>{e.location ?? 'Sem local definido'}</span>
-                    <span className="num text-sm text-tinta">{formatBRL(e.value)}</span>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </>
+                  </td>
+                  <td className="px-4 py-3 text-right whitespace-nowrap">{formatarMoeda(e.value)}</td>
+                  <td className="px-4 py-3">
+                    {podeEditar ? (
+                      <div className="flex items-center justify-end gap-4 whitespace-nowrap">
+                        <Link href={`/equipamentos/${e.id}`} className="text-indigo-600 hover:text-indigo-700">
+                          Editar
+                        </Link>
+                        <form action={alternarBaixa}>
+                          <input type="hidden" name="id" value={e.id} />
+                          <input type="hidden" name="retorno" value={retorno} />
+                          <button type="submit" className="text-gray-600 hover:text-gray-900">
+                            {e.status === 'descartado' ? 'Reativar' : 'Dar baixa'}
+                          </button>
+                        </form>
+                        {podeExcluir && (
+                          <form action={excluirEquipamento}>
+                            <input type="hidden" name="id" value={e.id} />
+                            <input type="hidden" name="retorno" value={retorno} />
+                            <BotaoExcluir nome={e.name} />
+                          </form>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="block text-right text-gray-400">—</span>
+                    )}
+                  </td>
+                </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   )

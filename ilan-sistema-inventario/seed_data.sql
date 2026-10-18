@@ -138,35 +138,35 @@ ON CONFLICT DO NOTHING;
 
 -- Equipamentos Recreio
 INSERT INTO equipment (name, brand, category, value, purchase_date, campus_id, responsible_id, status, location) VALUES
-('Câmera Sony a6700', 'Sony', 'câmera', 8500.00, '2024-01-15', (SELECT id FROM campus WHERE name = 'Recreio'), (SELECT id FROM users WHERE email = 'lider.recreio@ilan.com.br'), 'ativo', 'Palco principal'),
-('Áudio Yamaha MG16XU', 'Yamaha', 'áudio', 3200.00, '2023-06-20', (SELECT id FROM campus WHERE name = 'Recreio'), (SELECT id FROM users WHERE email = 'lider.recreio@ilan.com.br'), 'ativo', 'Sala de técnica'),
-('Projetor Epson EB-2250U', 'Epson', 'projetor', 12000.00, '2023-03-10', (SELECT id FROM campus WHERE name = 'Recreio'), (SELECT id FROM users WHERE email = 'lider.recreio@ilan.com.br'), 'em_manutencao', 'Auditório'),
-('Iluminação LED RGB', 'Generic', 'luz', 2500.00, '2024-02-05', (SELECT id FROM campus WHERE name = 'Recreio'), (SELECT id FROM users WHERE email = 'lider.recreio@ilan.com.br'), 'ativo', 'Palco principal')
+('Câmera Sony a6700', 'Sony', 'câmera', 8500.00, '2024-01-15', (SELECT id FROM campus WHERE name = 'Recreio'), '550e8400-e29b-41d4-a716-446655440010', 'ativo', 'Palco principal'),
+('Áudio Yamaha MG16XU', 'Yamaha', 'áudio', 3200.00, '2023-06-20', (SELECT id FROM campus WHERE name = 'Recreio'), '550e8400-e29b-41d4-a716-446655440010', 'ativo', 'Sala de técnica'),
+('Projetor Epson EB-2250U', 'Epson', 'projetor', 12000.00, '2023-03-10', (SELECT id FROM campus WHERE name = 'Recreio'), '550e8400-e29b-41d4-a716-446655440010', 'em_manutencao', 'Auditório'),
+('Iluminação LED RGB', 'Generic', 'luz', 2500.00, '2024-02-05', (SELECT id FROM campus WHERE name = 'Recreio'), '550e8400-e29b-41d4-a716-446655440010', 'ativo', 'Palco principal')
 ON CONFLICT DO NOTHING;
 
 -- Equipamentos Niterói
 INSERT INTO equipment (name, brand, category, value, purchase_date, campus_id, responsible_id, status, location) VALUES
-('Câmera Canon R5', 'Canon', 'câmera', 9200.00, '2024-03-12', (SELECT id FROM campus WHERE name = 'Niterói'), (SELECT id FROM users WHERE email = 'lider.niteroi@ilan.com.br'), 'ativo', 'Palco'),
-('Mixer Behringer X32', 'Behringer', 'áudio', 4500.00, '2023-08-22', (SELECT id FROM campus WHERE name = 'Niterói'), (SELECT id FROM users WHERE email = 'lider.niteroi@ilan.com.br'), 'ativo', 'Cabine de técnica')
+('Câmera Canon R5', 'Canon', 'câmera', 9200.00, '2024-03-12', (SELECT id FROM campus WHERE name = 'Niterói'), '550e8400-e29b-41d4-a716-446655440012', 'ativo', 'Palco'),
+('Mixer Behringer X32', 'Behringer', 'áudio', 4500.00, '2023-08-22', (SELECT id FROM campus WHERE name = 'Niterói'), '550e8400-e29b-41d4-a716-446655440012', 'ativo', 'Cabine de técnica')
 ON CONFLICT DO NOTHING;
 
 -- Equipamentos Arena
 INSERT INTO equipment (name, brand, category, value, purchase_date, campus_id, responsible_id, status, location) VALUES
-('Câmera Panasonic GH6', 'Panasonic', 'câmera', 7800.00, '2024-04-01', (SELECT id FROM campus WHERE name = 'Arena'), (SELECT id FROM users WHERE email = 'lider.arena@ilan.com.br'), 'ativo', 'Cobertura lateral'),
-('Computador Streaming', 'Dell', 'computador', 6000.00, '2023-11-15', (SELECT id FROM campus WHERE name = 'Arena'), (SELECT id FROM users WHERE email = 'lider.arena@ilan.com.br'), 'danificado', 'Sala de controle')
+('Câmera Panasonic GH6', 'Panasonic', 'câmera', 7800.00, '2024-04-01', (SELECT id FROM campus WHERE name = 'Arena'), '550e8400-e29b-41d4-a716-446655440014', 'ativo', 'Cobertura lateral'),
+('Computador Streaming', 'Dell', 'computador', 6000.00, '2023-11-15', (SELECT id FROM campus WHERE name = 'Arena'), '550e8400-e29b-41d4-a716-446655440014', 'danificado', 'Sala de controle')
 ON CONFLICT DO NOTHING;
 
 -- Equipamentos Cachambi
 INSERT INTO equipment (name, brand, category, value, purchase_date, campus_id, responsible_id, status, location) VALUES
-('Câmera Sony a6400', 'Sony', 'câmera', 7200.00, '2024-01-20', (SELECT id FROM campus WHERE name = 'Cachambi'), (SELECT id FROM users WHERE email = 'lider.cachambi@ilan.com.br'), 'ativo', 'Principal'),
-('Mesa de som Soundcraft', 'Soundcraft', 'áudio', 5500.00, '2023-07-10', (SELECT id FROM campus WHERE name = 'Cachambi'), (SELECT id FROM users WHERE email = 'lider.cachambi@ilan.com.br'), 'ativo', 'Cabine'),
-('Projetor Optoma', 'Optoma', 'projetor', 8000.00, '2023-12-05', (SELECT id FROM campus WHERE name = 'Cachambi'), (SELECT id FROM users WHERE email = 'lider.cachambi@ilan.com.br'), 'em_manutencao', 'Auditório')
+('Câmera Sony a6400', 'Sony', 'câmera', 7200.00, '2024-01-20', (SELECT id FROM campus WHERE name = 'Cachambi'), '550e8400-e29b-41d4-a716-446655440028', 'ativo', 'Principal'),
+('Mesa de som Soundcraft', 'Soundcraft', 'áudio', 5500.00, '2023-07-10', (SELECT id FROM campus WHERE name = 'Cachambi'), '550e8400-e29b-41d4-a716-446655440028', 'ativo', 'Cabine'),
+('Projetor Optoma', 'Optoma', 'projetor', 8000.00, '2023-12-05', (SELECT id FROM campus WHERE name = 'Cachambi'), '550e8400-e29b-41d4-a716-446655440028', 'em_manutencao', 'Auditório')
 ON CONFLICT DO NOTHING;
 
 -- Equipamentos Araruama
 INSERT INTO equipment (name, brand, category, value, purchase_date, campus_id, responsible_id, status, location) VALUES
-('Câmera Fujifilm X-S20', 'Fujifilm', 'câmera', 5500.00, '2024-02-28', (SELECT id FROM campus WHERE name = 'Araruama'), (SELECT id FROM users WHERE email = 'lider.araruama@ilan.com.br'), 'ativo', 'Frente'),
-('Áudio Bose SoundLink', 'Bose', 'áudio', 3800.00, '2023-09-14', (SELECT id FROM campus WHERE name = 'Araruama'), (SELECT id FROM users WHERE email = 'lider.araruama@ilan.com.br'), 'ativo', 'Entrada')
+('Câmera Fujifilm X-S20', 'Fujifilm', 'câmera', 5500.00, '2024-02-28', (SELECT id FROM campus WHERE name = 'Araruama'), '550e8400-e29b-41d4-a716-446655440030', 'ativo', 'Frente'),
+('Áudio Bose SoundLink', 'Bose', 'áudio', 3800.00, '2023-09-14', (SELECT id FROM campus WHERE name = 'Araruama'), '550e8400-e29b-41d4-a716-446655440030', 'ativo', 'Entrada')
 ON CONFLICT DO NOTHING;
 
 -- ====================================
@@ -177,11 +177,11 @@ ON CONFLICT DO NOTHING;
 INSERT INTO maintenance_requests (equipment_id, campus_id, created_by_id, problem_description, status, priority, assigned_to_id, scheduled_completion_date, notes) VALUES
 ((SELECT id FROM equipment WHERE name = 'Projetor Epson EB-2250U' LIMIT 1), 
  (SELECT id FROM campus WHERE name = 'Recreio'), 
- (SELECT id FROM users WHERE email = 'lider.recreio@ilan.com.br'),
+ '550e8400-e29b-41d4-a716-446655440010',
  'Projetor não liga, mostra erro de lâmpada',
  'recebido',
  'alta',
- (SELECT id FROM users WHERE email = 'rodrigo@ilantechpro.com.br'),
+ '550e8400-e29b-41d4-a716-446655440002',
  CURRENT_DATE + INTERVAL '3 days',
  'Possível troca de lâmpada necessária')
 ON CONFLICT DO NOTHING;
@@ -190,11 +190,11 @@ ON CONFLICT DO NOTHING;
 INSERT INTO maintenance_requests (equipment_id, campus_id, created_by_id, problem_description, status, priority, assigned_to_id, scheduled_completion_date, notes) VALUES
 ((SELECT id FROM equipment WHERE name = 'Computador Streaming' LIMIT 1), 
  (SELECT id FROM campus WHERE name = 'Arena'), 
- (SELECT id FROM users WHERE email = 'lider.arena@ilan.com.br'),
+ '550e8400-e29b-41d4-a716-446655440014',
  'Computador desligando aleatoriamente durante transmissão',
  'em_conserto',
  'critica',
- (SELECT id FROM users WHERE email = 'rodrigo@ilantechpro.com.br'),
+ '550e8400-e29b-41d4-a716-446655440002',
  CURRENT_DATE + INTERVAL '2 days',
  'Pode ser superaquecimento')
 ON CONFLICT DO NOTHING;
@@ -203,11 +203,11 @@ ON CONFLICT DO NOTHING;
 INSERT INTO maintenance_requests (equipment_id, campus_id, created_by_id, problem_description, status, priority, assigned_to_id, scheduled_completion_date, notes) VALUES
 ((SELECT id FROM equipment WHERE name = 'Projetor Optoma' LIMIT 1), 
  (SELECT id FROM campus WHERE name = 'Cachambi'), 
- (SELECT id FROM users WHERE email = 'lider.cachambi@ilan.com.br'),
+ '550e8400-e29b-41d4-a716-446655440028',
  'Lente com problema de foco automático',
  'aguardando_pecas',
  'media',
- (SELECT id FROM users WHERE email = 'rodrigo@ilantechpro.com.br'),
+ '550e8400-e29b-41d4-a716-446655440002',
  CURRENT_DATE + INTERVAL '5 days',
  'Aguardando peça de reposição')
 ON CONFLICT DO NOTHING;
@@ -220,21 +220,21 @@ INSERT INTO maintenance_logs (maintenance_request_id, action_type, description, 
 ((SELECT id FROM maintenance_requests WHERE problem_description = 'Projetor não liga, mostra erro de lâmpada' LIMIT 1),
  'recebido',
  'Equipamento recebido na Ilan Tech Pro em bom estado',
- (SELECT id FROM users WHERE email = 'rodrigo@ilantechpro.com.br'))
+ '550e8400-e29b-41d4-a716-446655440002')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO maintenance_logs (maintenance_request_id, action_type, description, performed_by_id) VALUES
 ((SELECT id FROM maintenance_requests WHERE problem_description = 'Computador desligando aleatoriamente durante transmissão' LIMIT 1),
  'diagnosticado',
  'Diagnosticado: Ventilador com travamento, causando superaquecimento',
- (SELECT id FROM users WHERE email = 'rodrigo@ilantechpro.com.br'))
+ '550e8400-e29b-41d4-a716-446655440002')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO maintenance_logs (maintenance_request_id, action_type, description, performed_by_id) VALUES
 ((SELECT id FROM maintenance_requests WHERE problem_description = 'Computador desligando aleatoriamente durante transmissão' LIMIT 1),
  'conserto_iniciado',
  'Iniciado limpeza do ventilador e reaplic ação de pasta térmica',
- (SELECT id FROM users WHERE email = 'rodrigo@ilantechpro.com.br'))
+ '550e8400-e29b-41d4-a716-446655440002')
 ON CONFLICT DO NOTHING;
 
 -- ====================================
