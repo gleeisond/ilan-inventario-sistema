@@ -30,5 +30,5 @@ export async function middleware(request: NextRequest) {
 export const config = {
   // Arquivos de public/ (logo, ícones) e os do aplicativo instalável ficam fora,
   // para funcionarem também antes do login
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|.*\.png$).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|.*\.(?:png|svg)$).*)'],
 }
