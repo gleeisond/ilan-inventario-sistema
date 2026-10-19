@@ -83,6 +83,16 @@ Num projeto Supabase novo, rode no SQL Editor, nesta ordem:
 5. `sql/03_fluxo_reparo.sql`: etapas do fluxo de reparo (triagem, aprovação de orçamento, descarte, instalação).
 6. `sql/04_fecha_acesso_anonimo.sql`: fecha o banco para a chave pública. Só rode com a aplicação já configurada com a `SUPABASE_SERVICE_ROLE_KEY`. Se rodar de novo algum dos scripts 01 a 03, rode este em seguida, porque eles reabrem o acesso.
 7. `sql/05_igrejas.sql`: tabela de igrejas, `igreja_id` nos cadastros e o perfil `superadmin`. Rode antes de publicar a versão com o painel da plataforma. Para dar o perfil a alguém: `update users set role = 'superadmin', igreja_id = null where email = '<usuario>@ilan.local';`
+8. `sql/06_isolamento_igrejas.sql`: igreja_id em equipamentos, chamados e histórico, e os gatilhos que recusam qualquer registro ligado a outra igreja. Compatível com a versão anterior do sistema: rode antes de publicar a versão nova.
+9. `sql/07_igreja_obrigatoria.sql`: torna o igreja_id obrigatório. Rode depois de publicar a versão que grava igreja_id.
+
+## Isolamento entre igrejas
+
+Cada igreja só vê os próprios dados. Isso é garantido em três camadas:
+
+- **Código:** toda consulta às tabelas da igreja passa por `daIgreja()` (`lib/db.ts`), que filtra pela igreja do usuário logado e grava a igreja nos registros novos.
+- **Build:** `npm run build` roda antes `scripts/verificar-isolamento.mjs`, que barra qualquer `.from()` fora dos arquivos autorizados. Para conferir à mão: `npm run verificar`.
+- **Banco:** gatilhos (`sql/06`) recusam equipamento num campus de outra igreja, chamado com usuário de outra igreja, troca de igreja e afins.
 
 Toda mudança futura de banco deve ganhar um arquivo novo em `sql/` com o próximo número e ser registrada aqui.
 

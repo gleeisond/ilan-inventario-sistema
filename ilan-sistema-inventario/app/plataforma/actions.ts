@@ -1,11 +1,13 @@
 'use server'
 
 import { randomUUID } from 'crypto'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { getSupabase } from '@/lib/supabase'
 import { sincronizarAcesso } from '@/lib/acesso'
-import { FORMATO_LOGIN, exigirSuperadmin, loginParaEmail, registrarLog } from '@/lib/auth'
+import { COOKIE_IGREJA_ABERTA, FORMATO_LOGIN, exigirSuperadmin, loginParaEmail, registrarLog } from '@/lib/auth'
+import { daIgreja } from '@/lib/db'
 import { PLANOS } from '@/lib/igrejas'
 import { MODULOS } from '@/lib/modulos'
 import { PlanoIgreja, SituacaoIgreja } from '@/types/database'
@@ -50,7 +52,7 @@ export async function criarIgreja(form: FormData) {
   if (error) voltar(caminho, 'erro', error.code === '23505' ? `Já existe uma igreja chamada "${dados.nome}".` : `Não foi possível criar: ${error.message}`)
 
   // Toda igreja começa com uma região, para já poder cadastrar as filiais
-  await supabase.from('regions').insert({ name: 'Principal', igreja_id: data.id })
+  await (await daIgreja(data.id)).insert('regions', { name: 'Principal' })
 
   await registrarLog({ acao: 'igreja_criada', descricao: `Criou a igreja ${dados.nome} (plano ${PLANOS[dados.plano].nome})`, entidade: 'igreja', entidade_id: data.id, igreja_id: null })
   redirect(`/plataforma/igrejas/${data.id}?salvo=${encodeURIComponent(`Igreja ${dados.nome} criada. Agora cadastre as filiais e o administrador.`)}`)
@@ -67,11 +69,8 @@ export async function salvarIgreja(form: FormData) {
   const { data: atual } = await supabase.from('igrejas').select('situacao').eq('id', id).maybeSingle()
   if (!atual) voltar('/plataforma/igrejas', 'erro', 'Igreja não encontrada.')
 
-  // Enquanto os dados das igrejas não estão separados em todas as telas, nenhuma igreja nova
-  // pode ser ativada, e a igreja ativa (a ILAN) não é suspensa por aqui.
-  let situacao = atual.situacao as SituacaoIgreja
   const pedida = texto(form, 'situacao') as SituacaoIgreja | null
-  if (atual.situacao !== 'ativa' && (pedida === 'implantacao' || pedida === 'suspensa')) situacao = pedida
+  const situacao: SituacaoIgreja = pedida === 'implantacao' || pedida === 'ativa' || pedida === 'suspensa' ? pedida : (atual.situacao as SituacaoIgreja)
 
   const { error } = await supabase
     .from('igrejas')
@@ -79,7 +78,8 @@ export async function salvarIgreja(form: FormData) {
     .eq('id', id)
   if (error) voltar(caminho, 'erro', error.code === '23505' ? `Já existe uma igreja chamada "${dados.nome}".` : `Não foi possível salvar: ${error.message}`)
 
-  await registrarLog({ acao: 'igreja_editada', descricao: `Editou os dados da igreja ${dados.nome}`, entidade: 'igreja', entidade_id: id, igreja_id: null })
+  const mudou = situacao !== atual.situacao ? ` (situação: ${atual.situacao} → ${situacao})` : ''
+  await registrarLog({ acao: 'igreja_editada', descricao: `Editou os dados da igreja ${dados.nome}${mudou}`, entidade: 'igreja', entidade_id: id, igreja_id: null })
   voltar(caminho, 'salvo', 'Dados da igreja salvos.')
 }
 
@@ -108,7 +108,7 @@ export async function criarRegiao(form: FormData) {
   const caminho = `/plataforma/igrejas/${igreja_id}`
   if (!name) voltar(caminho, 'erro', 'Informe o nome da região.')
 
-  const { data, error } = await getSupabase().from('regions').insert({ name, igreja_id }).select('id').single()
+  const { data, error } = await (await daIgreja(igreja_id)).insert('regions', { name }).select('id').single()
   if (error) voltar(caminho, 'erro', error.code === '23505' ? `A região "${name}" já existe nesta igreja.` : `Não foi possível criar: ${error.message}`)
 
   await registrarLog({ acao: 'cadastro_criado', descricao: `Criou a região ${name}`, entidade: 'region', entidade_id: data.id, igreja_id: null })
@@ -124,15 +124,11 @@ export async function criarFilial(form: FormData) {
   const caminho = `/plataforma/igrejas/${igreja_id}`
   if (!name || !region_id) voltar(caminho, 'erro', 'Preencha o nome e a região da filial.')
 
-  const supabase = getSupabase()
-  const { data: regiao } = await supabase.from('regions').select('id').eq('id', region_id).eq('igreja_id', igreja_id).maybeSingle()
+  const db = await daIgreja(igreja_id)
+  const { data: regiao } = await db.select('regions', 'id').eq('id', region_id).maybeSingle()
   if (!regiao) voltar(caminho, 'erro', 'Região não encontrada nesta igreja.')
 
-  const { data, error } = await supabase
-    .from('campus')
-    .insert({ name, region_id, location: texto(form, 'location'), igreja_id })
-    .select('id')
-    .single()
+  const { data, error } = await db.insert('campus', { name, region_id, location: texto(form, 'location') }).select('id').single()
   if (error) voltar(caminho, 'erro', error.code === '23505' ? `Já existe uma filial chamada "${name}" nesta igreja.` : `Não foi possível criar: ${error.message}`)
 
   await registrarLog({ acao: 'cadastro_criado', descricao: `Criou a filial ${name}`, entidade: 'campus', entidade_id: data.id, igreja_id: null })
@@ -162,7 +158,7 @@ export async function criarAdministrador(form: FormData) {
 
   const id = randomUUID()
   const email = loginParaEmail(login)
-  const { error } = await supabase.from('users').insert({ id, name, email, role: 'admin', is_active: true, igreja_id })
+  const { error } = await (await daIgreja(igreja_id)).insert('users', { id, name, email, role: 'admin', is_active: true })
   if (error) voltar(caminho, 'erro', `Não foi possível cadastrar: ${error.message}`)
 
   let erroAcesso: string | null
@@ -174,4 +170,15 @@ export async function criarAdministrador(form: FormData) {
   await registrarLog({ acao: 'usuario_criado', descricao: `Cadastrou ${name} (${login}) como administrador da igreja`, entidade: 'user', entidade_id: id, igreja_id: null })
   if (erroAcesso) voltar(caminho, 'erro', `Administrador cadastrado, mas a senha não foi definida: ${erroAcesso}`)
   voltar(caminho, 'salvo', `Administrador ${name} cadastrado.${igreja.situacao === 'ativa' ? '' : ' O acesso é liberado quando a igreja for ativada.'}`)
+}
+
+// O superadmin passa a ver as telas do sistema com os dados desta igreja
+export async function abrirIgreja(form: FormData) {
+  await exigirSuperadmin()
+  const id = texto(form, 'id')
+  const { data } = id ? await getSupabase().from('igrejas').select('id, nome').eq('id', id).maybeSingle() : { data: null }
+  if (!data) voltar('/plataforma/igrejas', 'erro', 'Igreja não encontrada.')
+  cookies().set(COOKIE_IGREJA_ABERTA, data.id, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/' })
+  await registrarLog({ acao: 'igreja_aberta', descricao: `Abriu a igreja ${data.nome} pelo painel da plataforma`, entidade: 'igreja', entidade_id: data.id, igreja_id: data.id })
+  redirect('/dashboard')
 }

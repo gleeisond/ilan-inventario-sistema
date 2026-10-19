@@ -2,13 +2,13 @@
 
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-import { getSupabase } from '@/lib/supabase'
 import { lerMoeda } from '@/lib/equipamentos'
 import { ACAO_POR_STATUS, MANUTENCAO_STATUS_LABELS, PRIORIDADE_LABELS, STATUS_FINALIZADOS } from '@/lib/manutencoes'
 import { MaintenanceStatus, PriorityLevel } from '@/types/database'
 import { exigirLogin, getUsuarioAtual, registrarLog } from '@/lib/auth'
 import { acoesDisponiveis, podeAgir } from '@/lib/fluxoReparo'
 import { loginAtivo } from '@/lib/sessao'
+import { daIgreja } from '@/lib/db'
 
 function texto(form: FormData, campo: string) {
   const valor = String(form.get(campo) ?? '').trim()
@@ -24,7 +24,8 @@ async function autor(idEscolhido: string | null) {
   const logado = await exigirLogin()
   if (logado) return logado
   if (!idEscolhido) return null
-  const { data } = await getSupabase().from('users').select('id, name').eq('id', idEscolhido).maybeSingle()
+  const db = await daIgreja()
+  const { data } = await db.select('users', 'id, name').eq('id', idEscolhido).maybeSingle()
   return data
 }
 
@@ -32,22 +33,20 @@ const STATUS_COM_DATA_DE_CONCLUSAO: MaintenanceStatus[] = ['concluido', 'descart
 
 // Mantém o status do equipamento coerente com os chamados dele
 async function sincronizarEquipamento(equipment_id: string, novoStatus: MaintenanceStatus) {
-  const supabase = getSupabase()
+  const db = await daIgreja()
   if (novoStatus === 'descartado') {
-    await supabase.from('equipment').update({ status: 'descartado' }).eq('id', equipment_id)
+    await db.update('equipment', { status: 'descartado' }).eq('id', equipment_id)
     return
   }
   if (STATUS_FINALIZADOS.includes(novoStatus)) {
-    const { count } = await supabase
-      .from('maintenance_requests')
-      .select('id', { count: 'exact', head: true })
+    const { count } = await db.select('maintenance_requests', 'id', { count: 'exact', head: true })
       .eq('equipment_id', equipment_id)
       .not('status', 'in', `(${STATUS_FINALIZADOS.join(',')})`)
     if (!count) {
-      await supabase.from('equipment').update({ status: 'ativo' }).eq('id', equipment_id).eq('status', 'em_manutencao')
+      await db.update('equipment', { status: 'ativo' }).eq('id', equipment_id).eq('status', 'em_manutencao')
     }
   } else {
-    await supabase.from('equipment').update({ status: 'em_manutencao' }).eq('id', equipment_id).neq('status', 'descartado')
+    await db.update('equipment', { status: 'em_manutencao' }).eq('id', equipment_id).neq('status', 'descartado')
   }
 }
 
@@ -58,7 +57,7 @@ function revalidarTelas() {
 }
 
 export async function criarManutencao(form: FormData) {
-  const supabase = getSupabase()
+  const db = await daIgreja()
   const equipment_id = texto(form, 'equipment_id')
   const problem_description = texto(form, 'problem_description')
   const quem = await autor(texto(form, 'created_by_id'))
@@ -69,17 +68,13 @@ export async function criarManutencao(form: FormData) {
   }
 
   // O chamado fica no campus onde o equipamento está
-  const { data: equipamento, error: erroEquip } = await supabase
-    .from('equipment')
-    .select('name, campus_id, status')
+  const { data: equipamento, error: erroEquip } = await db.select('equipment', 'name, campus_id, status')
     .eq('id', equipment_id)
     .single()
   if (erroEquip || !equipamento) voltarCom('/manutencoes/criar', 'Equipamento não encontrado.')
 
   const priority = texto(form, 'priority') ?? 'media'
-  const { data: chamado, error } = await supabase
-    .from('maintenance_requests')
-    .insert({
+  const { data: chamado, error } = await db.insert('maintenance_requests', {
       equipment_id,
       campus_id: equipamento.campus_id,
       created_by_id,
@@ -102,7 +97,7 @@ export async function criarManutencao(form: FormData) {
   })
 
   if (equipamento.status !== 'descartado') {
-    await supabase.from('equipment').update({ status: 'em_manutencao' }).eq('id', equipment_id)
+    await db.update('equipment', { status: 'em_manutencao' }).eq('id', equipment_id)
   }
 
   revalidarTelas()
@@ -110,14 +105,12 @@ export async function criarManutencao(form: FormData) {
 }
 
 export async function atualizarManutencao(form: FormData) {
-  const supabase = getSupabase()
+  const db = await daIgreja()
   const id = texto(form, 'id')
   if (!id) redirect('/manutencoes')
   const pagina = `/manutencoes/${id}`
 
-  const { data: atual, error: erroAtual } = await supabase
-    .from('maintenance_requests')
-    .select('status, equipment_id, equipment:equipment_id (name)')
+  const { data: atual, error: erroAtual } = await db.select('maintenance_requests', 'status, equipment_id, equipment:equipment_id (name)')
     .eq('id', id)
     .single()
   if (erroAtual || !atual) voltarCom(pagina, 'Chamado não encontrado.')
@@ -140,14 +133,12 @@ export async function atualizarManutencao(form: FormData) {
   if (cost !== null && Number.isNaN(cost)) voltarCom(pagina, 'Custo inválido. Use só números, ex: 350,00')
 
   const hoje = new Date().toISOString().slice(0, 10)
-  const { error } = await supabase
-    .from('maintenance_requests')
-    .update({
+  const { error } = await db.update('maintenance_requests', {
       status: novoStatus,
       priority: texto(form, 'priority') ?? undefined,
       assigned_to_id: texto(form, 'assigned_to_id'),
       scheduled_completion_date: texto(form, 'scheduled_completion_date'),
-      // O custo só vem no formulário de quem pode editá-lo (admin e Ilan Tech Pro)
+      // O custo só vem no formulário de quem pode editá-lo (admin e assistência técnica)
       ...(editaCusto && { cost }),
       notes: texto(form, 'notes'),
       ...(mudouStatus && { actual_completion_date: STATUS_COM_DATA_DE_CONCLUSAO.includes(novoStatus) ? hoje : null }),
@@ -170,7 +161,7 @@ export async function atualizarManutencao(form: FormData) {
     const acao = ACAO_POR_STATUS[novoStatus]
     if (acao && performed_by_id) {
       const resumo = `${MANUTENCAO_STATUS_LABELS[atual.status as MaintenanceStatus]} → ${MANUTENCAO_STATUS_LABELS[novoStatus]}`
-      await supabase.from('maintenance_logs').insert({
+      await db.insert('maintenance_logs', {
         maintenance_request_id: id,
         action_type: acao,
         description: comentario ? `${resumo}: ${comentario}` : resumo,
@@ -187,14 +178,12 @@ export async function atualizarManutencao(form: FormData) {
 
 // Avança o chamado para a próxima etapa do fluxo de reparo (botões do detalhe do chamado)
 export async function avancarEtapa(form: FormData) {
-  const supabase = getSupabase()
+  const db = await daIgreja()
   const id = texto(form, 'id')
   if (!id) redirect('/manutencoes')
   const pagina = `/manutencoes/${id}`
 
-  const { data: atual, error: erroAtual } = await supabase
-    .from('maintenance_requests')
-    .select('status, campus_id, equipment_id, cost, equipment:equipment_id (name), campus:campus_id (region_id)')
+  const { data: atual, error: erroAtual } = await db.select('maintenance_requests', 'status, campus_id, equipment_id, cost, equipment:equipment_id (name), campus:campus_id (region_id)')
     .eq('id', id)
     .single()
   if (erroAtual || !atual) voltarCom(pagina, 'Chamado não encontrado.')
@@ -231,9 +220,7 @@ export async function avancarEtapa(form: FormData) {
   }
 
   const hoje = new Date().toISOString().slice(0, 10)
-  const { error } = await supabase
-    .from('maintenance_requests')
-    .update({
+  const { error } = await db.update('maintenance_requests', {
       status: acao.para,
       cost,
       actual_completion_date: STATUS_COM_DATA_DE_CONCLUSAO.includes(acao.para) ? hoje : null,
@@ -244,7 +231,7 @@ export async function avancarEtapa(form: FormData) {
 
   const custoTexto = acao.exigeCusto && cost !== null ? ` (orçamento R$ ${cost.toFixed(2).replace('.', ',')})` : ''
   const descricao = `${acao.rotulo}${custoTexto}${comentario ? `: ${comentario}` : ''}`
-  await supabase.from('maintenance_logs').insert({
+  await db.insert('maintenance_logs', {
     maintenance_request_id: id,
     action_type: acao.registro,
     description: descricao,

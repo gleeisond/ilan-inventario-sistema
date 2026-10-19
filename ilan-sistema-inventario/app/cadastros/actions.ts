@@ -2,8 +2,8 @@
 
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-import { getSupabase } from '@/lib/supabase'
 import { exigirAdmin, igrejaDoContexto, registrarLog } from '@/lib/auth'
+import { TabelaDaIgreja, daIgreja } from '@/lib/db'
 
 function texto(form: FormData, campo: string) {
   const valor = String(form.get(campo) ?? '').trim()
@@ -30,14 +30,13 @@ export async function salvarCampus(form: FormData) {
   const location = texto(form, 'location')
   if (!name || !region_id) voltar(id ? `${caminho}/${id}` : caminho, 'erro', 'Preencha o nome e a região.')
 
-  const supabase = getSupabase()
-  const igreja = await igrejaDoContexto()
+  const db = await daIgreja()
   // A região escolhida precisa ser da mesma igreja
-  const { data: regiao } = await supabase.from('regions').select('id').eq('id', region_id).eq('igreja_id', igreja).maybeSingle()
+  const { data: regiao } = await db.select('regions', 'id').eq('id', region_id).maybeSingle()
   if (!regiao) voltar(id ? `${caminho}/${id}` : caminho, 'erro', 'Região não encontrada.')
   const { data, error } = id
-    ? await supabase.from('campus').update({ name, region_id, location }).eq('id', id).eq('igreja_id', igreja).select('id').single()
-    : await supabase.from('campus').insert({ name, region_id, location, igreja_id: igreja }).select('id').single()
+    ? await db.update('campus', { name, region_id, location }).eq('id', id).select('id').single()
+    : await db.insert('campus', { name, region_id, location }).select('id').single()
 
   if (error) {
     const msg = error.code === '23505' ? `Já existe um campus chamado "${name}".` : `Não foi possível salvar: ${error.message}`
@@ -59,11 +58,10 @@ export async function excluirCampus(form: FormData) {
   const id = texto(form, 'id')
   if (!id) voltar(caminho, 'erro', 'Campus não informado.')
 
-  const supabase = getSupabase()
-  const igreja = await igrejaDoContexto()
-  const contar = (tabela: string) => supabase.from(tabela).select('id', { count: 'exact', head: true }).eq('campus_id', id)
+  const db = await daIgreja()
+  const contar = (tabela: TabelaDaIgreja) => db.select(tabela, 'id', { count: 'exact', head: true }).eq('campus_id', id)
   const [{ data: campus }, equipamentos, usuarios, chamados] = await Promise.all([
-    supabase.from('campus').select('name').eq('id', id).eq('igreja_id', igreja).maybeSingle(),
+    db.select('campus', 'name').eq('id', id).maybeSingle(),
     contar('equipment'),
     contar('users'),
     contar('maintenance_requests'),
@@ -80,7 +78,7 @@ export async function excluirCampus(form: FormData) {
     voltar(caminho, 'erro', `${campus.name} não pode ser excluído porque tem ${emUso.join(', ')}. Mova ou exclua esses registros antes.`)
   }
 
-  const { error } = await supabase.from('campus').delete().eq('id', id).eq('igreja_id', igreja)
+  const { error } = await db.delete('campus').eq('id', id)
   if (error) voltar(caminho, 'erro', `Não foi possível excluir: ${error.message}`)
 
   await registrarLog({ acao: 'cadastro_excluido', descricao: `Excluiu o campus ${campus.name}`, entidade: 'campus', entidade_id: id })
@@ -113,17 +111,17 @@ export async function salvarSimples(form: FormData) {
   const name = texto(form, 'name')
   if (!name) voltar(caminho, 'erro', `Informe o nome d${cfg.artigo} ${cfg.nome}.`)
 
-  const supabase = getSupabase()
+  const db = await daIgreja()
   let anterior: string | null = null
   if (id) {
-    const { data } = await supabase.from(cfg.tabela).select('name').eq('id', id).maybeSingle()
+    const { data } = await db.select(cfg.tabela, 'name').eq('id', id).maybeSingle()
     if (!data) voltar(caminho, 'erro', `${cfg.nome} não encontrad${cfg.artigo}.`)
     anterior = data.name
   }
 
   const { data, error } = id
-    ? await supabase.from(cfg.tabela).update({ name }).eq('id', id).select('id').single()
-    : await supabase.from(cfg.tabela).insert({ name, igreja_id: await igrejaDoContexto() }).select('id').single()
+    ? await db.update(cfg.tabela, { name }).eq('id', id).select('id').single()
+    : await db.insert(cfg.tabela, { name }).select('id').single()
   if (error) {
     const msg = error.code === '23505' ? `"${name}" já está cadastrad${cfg.artigo}.` : `Não foi possível salvar: ${error.message}`
     voltar(caminho, 'erro', msg)
@@ -131,7 +129,7 @@ export async function salvarSimples(form: FormData) {
 
   let atualizados = 0
   if (anterior && anterior !== name) {
-    const { count } = await supabase.from('equipment').update({ [cfg.coluna]: name }, { count: 'exact' }).eq(cfg.coluna, anterior)
+    const { count } = await db.update('equipment', { [cfg.coluna]: name }, { count: 'exact' }).eq(cfg.coluna, anterior)
     atualizados = count ?? 0
   }
 
@@ -154,16 +152,16 @@ export async function excluirSimples(form: FormData) {
   const id = texto(form, 'id')
   if (!id) voltar(caminho, 'erro', 'Registro não informado.')
 
-  const supabase = getSupabase()
-  const { data: registro } = await supabase.from(cfg.tabela).select('name').eq('id', id).maybeSingle()
+  const db = await daIgreja()
+  const { data: registro } = await db.select(cfg.tabela, 'name').eq('id', id).maybeSingle()
   if (!registro) voltar(caminho, 'erro', `${cfg.nome} não encontrad${cfg.artigo}.`)
 
-  const { count } = await supabase.from('equipment').select('id', { count: 'exact', head: true }).eq(cfg.coluna, registro.name)
+  const { count } = await db.select('equipment', 'id', { count: 'exact', head: true }).eq(cfg.coluna, registro.name)
   if (count) {
     voltar(caminho, 'erro', `"${registro.name}" não pode ser excluíd${cfg.artigo} porque está em ${plural(count, 'equipamento', 'equipamentos')}. Troque nos equipamentos antes.`)
   }
 
-  const { error } = await supabase.from(cfg.tabela).delete().eq('id', id)
+  const { error } = await db.delete(cfg.tabela).eq('id', id)
   if (error) voltar(caminho, 'erro', `Não foi possível excluir: ${error.message}`)
 
   await registrarLog({ acao: 'cadastro_excluido', descricao: `Excluiu ${cfg.artigo} ${cfg.nome} "${registro.name}"`, entidade: cfg.entidade, entidade_id: id })

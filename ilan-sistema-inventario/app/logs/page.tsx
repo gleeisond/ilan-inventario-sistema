@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import { getSupabase } from '@/lib/supabase'
-import { AcaoLog, exigirAdmin, igrejaDoContexto } from '@/lib/auth'
+import { AcaoLog, exigirAdmin } from '@/lib/auth'
 import { ACAO_LOG_COLORS, ACAO_LOG_LABELS, LINK_ENTIDADE } from '@/lib/logs'
+import { daIgreja } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,13 +32,10 @@ function formatarDataHora(data: string) {
 
 export default async function Logs({ searchParams }: { searchParams: Filtros }) {
   await exigirAdmin()
-  const supabase = getSupabase()
-  const igreja = await igrejaDoContexto()
+  const db = await daIgreja()
 
-  let query = supabase
-    .from('activity_logs')
-    .select('id, user_name, action, entity, entity_id, description, created_at')
-    .eq('igreja_id', igreja)
+  let query = db.select('activity_logs', 'id, user_name, action, entity, entity_id, description, created_at')
+    
     .order('created_at', { ascending: false })
     .limit(LIMITE)
   if (searchParams.usuario) query = query.eq('user_id', searchParams.usuario)
@@ -57,7 +54,7 @@ export default async function Logs({ searchParams }: { searchParams: Filtros }) 
 
   const [{ data, error }, { data: usuarios }] = await Promise.all([
     query,
-    supabase.from('users').select('id, name').eq('igreja_id', igreja).order('name'),
+    db.select('users', 'id, name').order('name'),
   ])
   const logs = (data ?? []) as LinhaLog[]
   const temFiltro = Object.values(searchParams).some(Boolean)

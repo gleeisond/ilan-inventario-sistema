@@ -1,8 +1,8 @@
 // lib/relatorios.ts
 // Consultas compartilhadas pela tela de relatórios e pela exportação em planilha
 
-import { getSupabase } from '@/lib/supabase'
 import { EquipmentStatus, MaintenanceStatus, PriorityLevel } from '@/types/database'
+import { daIgreja } from '@/lib/db'
 
 export type FiltrosRelatorio = { campus?: string; de?: string; ate?: string }
 
@@ -42,9 +42,8 @@ export function periodoPadrao(filtros: FiltrosRelatorio) {
 }
 
 export async function buscarEquipamentos(filtros: FiltrosRelatorio) {
-  let query = getSupabase()
-    .from('equipment')
-    .select('id, name, brand, category, location, status, value, purchase_date, campus_id, campus:campus_id (name), responsible:responsible_id (name)')
+  const db = await daIgreja()
+  let query = db.select('equipment', 'id, name, brand, category, location, status, value, purchase_date, campus_id, campus:campus_id (name), responsible:responsible_id (name)')
     .order('name')
   if (filtros.campus) query = query.eq('campus_id', filtros.campus)
   const { data, error } = await query
@@ -56,10 +55,8 @@ export async function buscarManutencoes(filtros: FiltrosRelatorio) {
   const { de, ate } = periodoPadrao(filtros)
   const fim = new Date(`${ate}T03:00:00Z`)
   fim.setUTCDate(fim.getUTCDate() + 1)
-  let query = getSupabase()
-    .from('maintenance_requests')
-    .select(
-      'id, status, priority, problem_description, cost, created_at, actual_completion_date, scheduled_completion_date, campus_id, equipment:equipment_id (name), campus:campus_id (name), created_by:created_by_id (name)'
+  const db = await daIgreja()
+  let query = db.select('maintenance_requests', 'id, status, priority, problem_description, cost, created_at, actual_completion_date, scheduled_completion_date, campus_id, equipment:equipment_id (name), campus:campus_id (name), created_by:created_by_id (name)'
     )
     .gte('created_at', `${de}T03:00:00`)
     .lt('created_at', fim.toISOString().slice(0, 19))

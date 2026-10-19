@@ -5,8 +5,8 @@ import { ActionType, MaintenanceStatus, PriorityLevel } from '@/types/database'
 
 export const MANUTENCAO_STATUS_LABELS: Record<MaintenanceStatus, string> = {
   aberto: 'Aguardando triagem',
-  aguardando_envio: 'Aguardando levar à Ilan Tech Pro',
-  recebido: 'Na Ilan Tech Pro',
+  aguardando_envio: 'Aguardando levar à assistência técnica',
+  recebido: 'Na assistência técnica',
   em_diagnostico: 'Em diagnóstico',
   em_conserto: 'Em conserto',
   aguardando_pecas: 'Aguardando peças',
@@ -88,14 +88,14 @@ export const ACAO_LABELS: Record<ActionType, string> = {
   conserto_completo: 'Conserto concluído',
   pronto_para_entrega: 'Pronto para buscar',
   entregue: 'Entregue ao campus',
-  enviado_assistencia: 'Triagem: enviar à Ilan Tech Pro',
+  enviado_assistencia: 'Triagem: enviar à assistência técnica',
   resolvido_no_campus: 'Triagem: resolver no campus',
   orcamento_solicitado: 'Orçamento enviado para aprovação',
   orcamento_aprovado: 'Orçamento aprovado',
   orcamento_reprovado: 'Orçamento reprovado',
   descartado: 'Equipamento descartado',
   devolvido_sem_conserto: 'Devolvido sem conserto',
-  retirado_assistencia: 'Retirado da Ilan Tech Pro',
+  retirado_assistencia: 'Retirado da assistência técnica',
   instalado: 'Instalado e funcionando',
   reaberto: 'Chamado reaberto',
 }

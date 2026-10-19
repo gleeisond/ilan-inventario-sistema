@@ -1,23 +1,36 @@
 import Link from 'next/link'
 import { headers } from 'next/headers'
-import { getUsuarioAtual } from '@/lib/auth'
+import { dadosDaIgreja, getUsuarioAtual } from '@/lib/auth'
 import { loginAtivo } from '@/lib/sessao'
 import { PERFIL_LABELS } from '@/lib/usuarios'
 import { sair } from '@/app/login/actions'
 import MenuLateral from './MenuLateral'
 import InstalarApp from './InstalarApp'
 import NavMenu from './NavMenu'
+import MarcaIgreja from './MarcaIgreja'
 
 export default async function Sidebar() {
   if (headers().get('x-pathname') === '/login') return null
 
   const usuario = await getUsuarioAtual()
+  const igreja = await dadosDaIgreja()
   // Sem login ligado, todos veem tudo. Com login, Usuários e Logs são só do admin.
   const podeAdministrar = !loginAtivo() || usuario?.role === 'admin'
 
   return (
-    <MenuLateral>
-      <img src="/logo-ilan.png" alt="Ilan Church" className="hidden md:block w-full max-w-[200px] mb-8" />
+    <MenuLateral marca={<MarcaIgreja igreja={igreja} />}>
+      <div className="hidden md:block mb-8">
+        <MarcaIgreja igreja={igreja} grande />
+      </div>
+      {usuario?.superadmin && (
+        <Link
+          href="/plataforma/igrejas"
+          className="mb-6 block rounded-lg border border-white/10 px-3 py-2 text-xs text-gray-300 hover:border-ouro-400/60 hover:text-white"
+        >
+          <span className="block uppercase tracking-[0.18em] text-[10px] text-ouro-400">Igreja aberta</span>
+          {igreja.nome} · trocar
+        </Link>
+      )}
       <NavMenu
         itens={[
           { href: '/dashboard', rotulo: 'Dashboard' },

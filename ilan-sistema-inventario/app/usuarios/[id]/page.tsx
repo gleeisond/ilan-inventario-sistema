@@ -1,16 +1,16 @@
 import { notFound } from 'next/navigation'
-import { getSupabase } from '@/lib/supabase'
 import { User } from '@/types/database'
-import { exigirAdmin, idsComAcesso, igrejaDoContexto } from '@/lib/auth'
+import { exigirAdmin, idsComAcesso } from '@/lib/auth'
 import FormularioUsuario from '../FormularioUsuario'
+import { daIgreja } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
 export default async function EditarUsuario({ params, searchParams }: { params: { id: string }; searchParams: { erro?: string } }) {
   await exigirAdmin()
-  const igreja = await igrejaDoContexto()
+  const db = await daIgreja()
   const [{ data }, comAcesso] = await Promise.all([
-    getSupabase().from('users').select('*').eq('id', params.id).eq('igreja_id', igreja).maybeSingle(),
+    db.select('users', '*').eq('id', params.id).maybeSingle(),
     idsComAcesso(),
   ])
   if (!data) notFound()

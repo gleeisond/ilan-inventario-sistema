@@ -1,6 +1,5 @@
 import Link from 'next/link'
-import { getSupabase } from '@/lib/supabase'
-import { exigirLogin, igrejaDoContexto } from '@/lib/auth'
+import { exigirLogin } from '@/lib/auth'
 import { STATUS_LABELS, formatarMoeda } from '@/lib/equipamentos'
 import { MANUTENCAO_STATUS_LABELS, STATUS_FINALIZADOS } from '@/lib/manutencoes'
 import { EquipmentStatus, MaintenanceStatus } from '@/types/database'
@@ -15,6 +14,7 @@ import {
 import BotaoImprimir from './BotaoImprimir'
 import NumeroAnimado from '@/components/NumeroAnimado'
 import TextoRevelado from '@/components/TextoRevelado'
+import { daIgreja } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
@@ -61,14 +61,14 @@ function formatarData(data: string) {
 
 export default async function Relatorios({ searchParams }: { searchParams: FiltrosRelatorio }) {
   await exigirLogin()
-  const igreja = await igrejaDoContexto()
   const { de, ate } = periodoPadrao(searchParams)
   const filtros = { ...searchParams, de, ate }
 
+  const db = await daIgreja()
   const [{ equipamentos, error: erroEquip }, { manutencoes, error: erroManut }, { data: campusList }] = await Promise.all([
     buscarEquipamentos(filtros),
     buscarManutencoes(filtros),
-    getSupabase().from('campus').select('id, name').eq('igreja_id', igreja).order('name'),
+    db.select('campus', 'id, name').order('name'),
   ])
   const erro = erroEquip ?? erroManut
   const campusNome = campusList?.find(c => c.id === searchParams.campus)?.name

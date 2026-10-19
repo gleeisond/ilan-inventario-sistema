@@ -70,21 +70,40 @@ export const getUsuarioAtual = cache(async (): Promise<UsuarioAtual | null> => {
   }
 })
 
-// Igreja cujos dados aparecem nas telas do sistema. O superadmin não pertence a nenhuma:
-// enquanto o "entrar como igreja" não existe, ele vê a primeira igreja ativa (a ILAN).
-export const igrejaDoContexto = cache(async (): Promise<string> => {
+// Igreja que o superadmin abriu no painel da plataforma ("Abrir igreja")
+export const COOKIE_IGREJA_ABERTA = 'g41_igreja'
+
+export type IgrejaDoContexto = { id: string; nome: string; logo_url: string | null; cor_principal: string }
+
+// Igreja cujos dados aparecem nas telas do sistema: a do usuário logado. O superadmin não
+// pertence a nenhuma e vê a igreja que abriu no painel (ou a mais antiga, se não abriu nenhuma).
+export const dadosDaIgreja = cache(async (): Promise<IgrejaDoContexto> => {
   const usuario = await getUsuarioAtual()
-  if (usuario?.igreja_id) return usuario.igreja_id
-  const { data, error } = await getSupabase()
-    .from('igrejas')
-    .select('id')
-    .eq('situacao', 'ativa')
-    .order('criada_em')
-    .limit(1)
-    .single()
-  if (error || !data) throw new Error('Nenhuma igreja ativa cadastrada. Rode sql/05_igrejas.sql.')
-  return data.id
+  const colunas = 'id, nome, logo_url, cor_principal'
+  const supabase = getSupabase()
+  if (usuario?.igreja_id) {
+    const { data } = await supabase.from('igrejas').select(colunas).eq('id', usuario.igreja_id).single()
+    if (!data) throw new Error('Igreja do usuário não encontrada.')
+    return data as IgrejaDoContexto
+  }
+  // Sem igreja só o superadmin (ou o modo de teste sem login)
+  const aberta = usuario?.superadmin ? cookies().get(COOKIE_IGREJA_ABERTA)?.value : undefined
+  if (aberta && /^[0-9a-f-]{36}$/i.test(aberta)) {
+    const { data } = await supabase.from('igrejas').select(colunas).eq('id', aberta).maybeSingle()
+    if (data) return data as IgrejaDoContexto
+  }
+  const { data } = await supabase.from('igrejas').select(colunas).order('criada_em').limit(1).maybeSingle()
+  if (!data) throw new Error('Nenhuma igreja cadastrada. Rode sql/05_igrejas.sql.')
+  return data as IgrejaDoContexto
 })
+
+export const igrejaDoContexto = cache(async (): Promise<string> => (await dadosDaIgreja()).id)
+
+// E-mail interno do próprio usuário logado. Lê direto (sem filtro de igreja) porque o superadmin não tem igreja.
+export async function emailDoUsuario(id: string) {
+  const { data } = await getSupabase().from('users').select('email').eq('id', id).maybeSingle()
+  return (data?.email as string | undefined) ?? null
+}
 
 // Ids dos usuários que já têm senha (conta no Supabase Auth). Null se a chave de admin não estiver configurada.
 export async function idsComAcesso(): Promise<Set<string> | null> {
@@ -142,6 +161,7 @@ export type AcaoLog =
   | 'relatorio_exportado'
   | 'igreja_criada'
   | 'igreja_editada'
+  | 'igreja_aberta'
 
 type Log = {
   acao: AcaoLog

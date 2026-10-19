@@ -25,6 +25,7 @@ export const ACAO_LOG_LABELS: Record<AcaoLog, string> = {
   relatorio_exportado: 'Planilha exportada',
   igreja_criada: 'Igreja criada',
   igreja_editada: 'Igreja editada',
+  igreja_aberta: 'Acesso do suporte Genesis41',
 }
 
 export const ACAO_LOG_COLORS: Record<AcaoLog, string> = {
@@ -49,6 +50,7 @@ export const ACAO_LOG_COLORS: Record<AcaoLog, string> = {
   relatorio_exportado: 'bg-gray-100 text-gray-700',
   igreja_criada: 'bg-gray-900 text-ouro-300',
   igreja_editada: 'bg-gray-900 text-ouro-300',
+  igreja_aberta: 'bg-gray-900 text-ouro-300',
 }
 
 export const LINK_ENTIDADE: Record<string, (id: string) => string> = {

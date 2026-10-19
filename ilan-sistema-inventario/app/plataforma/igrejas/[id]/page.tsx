@@ -7,7 +7,7 @@ import { MODULOS, SITUACAO_MODULO_LABELS } from '@/lib/modulos'
 import { PERFIL_LABELS } from '@/lib/usuarios'
 import { Igreja, UserRole } from '@/types/database'
 import Aviso from '@/app/cadastros/Aviso'
-import { criarAdministrador, criarFilial, criarRegiao, salvarIgreja, salvarModulos } from '../../actions'
+import { abrirIgreja, criarAdministrador, criarFilial, criarRegiao, salvarIgreja, salvarModulos } from '../../actions'
 import CamposIgreja, { inputClass } from '../CamposIgreja'
 
 export const dynamic = 'force-dynamic'
@@ -57,6 +57,13 @@ export default async function DetalheIgreja({ params, searchParams }: { params: 
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${SITUACOES[igreja.situacao].cor}`}>{SITUACOES[igreja.situacao].nome}</span>
         </div>
         <p className="text-sm text-gray-600">{SITUACOES[igreja.situacao].descricao}</p>
+        <form action={abrirIgreja}>
+          <input type="hidden" name="id" value={igreja.id} />
+          <button type="submit" className="bg-gray-900 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition text-sm">
+            Abrir esta igreja
+          </button>
+          <span className="ml-3 text-xs text-gray-500">Você passa a ver o sistema com os dados dela, para dar suporte ou demonstrar.</span>
+        </form>
         <Aviso erro={searchParams.erro} salvo={searchParams.salvo} />
       </div>
 
@@ -67,24 +74,17 @@ export default async function DetalheIgreja({ params, searchParams }: { params: 
           <div className="flex flex-wrap items-end gap-4">
             <label className="block text-sm font-medium text-gray-700">
               <span className="block mb-1">Situação</span>
-              {igreja.situacao === 'ativa' ? (
-                <p className="py-2 text-gray-600">Ativa</p>
-              ) : (
-                <select name="situacao" defaultValue={igreja.situacao} className={inputClass}>
-                  <option value="implantacao">{SITUACOES.implantacao.nome}</option>
-                  <option value="suspensa">{SITUACOES.suspensa.nome}</option>
-                </select>
-              )}
+              <select name="situacao" defaultValue={igreja.situacao} className={inputClass}>
+                <option value="implantacao">{SITUACOES.implantacao.nome}</option>
+                <option value="ativa">{SITUACOES.ativa.nome}</option>
+                <option value="suspensa">{SITUACOES.suspensa.nome}</option>
+              </select>
             </label>
             <button type="submit" className={botaoClass}>
               Salvar dados
             </button>
           </div>
-          {igreja.situacao !== 'ativa' && (
-            <p className="text-xs text-gray-500">
-              A ativação de novas igrejas fica liberada na próxima etapa, quando os equipamentos e chamados de cada igreja estiverem separados em todas as telas.
-            </p>
-          )}
+          <p className="text-xs text-gray-500">Ativa: os usuários da igreja entram. Suspensa: ninguém da igreja entra, e os dados ficam guardados.</p>
         </form>
       </Secao>
 

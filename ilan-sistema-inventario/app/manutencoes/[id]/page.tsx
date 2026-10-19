@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getSupabase } from '@/lib/supabase'
 import { formatarMoeda } from '@/lib/equipamentos'
 import {
   ACAO_LABELS,
@@ -14,11 +13,12 @@ import {
   formatarData,
 } from '@/lib/manutencoes'
 import { ActionType, MaintenanceStatus, PriorityLevel } from '@/types/database'
-import { getUsuarioAtual, exigirLogin, igrejaDoContexto } from '@/lib/auth'
+import { getUsuarioAtual, exigirLogin } from '@/lib/auth'
 import { atualizarManutencao, avancarEtapa } from '../actions'
 import { ETAPAS, acoesDisponiveis, etapaAtual, podeAgir, responsavelPor } from '@/lib/fluxoReparo'
 import { PERFIL_LABELS } from '@/lib/usuarios'
 import EtapaReparo from '@/components/EtapaReparo'
+import { daIgreja } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
@@ -72,22 +72,16 @@ export default async function DetalheManutencao({
   searchParams: { erro?: string; salvo?: string }
 }) {
   await exigirLogin()
-  const supabase = getSupabase()
-  const igreja = await igrejaDoContexto()
+  const db = await daIgreja()
   const [{ data, error }, { data: logsData }, { data: usuarios }] = await Promise.all([
-    supabase
-      .from('maintenance_requests')
-      .select(
-        'id, equipment_id, problem_description, status, priority, scheduled_completion_date, actual_completion_date, cost, notes, assigned_to_id, created_at, updated_at, campus_id, equipment:equipment_id (name, brand), campus:campus_id (name, region_id), created_by:created_by_id (name)'
+    db.select('maintenance_requests', 'id, equipment_id, problem_description, status, priority, scheduled_completion_date, actual_completion_date, cost, notes, assigned_to_id, created_at, updated_at, campus_id, equipment:equipment_id (name, brand), campus:campus_id (name, region_id), created_by:created_by_id (name)'
       )
       .eq('id', params.id)
       .maybeSingle(),
-    supabase
-      .from('maintenance_logs')
-      .select('id, action_type, description, created_at, performed_by:performed_by_id (name)')
+    db.select('maintenance_logs', 'id, action_type, description, created_at, performed_by:performed_by_id (name)')
       .eq('maintenance_request_id', params.id)
       .order('created_at', { ascending: false }),
-    supabase.from('users').select('id, name').eq('igreja_id', igreja).eq('is_active', true).order('name'),
+    db.select('users', 'id, name').eq('is_active', true).order('name'),
   ])
 
   if (error) {

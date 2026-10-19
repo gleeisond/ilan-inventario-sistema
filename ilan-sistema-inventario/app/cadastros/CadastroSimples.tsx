@@ -1,8 +1,8 @@
-import { getSupabase } from '@/lib/supabase'
 import BotaoExcluir from '@/components/BotaoExcluir'
 import { excluirSimples, salvarSimples } from './actions'
 import Aviso from './Aviso'
 import { exigirAdmin } from '@/lib/auth'
+import { daIgreja } from '@/lib/db'
 
 const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ouro-500 focus:border-transparent outline-none'
 
@@ -18,10 +18,10 @@ type Props = {
 // Lista de categorias ou locais: criar, renomear na própria linha e excluir
 export default async function CadastroSimples({ tipo, tabela, coluna, titulo, exemplo, searchParams }: Props) {
   await exigirAdmin()
-  const supabase = getSupabase()
+  const db = await daIgreja()
   const [{ data, error }, { data: equipamentos }] = await Promise.all([
-    supabase.from(tabela).select('id, name').order('name'),
-    supabase.from('equipment').select(coluna),
+    db.select(tabela, 'id, name').order('name'),
+    db.select('equipment', coluna),
   ])
   // Ordena em português (sem separar maiúsculas e acentos)
   const lista = ((data ?? []) as { id: string; name: string }[]).sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))

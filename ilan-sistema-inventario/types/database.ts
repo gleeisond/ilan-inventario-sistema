@@ -52,6 +52,7 @@ export interface Igreja {
   responsavel: string | null
   contato: string | null
   cor_principal: string
+  logo_url: string | null
   plano: PlanoIgreja
   situacao: SituacaoIgreja
   modulos: string[]

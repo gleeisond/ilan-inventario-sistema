@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { getSupabase } from '@/lib/supabase'
 import { formatarMoeda } from '@/lib/equipamentos'
 import {
   MANUTENCAO_STATUS_COLORS,
@@ -13,9 +12,10 @@ import {
   formatarData,
 } from '@/lib/manutencoes'
 import { MaintenanceStatus, PriorityLevel } from '@/types/database'
-import { exigirLogin, getUsuarioAtual, igrejaDoContexto } from '@/lib/auth'
+import { exigirLogin, getUsuarioAtual } from '@/lib/auth'
 import { aguardaUsuario, responsavelPor } from '@/lib/fluxoReparo'
 import { PERFIL_LABELS } from '@/lib/usuarios'
+import { daIgreja } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
@@ -38,17 +38,13 @@ const selectClass = 'px-3 py-2 border border-gray-300 rounded-lg'
 
 export default async function Manutencoes({ searchParams }: { searchParams: Filtros }) {
   await exigirLogin()
-  const supabase = getSupabase()
-  const igreja = await igrejaDoContexto()
+  const db = await daIgreja()
   const usuario = await getUsuarioAtual()
   const situacao = searchParams.situacao ?? 'abertas'
   const ehMinha = (m: ManutencaoLinha) =>
     Boolean(usuario) && aguardaUsuario(usuario!, { status: m.status, campus_id: m.campus_id, campus_region_id: m.campus?.region_id ?? null })
 
-  let query = supabase
-    .from('maintenance_requests')
-    .select(
-      'id, problem_description, status, priority, scheduled_completion_date, cost, created_at, campus_id, equipment:equipment_id (name), campus:campus_id (name, region_id)'
+  let query = db.select('maintenance_requests', 'id, problem_description, status, priority, scheduled_completion_date, cost, created_at, campus_id, equipment:equipment_id (name), campus:campus_id (name, region_id)'
     )
     .order('created_at', { ascending: false })
 
@@ -62,12 +58,10 @@ export default async function Manutencoes({ searchParams }: { searchParams: Filt
 
   const [{ data, error }, { data: campusList }, { data: abertasData }] = await Promise.all([
     query,
-    supabase.from('campus').select('id, name').eq('igreja_id', igreja).order('name'),
+    db.select('campus', 'id, name').order('name'),
     // Para contar o que aguarda o usuário logado, independente dos filtros
     usuario
-      ? supabase
-          .from('maintenance_requests')
-          .select('status, campus_id, campus:campus_id (region_id)')
+      ? db.select('maintenance_requests', 'status, campus_id, campus:campus_id (region_id)')
           .not('status', 'in', `(${STATUS_FINALIZADOS.join(',')})`)
       : Promise.resolve({ data: [] }),
   ])

@@ -7,7 +7,7 @@ import { ActionType, MaintenanceStatus, UserRole } from '@/types/database'
 export const ETAPAS: { titulo: string; quem: UserRole; status: MaintenanceStatus[] }[] = [
   { titulo: 'Defeito detectado', quem: 'lider_midia', status: [] },
   { titulo: 'Triagem', quem: 'lider_regional', status: ['aberto'] },
-  { titulo: 'Levar à Ilan Tech Pro', quem: 'pastor', status: ['aguardando_envio'] },
+  { titulo: 'Levar à assistência técnica', quem: 'pastor', status: ['aguardando_envio'] },
   { titulo: 'Diagnóstico e conserto', quem: 'rodrigo', status: ['recebido', 'em_diagnostico', 'em_conserto', 'aguardando_pecas', 'reprovado'] },
   { titulo: 'Aprovação do orçamento', quem: 'admin', status: ['aguardando_aprovacao'] },
   { titulo: 'Retirar e devolver ao campus', quem: 'pastor', status: ['pronto'] },
@@ -62,7 +62,7 @@ const CONSERTO_PRONTO: AcaoFluxo = {
 
 export const ACOES_POR_STATUS: Partial<Record<MaintenanceStatus, AcaoFluxo[]>> = {
   aberto: [
-    { id: 'enviar', rotulo: 'Enviar para a Ilan Tech Pro', para: 'aguardando_envio', registro: 'enviado_assistencia', estilo: 'principal' },
+    { id: 'enviar', rotulo: 'Enviar para a assistência técnica', para: 'aguardando_envio', registro: 'enviado_assistencia', estilo: 'principal' },
     {
       id: 'resolver_no_campus',
       rotulo: 'Resolver no campus',
@@ -73,7 +73,7 @@ export const ACOES_POR_STATUS: Partial<Record<MaintenanceStatus, AcaoFluxo[]>> =
     },
   ],
   aguardando_envio: [
-    { id: 'levou', rotulo: 'Entreguei na Ilan Tech Pro', para: 'recebido', registro: 'recebido', estilo: 'principal' },
+    { id: 'levou', rotulo: 'Entreguei na assistência técnica', para: 'recebido', registro: 'recebido', estilo: 'principal' },
   ],
   recebido: [
     { id: 'diagnosticar', rotulo: 'Iniciar diagnóstico', para: 'em_diagnostico', registro: 'diagnosticado', estilo: 'secundario' },
