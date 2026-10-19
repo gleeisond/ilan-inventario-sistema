@@ -33,11 +33,22 @@ export default async function Sidebar() {
             : []),
         ]}
       />
+      {usuario?.superadmin && (
+        <div className="mt-8">
+          <p className="px-3 mb-2 text-[11px] uppercase tracking-[0.18em] text-ouro-400">Genesis41</p>
+          <NavMenu
+            itens={[
+              { href: '/plataforma/igrejas', rotulo: 'Igrejas' },
+              { href: '/plataforma/modulos', rotulo: 'Próximos módulos' },
+            ]}
+          />
+        </div>
+      )}
       <div className="mt-auto pt-8 text-sm">
         {usuario ? (
           <>
             <p className="font-medium">{usuario.name}</p>
-            <p className="text-gray-400">{PERFIL_LABELS[usuario.role]}</p>
+            <p className="text-gray-400">{PERFIL_LABELS[usuario.superadmin ? 'superadmin' : usuario.role]}</p>
             <Link href="/minha-senha" className="block mt-3 text-gray-300 hover:text-white">Trocar minha senha</Link>
             <form action={sair}>
               <button type="submit" className="mt-2 text-gray-300 hover:text-white">Sair</button>

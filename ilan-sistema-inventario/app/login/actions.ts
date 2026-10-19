@@ -20,16 +20,27 @@ export async function entrar(form: FormData) {
 
   if (!login || !senha) falhar('Informe usuário e senha.')
 
-  const { data, error } = await criarClienteLogin().auth.signInWithPassword({ email: loginParaEmail(login), password: senha })
-  if (error || !data.user) {
+  const { data: autenticado, error } = await criarClienteLogin().auth.signInWithPassword({ email: loginParaEmail(login), password: senha })
+  if (error || !autenticado.user) {
     await registrarLog({ acao: 'login_falhou', descricao: `Tentativa de entrar como "${login}"`, usuario: { id: null, name: login } })
     falhar('Usuário ou senha incorretos.')
   }
 
-  const { data: usuario } = await getSupabase().from('users').select('id, name, is_active').eq('id', data.user.id).maybeSingle()
+  const { data } = await getSupabase()
+    .from('users')
+    .select('id, name, role, is_active, igreja_id, igreja:igreja_id (situacao)')
+    .eq('id', autenticado.user.id)
+    .maybeSingle()
+  const usuario = data as unknown as { id: string; name: string; role: string; is_active: boolean; igreja_id: string | null; igreja: { situacao: string } | null } | null
+  const igreja_id = usuario?.igreja_id ?? null
   if (!usuario || !usuario.is_active) {
-    await registrarLog({ acao: 'login_falhou', descricao: `Acesso bloqueado para "${login}"`, usuario: { id: usuario?.id ?? null, name: usuario?.name ?? login } })
+    await registrarLog({ acao: 'login_falhou', descricao: `Acesso bloqueado para "${login}"`, usuario: { id: usuario?.id ?? null, name: usuario?.name ?? login }, igreja_id })
     falhar('Seu acesso está bloqueado. Fale com o administrador.')
+  }
+  // Igreja ainda em implantação (ou suspensa): ninguém dela entra, só o superadmin
+  if (usuario.role !== 'superadmin' && usuario.igreja?.situacao !== 'ativa') {
+    await registrarLog({ acao: 'login_falhou', descricao: `Igreja ainda não liberada para "${login}"`, usuario, igreja_id })
+    falhar(usuario.igreja?.situacao === 'suspensa' ? 'O acesso da sua igreja está suspenso.' : 'Sua igreja ainda está em implantação. Em breve o acesso será liberado.')
   }
 
   cookies().set(COOKIE_SESSAO, await criarToken(usuario.id), {
@@ -39,7 +50,7 @@ export async function entrar(form: FormData) {
     path: '/',
     maxAge: DURACAO_SESSAO_SEGUNDOS,
   })
-  await registrarLog({ acao: 'login', descricao: 'Entrou no sistema', entidade: 'user', entidade_id: usuario.id, usuario })
+  await registrarLog({ acao: 'login', descricao: 'Entrou no sistema', entidade: 'user', entidade_id: usuario.id, usuario, igreja_id })
   redirect(voltar)
 }
 

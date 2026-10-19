@@ -4,7 +4,7 @@ import BotaoExcluir from '@/components/BotaoExcluir'
 import { excluirCampus } from '../actions'
 import Aviso from '../Aviso'
 import FormCampus from './FormCampus'
-import { exigirAdmin } from '@/lib/auth'
+import { exigirAdmin, igrejaDoContexto } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,11 +13,12 @@ type CampusLinha = { id: string; name: string; location: string | null; region: 
 export default async function CadastroCampus({ searchParams }: { searchParams: { erro?: string; salvo?: string } }) {
   await exigirAdmin()
   const supabase = getSupabase()
+  const igreja = await igrejaDoContexto()
   const [{ data, error }, { data: regioes }, { data: equipamentos }, { data: usuarios }] = await Promise.all([
-    supabase.from('campus').select('id, name, location, region:region_id (name)').order('name'),
-    supabase.from('regions').select('id, name').order('name'),
+    supabase.from('campus').select('id, name, location, region:region_id (name)').eq('igreja_id', igreja).order('name'),
+    supabase.from('regions').select('id, name').eq('igreja_id', igreja).order('name'),
     supabase.from('equipment').select('campus_id'),
-    supabase.from('users').select('campus_id').not('campus_id', 'is', null),
+    supabase.from('users').select('campus_id').eq('igreja_id', igreja).not('campus_id', 'is', null),
   ])
   const lista = ((data ?? []) as unknown as CampusLinha[]).sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
   const contar = (linhas: { campus_id: string | null }[] | null, id: string) => (linhas ?? []).filter(l => l.campus_id === id).length

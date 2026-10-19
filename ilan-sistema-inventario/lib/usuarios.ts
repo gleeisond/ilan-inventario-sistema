@@ -3,9 +3,11 @@
 
 import { UserRole } from '@/types/database'
 
+// Perfis que o administrador da igreja pode dar. O superadmin só é definido direto no banco.
 export const PERFIS: UserRole[] = ['admin', 'rodrigo', 'lider_regional', 'pastor', 'lider_midia']
 
 export const PERFIL_LABELS: Record<UserRole, string> = {
+  superadmin: 'Administrador Genesis41',
   admin: 'ADM Ilan',
   rodrigo: 'Ilan Tech Pro',
   lider_regional: 'Líder regional',
@@ -14,6 +16,7 @@ export const PERFIL_LABELS: Record<UserRole, string> = {
 }
 
 export const PERFIL_DESCRICOES: Record<UserRole, string> = {
+  superadmin: 'Cria e gerencia as igrejas da plataforma. Tem também todos os acessos do administrador de cada igreja.',
   admin: 'Acesso total. Aprova ou reprova os orçamentos de reparo e pode agir em qualquer etapa.',
   rodrigo: 'Recebe os equipamentos, faz o diagnóstico, pede aprovação dos custos e conserta ou descarta.',
   lider_regional: 'Faz a triagem dos defeitos dos campus da sua região: envia para a Ilan Tech Pro ou resolve no campus.',
@@ -22,6 +25,7 @@ export const PERFIL_DESCRICOES: Record<UserRole, string> = {
 }
 
 export const PERFIL_COLORS: Record<UserRole, string> = {
+  superadmin: 'bg-gray-900 text-ouro-300',
   admin: 'bg-purple-100 text-purple-800',
   rodrigo: 'bg-blue-100 text-blue-800',
   lider_regional: 'bg-teal-100 text-teal-800',
@@ -31,6 +35,7 @@ export const PERFIL_COLORS: Record<UserRole, string> = {
 
 // Qual vínculo cada perfil exige
 export const PERFIL_VINCULO: Record<UserRole, 'campus' | 'regiao' | null> = {
+  superadmin: null,
   admin: null,
   rodrigo: null,
   lider_regional: 'regiao',

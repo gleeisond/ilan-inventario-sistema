@@ -3,16 +3,17 @@ import { notFound } from 'next/navigation'
 import { getSupabase } from '@/lib/supabase'
 import Aviso from '../../Aviso'
 import FormCampus from '../FormCampus'
-import { exigirAdmin } from '@/lib/auth'
+import { exigirAdmin, igrejaDoContexto } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
 export default async function EditarCampus({ params, searchParams }: { params: { id: string }; searchParams: { erro?: string } }) {
   await exigirAdmin()
   const supabase = getSupabase()
+  const igreja = await igrejaDoContexto()
   const [{ data: campus }, { data: regioes }] = await Promise.all([
-    supabase.from('campus').select('id, name, location, region_id').eq('id', params.id).maybeSingle(),
-    supabase.from('regions').select('id, name').order('name'),
+    supabase.from('campus').select('id, name, location, region_id').eq('id', params.id).eq('igreja_id', igreja).maybeSingle(),
+    supabase.from('regions').select('id, name').eq('igreja_id', igreja).order('name'),
   ])
   if (!campus) notFound()
 

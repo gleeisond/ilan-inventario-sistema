@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { getSupabase } from '@/lib/supabase'
-import { exigirAdmin, registrarLog } from '@/lib/auth'
+import { exigirAdmin, igrejaDoContexto, registrarLog } from '@/lib/auth'
 
 function texto(form: FormData, campo: string) {
   const valor = String(form.get(campo) ?? '').trim()
@@ -31,9 +31,13 @@ export async function salvarCampus(form: FormData) {
   if (!name || !region_id) voltar(id ? `${caminho}/${id}` : caminho, 'erro', 'Preencha o nome e a região.')
 
   const supabase = getSupabase()
+  const igreja = await igrejaDoContexto()
+  // A região escolhida precisa ser da mesma igreja
+  const { data: regiao } = await supabase.from('regions').select('id').eq('id', region_id).eq('igreja_id', igreja).maybeSingle()
+  if (!regiao) voltar(id ? `${caminho}/${id}` : caminho, 'erro', 'Região não encontrada.')
   const { data, error } = id
-    ? await supabase.from('campus').update({ name, region_id, location }).eq('id', id).select('id').single()
-    : await supabase.from('campus').insert({ name, region_id, location }).select('id').single()
+    ? await supabase.from('campus').update({ name, region_id, location }).eq('id', id).eq('igreja_id', igreja).select('id').single()
+    : await supabase.from('campus').insert({ name, region_id, location, igreja_id: igreja }).select('id').single()
 
   if (error) {
     const msg = error.code === '23505' ? `Já existe um campus chamado "${name}".` : `Não foi possível salvar: ${error.message}`
@@ -56,9 +60,10 @@ export async function excluirCampus(form: FormData) {
   if (!id) voltar(caminho, 'erro', 'Campus não informado.')
 
   const supabase = getSupabase()
+  const igreja = await igrejaDoContexto()
   const contar = (tabela: string) => supabase.from(tabela).select('id', { count: 'exact', head: true }).eq('campus_id', id)
   const [{ data: campus }, equipamentos, usuarios, chamados] = await Promise.all([
-    supabase.from('campus').select('name').eq('id', id).maybeSingle(),
+    supabase.from('campus').select('name').eq('id', id).eq('igreja_id', igreja).maybeSingle(),
     contar('equipment'),
     contar('users'),
     contar('maintenance_requests'),
@@ -75,7 +80,7 @@ export async function excluirCampus(form: FormData) {
     voltar(caminho, 'erro', `${campus.name} não pode ser excluído porque tem ${emUso.join(', ')}. Mova ou exclua esses registros antes.`)
   }
 
-  const { error } = await supabase.from('campus').delete().eq('id', id)
+  const { error } = await supabase.from('campus').delete().eq('id', id).eq('igreja_id', igreja)
   if (error) voltar(caminho, 'erro', `Não foi possível excluir: ${error.message}`)
 
   await registrarLog({ acao: 'cadastro_excluido', descricao: `Excluiu o campus ${campus.name}`, entidade: 'campus', entidade_id: id })
@@ -118,7 +123,7 @@ export async function salvarSimples(form: FormData) {
 
   const { data, error } = id
     ? await supabase.from(cfg.tabela).update({ name }).eq('id', id).select('id').single()
-    : await supabase.from(cfg.tabela).insert({ name }).select('id').single()
+    : await supabase.from(cfg.tabela).insert({ name, igreja_id: await igrejaDoContexto() }).select('id').single()
   if (error) {
     const msg = error.code === '23505' ? `"${name}" já está cadastrad${cfg.artigo}.` : `Não foi possível salvar: ${error.message}`
     voltar(caminho, 'erro', msg)

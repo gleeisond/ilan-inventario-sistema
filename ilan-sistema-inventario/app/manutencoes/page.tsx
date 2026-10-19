@@ -13,7 +13,7 @@ import {
   formatarData,
 } from '@/lib/manutencoes'
 import { MaintenanceStatus, PriorityLevel } from '@/types/database'
-import { exigirLogin, getUsuarioAtual } from '@/lib/auth'
+import { exigirLogin, getUsuarioAtual, igrejaDoContexto } from '@/lib/auth'
 import { aguardaUsuario, responsavelPor } from '@/lib/fluxoReparo'
 import { PERFIL_LABELS } from '@/lib/usuarios'
 
@@ -39,6 +39,7 @@ const selectClass = 'px-3 py-2 border border-gray-300 rounded-lg'
 export default async function Manutencoes({ searchParams }: { searchParams: Filtros }) {
   await exigirLogin()
   const supabase = getSupabase()
+  const igreja = await igrejaDoContexto()
   const usuario = await getUsuarioAtual()
   const situacao = searchParams.situacao ?? 'abertas'
   const ehMinha = (m: ManutencaoLinha) =>
@@ -61,7 +62,7 @@ export default async function Manutencoes({ searchParams }: { searchParams: Filt
 
   const [{ data, error }, { data: campusList }, { data: abertasData }] = await Promise.all([
     query,
-    supabase.from('campus').select('id, name').order('name'),
+    supabase.from('campus').select('id, name').eq('igreja_id', igreja).order('name'),
     // Para contar o que aguarda o usuário logado, independente dos filtros
     usuario
       ? supabase

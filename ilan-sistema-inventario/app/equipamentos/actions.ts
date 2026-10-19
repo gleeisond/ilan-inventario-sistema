@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { getSupabase } from '@/lib/supabase'
 import { lerMoeda, podeEditarNoCampus, podeExcluirEquipamento } from '@/lib/equipamentos'
-import { exigirLogin, registrarLog } from '@/lib/auth'
+import { exigirLogin, igrejaDoContexto, registrarLog } from '@/lib/auth'
 
 function texto(form: FormData, campo: string) {
   const valor = String(form.get(campo) ?? '').trim()
@@ -31,7 +31,12 @@ async function lerFormulario(form: FormData, caminho: string, usuario: Awaited<R
   const value = lerMoeda(texto(form, 'value'))
   if (value !== null && Number.isNaN(value)) voltar(caminho, 'erro', 'Valor inválido. Use só números, ex: 3500,00')
 
-  const { data: campus } = await getSupabase().from('campus').select('id, name, region_id').eq('id', campus_id).maybeSingle()
+  const { data: campus } = await getSupabase()
+    .from('campus')
+    .select('id, name, region_id')
+    .eq('id', campus_id)
+    .eq('igreja_id', await igrejaDoContexto())
+    .maybeSingle()
   if (!campus) voltar(caminho, 'erro', 'Campus não encontrado.')
   if (!podeEditarNoCampus(usuario, campus)) voltar(caminho, 'erro', `Você não tem permissão para cadastrar equipamentos em ${campus.name}.`)
 

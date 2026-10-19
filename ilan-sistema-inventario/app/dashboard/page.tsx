@@ -14,7 +14,7 @@ import NumeroAnimado from '@/components/NumeroAnimado'
 import TextoRevelado from '@/components/TextoRevelado'
 import SeletorCampus from '@/components/SeletorCampus'
 import { EquipmentStatus, MaintenanceStatus, PriorityLevel } from '@/types/database'
-import { exigirLogin } from '@/lib/auth'
+import { exigirLogin, igrejaDoContexto } from '@/lib/auth'
 import { aguardaUsuario } from '@/lib/fluxoReparo'
 
 export const dynamic = 'force-dynamic'
@@ -58,13 +58,14 @@ function Indicador({ titulo, valor, detalhe, destaque }: { titulo: string; valor
 export default async function Dashboard({ searchParams }: { searchParams: { sem_permissao?: string; campus?: string } }) {
   const usuario = await exigirLogin()
   const supabase = getSupabase()
+  const igreja = await igrejaDoContexto()
 
   const [equipRes, manutRes, campusRes] = await Promise.all([
     supabase.from('equipment').select('id, name, category, location, status, value, campus_id').order('name'),
     supabase
       .from('maintenance_requests')
       .select('id, status, priority, problem_description, scheduled_completion_date, campus_id, equipment:equipment_id (name), campus:campus_id (name, region_id)'),
-    supabase.from('campus').select('id, name').order('name'),
+    supabase.from('campus').select('id, name').eq('igreja_id', igreja).order('name'),
   ])
 
   const erro = equipRes.error ?? manutRes.error ?? campusRes.error
