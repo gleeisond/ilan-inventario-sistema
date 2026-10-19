@@ -11,7 +11,8 @@ export async function middleware(request: NextRequest) {
   if (pathname === '/') return NextResponse.redirect(new URL('/dashboard', request.url))
   if (pathname === '/auth') return NextResponse.redirect(new URL('/login', request.url))
 
-  if (loginAtivo() && pathname !== '/login') {
+  // /api/manter-ativo é chamada pelo Vercel Cron, sem sessão
+  if (loginAtivo() && pathname !== '/login' && pathname !== '/api/manter-ativo') {
     const sessao = await lerToken(request.cookies.get(COOKIE_SESSAO)?.value)
     if (!sessao) {
       const destino = new URL('/login', request.url)
