@@ -36,7 +36,7 @@ export const ACAO_LOG_COLORS: Record<AcaoLog, string> = {
   equipamento_excluido: 'bg-red-100 text-red-800',
   manutencao_aberta: 'bg-yellow-100 text-yellow-800',
   manutencao_atualizada: 'bg-blue-100 text-blue-800',
-  manutencao_etapa: 'bg-indigo-100 text-indigo-800',
+  manutencao_etapa: 'bg-ouro-100 text-ouro-800',
   usuario_criado: 'bg-purple-100 text-purple-800',
   usuario_editado: 'bg-purple-100 text-purple-800',
   senha_definida: 'bg-purple-100 text-purple-800',

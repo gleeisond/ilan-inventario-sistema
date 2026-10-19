@@ -50,7 +50,7 @@ export const MANUTENCAO_STATUS_COLORS: Record<MaintenanceStatus, string> = {
   aberto: 'bg-gray-100 text-gray-700',
   aguardando_envio: 'bg-sky-100 text-sky-800',
   recebido: 'bg-blue-100 text-blue-800',
-  em_diagnostico: 'bg-indigo-100 text-indigo-800',
+  em_diagnostico: 'bg-ouro-100 text-ouro-800',
   em_conserto: 'bg-yellow-100 text-yellow-800',
   aguardando_pecas: 'bg-orange-100 text-orange-800',
   aguardando_aprovacao: 'bg-purple-100 text-purple-800',

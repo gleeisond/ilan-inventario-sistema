@@ -10,7 +10,7 @@ export default async function CriarEquipamento({ searchParams }: { searchParams:
 
   return (
     <div className="p-4 md:p-8 max-w-3xl">
-      <Link href="/equipamentos" className="text-sm text-indigo-600 hover:text-indigo-700">
+      <Link href="/equipamentos" className="text-sm text-ouro-600 hover:text-ouro-700">
         ← Voltar para equipamentos
       </Link>
       <h1 className="text-2xl font-bold mt-2 mb-6">Novo equipamento</h1>

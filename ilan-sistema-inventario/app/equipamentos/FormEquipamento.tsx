@@ -4,7 +4,7 @@ import { STATUS_LABELS, podeEditarNoCampus } from '@/lib/equipamentos'
 import { UsuarioAtual } from '@/lib/auth'
 import { Equipment } from '@/types/database'
 
-const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none'
+const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ouro-500 focus:border-transparent outline-none'
 
 function Campo({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -124,7 +124,7 @@ export default async function FormEquipamento({
         </Campo>
 
         <div className="flex gap-3 pt-2">
-          <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition">
+          <button type="submit" className="bg-ouro-400 hover:bg-ouro-300 text-gray-900 font-semibold px-4 py-2 rounded-lg transition">
             {textoBotao}
           </button>
           <Link href="/equipamentos" className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">

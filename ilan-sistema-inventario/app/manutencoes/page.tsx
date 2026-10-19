@@ -94,7 +94,7 @@ export default async function Manutencoes({ searchParams }: { searchParams: Filt
         </div>
         <Link
           href="/manutencoes/criar"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition"
+          className="bg-ouro-400 hover:bg-ouro-300 text-gray-900 font-semibold px-4 py-2 rounded-lg transition"
         >
           + Novo chamado
         </Link>
@@ -109,7 +109,7 @@ export default async function Manutencoes({ searchParams }: { searchParams: Filt
       {usuario && aguardandoVoce > 0 && situacao !== 'minhas' && (
         <Link
           href="/manutencoes?situacao=minhas"
-          className="mb-4 flex items-center justify-between gap-3 p-3 rounded-lg text-sm bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100 transition"
+          className="mb-4 flex items-center justify-between gap-3 p-3 rounded-lg text-sm bg-ouro-50 text-ouro-800 border border-ouro-200 hover:bg-ouro-100 transition"
         >
           <span>
             <strong>{aguardandoVoce}</strong> {aguardandoVoce === 1 ? 'chamado aguarda' : 'chamados aguardam'} você
@@ -153,7 +153,7 @@ export default async function Manutencoes({ searchParams }: { searchParams: Filt
           Filtrar
         </button>
         {temFiltro && (
-          <Link href="/manutencoes" className="text-sm text-indigo-600 hover:text-indigo-700 py-2">
+          <Link href="/manutencoes" className="text-sm text-ouro-600 hover:text-ouro-700 py-2">
             Limpar filtros
           </Link>
         )}
@@ -185,7 +185,7 @@ export default async function Manutencoes({ searchParams }: { searchParams: Filt
               {manutencoes.map(m => (
                 <tr key={m.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 max-w-xs">
-                    <Link href={`/manutencoes/${m.id}`} className="font-medium text-gray-900 hover:text-indigo-700">
+                    <Link href={`/manutencoes/${m.id}`} className="font-medium text-gray-900 hover:text-ouro-700">
                       {m.equipment?.name ?? 'Equipamento'}
                     </Link>
                     <div className="text-gray-500 truncate">{m.problem_description}</div>
@@ -211,7 +211,7 @@ export default async function Manutencoes({ searchParams }: { searchParams: Filt
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     {ehMinha(m) ? (
-                      <span className="font-medium text-indigo-700">Você</span>
+                      <span className="font-medium text-ouro-700">Você</span>
                     ) : (
                       (() => {
                         const quem = responsavelPor(m.status)

@@ -18,7 +18,7 @@ export default async function EditarEquipamento({ params, searchParams }: { para
   const equipamento = data as (Equipment & { campus: { id: string; name: string; region_id: string | null } | null }) | null
 
   const voltar = (
-    <Link href="/equipamentos" className="text-sm text-indigo-600 hover:text-indigo-700">
+    <Link href="/equipamentos" className="text-sm text-ouro-600 hover:text-ouro-700">
       ← Voltar para equipamentos
     </Link>
   )

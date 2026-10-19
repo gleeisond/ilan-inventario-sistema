@@ -68,7 +68,7 @@ export default async function Equipamentos({ searchParams }: { searchParams: Fil
         </div>
         <Link
           href="/equipamentos/criar"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition"
+          className="bg-ouro-400 hover:bg-ouro-300 text-gray-900 font-semibold px-4 py-2 rounded-lg transition"
         >
           + Novo equipamento
         </Link>
@@ -127,7 +127,7 @@ export default async function Equipamentos({ searchParams }: { searchParams: Fil
           Filtrar
         </button>
         {temFiltro && (
-          <Link href="/equipamentos" className="text-sm text-indigo-600 hover:text-indigo-700 py-2">
+          <Link href="/equipamentos" className="text-sm text-ouro-600 hover:text-ouro-700 py-2">
             Limpar filtros
           </Link>
         )}
@@ -163,7 +163,7 @@ export default async function Equipamentos({ searchParams }: { searchParams: Fil
                 <tr key={e.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
                     {podeEditar ? (
-                      <Link href={`/equipamentos/${e.id}`} className="font-medium text-gray-900 hover:text-indigo-700">{e.name}</Link>
+                      <Link href={`/equipamentos/${e.id}`} className="font-medium text-gray-900 hover:text-ouro-700">{e.name}</Link>
                     ) : (
                       <div className="font-medium text-gray-900">{e.name}</div>
                     )}
@@ -182,7 +182,7 @@ export default async function Equipamentos({ searchParams }: { searchParams: Fil
                   <td className="px-4 py-3">
                     {podeEditar ? (
                       <div className="flex items-center justify-end gap-4 whitespace-nowrap">
-                        <Link href={`/equipamentos/${e.id}`} className="text-indigo-600 hover:text-indigo-700">
+                        <Link href={`/equipamentos/${e.id}`} className="text-ouro-600 hover:text-ouro-700">
                           Editar
                         </Link>
                         <form action={alternarBaixa}>

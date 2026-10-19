@@ -102,7 +102,7 @@ export default async function Logs({ searchParams }: { searchParams: Filtros }) 
           Filtrar
         </button>
         {temFiltro && (
-          <Link href="/logs" className="text-sm text-indigo-600 hover:text-indigo-700 py-2">
+          <Link href="/logs" className="text-sm text-ouro-600 hover:text-ouro-700 py-2">
             Limpar filtros
           </Link>
         )}
@@ -142,7 +142,7 @@ export default async function Logs({ searchParams }: { searchParams: Filtros }) 
                     </td>
                     <td className="px-4 py-3">
                       {link ? (
-                        <Link href={link} className="hover:text-indigo-700">{l.description}</Link>
+                        <Link href={link} className="hover:text-ouro-700">{l.description}</Link>
                       ) : (
                         l.description
                       )}

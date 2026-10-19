@@ -151,7 +151,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
       {aguardandoVoce > 0 && (
         <Link
           href="/manutencoes?situacao=minhas"
-          className="flex items-center justify-between gap-3 p-4 rounded-lg bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100 transition"
+          className="flex items-center justify-between gap-3 p-4 rounded-lg bg-ouro-50 text-ouro-800 border border-ouro-200 hover:bg-ouro-100 transition"
         >
           <span>
             <strong>{aguardandoVoce}</strong> {aguardandoVoce === 1 ? 'chamado de reparo aguarda' : 'chamados de reparo aguardam'} você
@@ -183,7 +183,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
         <section className="xl:col-span-2 bg-white rounded-lg border border-gray-200">
           <div className="flex items-center justify-between p-5 border-b border-gray-100">
             <h2 className="font-semibold text-lg">Manutenções em andamento</h2>
-            <Link href={`/manutencoes${campusAtual ? `?campus=${campusAtual.id}` : ''}`} className="group text-sm text-indigo-600 hover:text-indigo-700 whitespace-nowrap">Ver todas <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span></Link>
+            <Link href={`/manutencoes${campusAtual ? `?campus=${campusAtual.id}` : ''}`} className="group text-sm text-ouro-600 hover:text-ouro-700 whitespace-nowrap">Ver todas <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span></Link>
           </div>
           {pendentes.length === 0 ? (
             <p className="p-5 text-gray-500">Nenhuma manutenção em andamento.</p>
@@ -234,7 +234,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
         <section className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
           <div className="flex items-center justify-between p-5 border-b border-gray-100">
             <h2 className="font-semibold text-lg">Equipamentos de {campusAtual.name}</h2>
-            <Link href={`/equipamentos?campus=${campusAtual.id}`} className="group text-sm text-indigo-600 hover:text-indigo-700 whitespace-nowrap">Gerenciar <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span></Link>
+            <Link href={`/equipamentos?campus=${campusAtual.id}`} className="group text-sm text-ouro-600 hover:text-ouro-700 whitespace-nowrap">Gerenciar <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span></Link>
           </div>
           {equipamentos.length === 0 ? (
             <p className="p-5 text-gray-500">Nenhum equipamento cadastrado neste campus.</p>
@@ -287,13 +287,13 @@ export default async function Dashboard({ searchParams }: { searchParams: { sem_
               {porCampus.map(c => (
                 <tr key={c.id} className="hover:bg-gray-50">
                   <td className="px-5 py-3">
-                    <Link href={`/dashboard?campus=${c.id}`} className="font-medium text-gray-900 hover:text-indigo-700">{c.name}</Link>
+                    <Link href={`/dashboard?campus=${c.id}`} className="font-medium text-gray-900 hover:text-ouro-700">{c.name}</Link>
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
                       <span className="w-6 text-right">{c.total}</span>
                       <div className="flex-1 max-w-[160px] h-2 bg-gray-100 rounded-full">
-                        <div className="barra h-2 bg-indigo-500 rounded-full" style={{ width: `${(c.total / maiorTotal) * 100}%` }} />
+                        <div className="barra h-2 bg-ouro-500 rounded-full" style={{ width: `${(c.total / maiorTotal) * 100}%` }} />
                       </div>
                     </div>
                   </td>

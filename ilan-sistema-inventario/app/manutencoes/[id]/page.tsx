@@ -22,7 +22,7 @@ import EtapaReparo from '@/components/EtapaReparo'
 
 export const dynamic = 'force-dynamic'
 
-const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none'
+const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ouro-500 focus:border-transparent outline-none'
 
 type Chamado = {
   id: string
@@ -113,7 +113,7 @@ export default async function DetalheManutencao({
 
   return (
     <div className="p-4 md:p-8 max-w-5xl">
-      <Link href="/manutencoes" className="text-sm text-indigo-600 hover:text-indigo-700">
+      <Link href="/manutencoes" className="text-sm text-ouro-600 hover:text-ouro-700">
         ← Voltar para manutenções
       </Link>
 
@@ -153,7 +153,7 @@ export default async function DetalheManutencao({
                     situacao === 'feita'
                       ? 'bg-green-600 text-white'
                       : situacao === 'atual'
-                        ? 'bg-indigo-600 text-white ring-4 ring-indigo-100'
+                        ? 'bg-ouro-400 text-gray-900 ring-4 ring-ouro-100'
                         : 'bg-gray-100 text-gray-500'
                   }`}
                   aria-label={situacao === 'feita' ? 'feita' : situacao === 'atual' ? 'etapa atual' : undefined}
@@ -210,7 +210,7 @@ export default async function DetalheManutencao({
             ) : (
               <ol className="space-y-4">
                 {registros.map(r => (
-                  <li key={r.id} className="border-l-2 border-indigo-200 pl-4">
+                  <li key={r.id} className="border-l-2 border-ouro-200 pl-4">
                     <p className="font-medium text-gray-900">{ACAO_LABELS[r.action_type]}</p>
                     {r.description && <p className="text-sm text-gray-700">{r.description}</p>}
                     <p className="text-xs text-gray-500 mt-1">
@@ -225,7 +225,7 @@ export default async function DetalheManutencao({
 
         <div className="lg:col-span-2 space-y-6 order-first lg:order-none">
           {responsavel && (
-            <section className={`rounded-lg border p-6 ${minhaVez ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-gray-200'}`}>
+            <section className={`rounded-lg border p-6 ${minhaVez ? 'bg-ouro-50 border-ouro-200' : 'bg-white border-gray-200'}`}>
               <h2 className="font-semibold">Próxima etapa</h2>
               <p className="text-sm text-gray-600 mt-1 mb-4">
                 {minhaVez && usuarioLogado?.role === responsavel
@@ -314,7 +314,7 @@ export default async function DetalheManutencao({
               <textarea name="notes" rows={3} defaultValue={m.notes ?? ''} className={inputClass} />
             </Campo>
 
-            <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition">
+            <button type="submit" className="w-full bg-ouro-400 hover:bg-ouro-300 text-gray-900 font-semibold px-4 py-2 rounded-lg transition">
               Salvar
             </button>
           </form>

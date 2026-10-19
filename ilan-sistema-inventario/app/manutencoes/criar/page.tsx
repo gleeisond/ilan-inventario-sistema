@@ -6,7 +6,7 @@ import { criarManutencao } from '../actions'
 
 export const dynamic = 'force-dynamic'
 
-const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none'
+const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ouro-500 focus:border-transparent outline-none'
 
 function Campo({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -31,7 +31,7 @@ export default async function CriarManutencao({ searchParams }: { searchParams: 
 
   return (
     <div className="p-4 md:p-8 max-w-3xl">
-      <Link href="/manutencoes" className="text-sm text-indigo-600 hover:text-indigo-700">
+      <Link href="/manutencoes" className="text-sm text-ouro-600 hover:text-ouro-700">
         ← Voltar para manutenções
       </Link>
       <h1 className="text-2xl font-bold mt-2 mb-6">Novo chamado de manutenção</h1>
@@ -110,7 +110,7 @@ export default async function CriarManutencao({ searchParams }: { searchParams: 
         <p className="text-xs text-gray-500">Ao abrir o chamado, o equipamento passa para &quot;Em manutenção&quot;.</p>
 
         <div className="flex gap-3 pt-2">
-          <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition">
+          <button type="submit" className="bg-ouro-400 hover:bg-ouro-300 text-gray-900 font-semibold px-4 py-2 rounded-lg transition">
             Abrir chamado
           </button>
           <Link href="/manutencoes" className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">

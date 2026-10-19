@@ -56,7 +56,7 @@ export default function NavMenu({ itens }: { itens: Item[] }) {
           transition: animar ? 'top 0.45s var(--suave), height 0.45s var(--suave), opacity 0.3s ease' : 'none',
         }}
       >
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-1 rounded-full bg-indigo-400" />
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-1 rounded-full bg-ouro-400" />
       </span>
       {itens.map((item, i) => (
         <Link

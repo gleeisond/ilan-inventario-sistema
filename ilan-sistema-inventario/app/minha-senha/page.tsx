@@ -3,7 +3,7 @@ import { trocarSenha } from './actions'
 
 export const dynamic = 'force-dynamic'
 
-const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none'
+const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ouro-500 focus:border-transparent outline-none'
 
 function Campo({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -43,7 +43,7 @@ export default async function MinhaSenha({ searchParams }: { searchParams: { err
           <Campo label="Repita a nova senha">
             <input name="confirmacao" type="password" required minLength={6} autoComplete="new-password" className={inputClass} />
           </Campo>
-          <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition">
+          <button type="submit" className="w-full bg-ouro-400 hover:bg-ouro-300 text-gray-900 font-semibold px-4 py-2 rounded-lg transition">
             Trocar senha
           </button>
         </form>
