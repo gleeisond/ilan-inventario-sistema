@@ -4,7 +4,7 @@ import { excluirSimples, salvarSimples } from './actions'
 import Aviso from './Aviso'
 import { exigirAdmin } from '@/lib/auth'
 
-const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none'
+const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ouro-500 focus:border-transparent outline-none'
 
 type Props = {
   tipo: 'categorias' | 'locais'
@@ -42,7 +42,7 @@ export default async function CadastroSimples({ tipo, tabela, coluna, titulo, ex
           <span className="block mb-1">{titulo}</span>
           <input name="name" required placeholder={exemplo} className={inputClass} />
         </label>
-        <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition">
+        <button type="submit" className="bg-ouro-400 hover:bg-ouro-300 text-gray-900 font-semibold px-4 py-2 rounded-lg transition">
           Criar
         </button>
       </form>
@@ -58,7 +58,7 @@ export default async function CadastroSimples({ tipo, tabela, coluna, titulo, ex
                 <span className="text-sm text-gray-500 w-32">
                   {usos.get(item.name) ?? 0} {usos.get(item.name) === 1 ? 'equipamento' : 'equipamentos'}
                 </span>
-                <button type="submit" className="text-indigo-600 hover:text-indigo-700">Salvar</button>
+                <button type="submit" className="text-ouro-600 hover:text-ouro-700">Salvar</button>
               </form>
               <form action={excluirSimples}>
                 <input type="hidden" name="tipo" value={tipo} />

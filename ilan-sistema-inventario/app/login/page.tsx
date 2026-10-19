@@ -2,7 +2,7 @@ import { entrar } from './actions'
 
 export const dynamic = 'force-dynamic'
 
-const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none'
+const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ouro-500 focus:border-transparent outline-none'
 
 export default function Login({ searchParams }: { searchParams: { erro?: string; voltar?: string } }) {
   return (
@@ -30,11 +30,19 @@ export default function Login({ searchParams }: { searchParams: { erro?: string;
             <span className="block mb-1">Senha</span>
             <input name="senha" type="password" required autoComplete="current-password" className={inputClass} />
           </label>
-          <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition">
+          <button type="submit" className="w-full bg-ouro-400 hover:bg-ouro-300 text-gray-900 font-semibold px-4 py-2 rounded-lg transition">
             Entrar
           </button>
           <p className="text-xs text-gray-500 text-center">No primeiro acesso, use a senha que o administrador passou. Depois você pode trocá-la. Esqueceu? Peça ao administrador uma nova.</p>
         </form>
+
+        <div
+          className="entrada mt-10 flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.18em] text-gray-400"
+          style={{ '--atraso': '450ms' } as React.CSSProperties}
+        >
+          por
+          <img src="/genesis41-negativo.svg" alt="Genesis41" className="h-4 w-auto" />
+        </div>
       </div>
     </div>
   )

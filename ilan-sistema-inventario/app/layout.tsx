@@ -3,9 +3,15 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { headers } from 'next/headers'
 import { Suspense } from 'react'
+import { Figtree, IBM_Plex_Mono, Sora } from 'next/font/google'
 import Sidebar from '@/components/Sidebar'
 import Interacoes from '@/components/Interacoes'
 import { exigirLogin } from '@/lib/auth'
+
+// Fontes da identidade Genesis41: Sora nos títulos, Figtree no texto e IBM Plex Mono nos números
+const titulo = Sora({ subsets: ['latin'], weight: ['600', '700'], variable: '--fonte-titulo' })
+const texto = Figtree({ subsets: ['latin'], variable: '--fonte-texto' })
+const mono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '600'], variable: '--fonte-mono' })
 
 export const metadata: Metadata = {
   title: 'ILAN - Sistema de Inventário de Mídia',
@@ -16,7 +22,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#111827',
+  themeColor: '#11141A',
 }
 
 export default async function RootLayout({
@@ -28,7 +34,7 @@ export default async function RootLayout({
   if (headers().get('x-pathname') !== '/login') await exigirLogin()
 
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" className={`${titulo.variable} ${texto.variable} ${mono.variable}`}>
       <body>
         <Suspense>
           <Interacoes />

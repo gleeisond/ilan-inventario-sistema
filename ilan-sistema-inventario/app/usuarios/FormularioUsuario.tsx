@@ -5,7 +5,7 @@ import { User } from '@/types/database'
 import { emailParaLogin } from '@/lib/auth'
 import { salvarUsuario } from './actions'
 
-const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none'
+const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ouro-500 focus:border-transparent outline-none'
 
 function Campo({ label, dica, children }: { label: string; dica?: string; children: React.ReactNode }) {
   return (
@@ -35,7 +35,7 @@ export default async function FormularioUsuario({
 
   return (
     <div className="p-4 md:p-8 max-w-3xl">
-      <Link href="/usuarios" className="text-sm text-indigo-600 hover:text-indigo-700">
+      <Link href="/usuarios" className="text-sm text-ouro-600 hover:text-ouro-700">
         ← Voltar para usuários
       </Link>
       <h1 className="text-2xl font-bold mt-2 mb-6">{usuario ? `Editar ${usuario.name}` : 'Novo usuário'}</h1>
@@ -81,7 +81,7 @@ export default async function FormularioUsuario({
             {PERFIS.map(perfil => (
               <label
                 key={perfil}
-                className="flex gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50"
+                className="flex gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 has-[:checked]:border-ouro-500 has-[:checked]:bg-ouro-50"
               >
                 <input type="radio" name="role" value={perfil} required defaultChecked={usuario?.role === perfil} className="mt-1" />
                 <span>
@@ -119,7 +119,7 @@ export default async function FormularioUsuario({
         </label>
 
         <div className="flex gap-3 pt-2">
-          <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition">
+          <button type="submit" className="bg-ouro-400 hover:bg-ouro-300 text-gray-900 font-semibold px-4 py-2 rounded-lg transition">
             Salvar usuário
           </button>
           <Link href="/usuarios" className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">

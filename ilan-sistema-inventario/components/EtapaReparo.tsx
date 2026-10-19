@@ -3,10 +3,10 @@
 import { useState } from 'react'
 import type { AcaoFluxo } from '@/lib/fluxoReparo'
 
-const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none'
+const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ouro-500 focus:border-transparent outline-none'
 
 const ESTILOS: Record<AcaoFluxo['estilo'], string> = {
-  principal: 'bg-indigo-600 hover:bg-indigo-700 text-white',
+  principal: 'bg-ouro-400 hover:bg-ouro-300 text-gray-900',
   secundario: 'bg-gray-900 hover:bg-gray-700 text-white',
   perigo: 'bg-red-600 hover:bg-red-700 text-white',
 }
@@ -47,7 +47,7 @@ export default function EtapaReparo({
               aria-checked={a.id === acao.id}
               onClick={() => setEscolhida(a.id)}
               className={`px-3 py-1.5 rounded-full text-sm border transition ${
-                a.id === acao.id ? 'border-indigo-600 bg-indigo-50 text-indigo-800 font-medium' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                a.id === acao.id ? 'border-ouro-600 bg-ouro-50 text-ouro-800 font-medium' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
               }`}
             >
               {a.rotulo}

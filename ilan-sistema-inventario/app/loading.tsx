@@ -2,6 +2,12 @@
 export default function Carregando() {
   return (
     <div className="p-4 md:p-8 space-y-8" aria-busy="true" aria-label="Carregando">
+      {/* G seguido das 6 casas do binário do 41, acendendo em onda */}
+      <div className="binario-carregando" aria-hidden="true">
+        {[0, 1, 2, 3, 4, 5, 6].map(i => (
+          <span key={i} style={{ '--casa': i } as React.CSSProperties} />
+        ))}
+      </div>
       <div className="space-y-2">
         <div className="esqueleto h-7 w-48" />
         <div className="esqueleto h-4 w-72 max-w-full" />

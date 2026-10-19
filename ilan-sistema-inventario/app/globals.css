@@ -9,17 +9,23 @@
 }
 
 body {
-  background-color: #f9fafb;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  background-color: #f4f3ef;
+  color: #16181d;
+  font-family: var(--fonte-texto), system-ui, -apple-system, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: var(--fonte-mono), Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+/* Títulos em Sora, como na marca Genesis41 */
+h1,
+h2,
+h3 {
+  font-family: var(--fonte-titulo), var(--fonte-texto), sans-serif;
+  letter-spacing: -0.015em;
 }
 
 /* ============================================================
@@ -115,7 +121,7 @@ tbody > tr:nth-child(n + 10) { --linha: 9; }
 .cartao:hover {
   transform: translateY(-3px);
   box-shadow: 0 10px 24px -12px rgb(17 24 39 / 0.18);
-  border-color: rgb(199 210 254);
+  border-color: rgb(232 197 122);
 }
 
 /* Barras de proporção crescem a partir da esquerda */
@@ -127,27 +133,27 @@ tbody > tr:nth-child(n + 10) { --linha: 9; }
 
 /* Botões: afundam ao clicar, com retorno em mola */
 button,
-a[class*='bg-indigo-600'] {
+a[class*='bg-ouro-400'] {
   transition: transform 0.25s var(--mola), background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 button:not(:disabled):active,
-a[class*='bg-indigo-600']:active {
+a[class*='bg-ouro-400']:active {
   transform: scale(0.96);
   transition-duration: 0.08s;
 }
 
 /* Botão principal: faixa de luz atravessa ao passar o mouse */
-button[class*='bg-indigo-600'],
-a[class*='bg-indigo-600'] {
-  background-image: linear-gradient(110deg, transparent 35%, rgb(255 255 255 / 0.28) 50%, transparent 65%);
+button[class*='bg-ouro-400'],
+a[class*='bg-ouro-400'] {
+  background-image: linear-gradient(110deg, transparent 35%, rgb(255 255 255 / 0.45) 50%, transparent 65%);
   background-size: 250% 100%;
   background-position: 150% 0;
   background-repeat: no-repeat;
 }
-button[class*='bg-indigo-600']:hover,
-a[class*='bg-indigo-600']:hover {
+button[class*='bg-ouro-400']:hover,
+a[class*='bg-ouro-400']:hover {
   animation: brilho 0.9s var(--suave);
-  box-shadow: 0 6px 18px -8px rgb(79 70 229 / 0.6);
+  box-shadow: 0 6px 18px -8px rgb(169 122 24 / 0.65);
 }
 
 /* Botão enviando: mostra um indicador girando e evita clique duplo */
@@ -178,7 +184,7 @@ textarea {
 input:focus,
 select:focus,
 textarea:focus {
-  box-shadow: 0 0 0 4px rgb(99 102 241 / 0.12);
+  box-shadow: 0 0 0 4px rgb(224 174 78 / 0.2);
 }
 
 /* Avisos: surgem com um pequeno impulso; erros balançam para chamar atenção */
@@ -189,22 +195,48 @@ textarea:focus {
   animation: surgir 0.3s var(--suave) both, tremer 0.45s ease 0.3s;
 }
 
-/* Barra de progresso no topo durante a troca de página */
+/* Barra de progresso dourada no topo durante a troca de página; o brilho corre por dentro enquanto carrega */
 .barra-progresso {
   position: fixed;
   top: 0;
   left: 0;
-  height: 3px;
+  height: 4px;
   z-index: 100;
-  background: linear-gradient(90deg, #6366f1, #a5b4fc);
-  box-shadow: 0 0 10px rgb(99 102 241 / 0.7);
+  background: linear-gradient(90deg, #a97a18, #e0ae4e 40%, #f6dfa6 50%, #e0ae4e 60%, #a97a18);
+  background-size: 200% 100%;
+  animation: brilho 1.2s linear infinite;
+  box-shadow: 0 0 12px rgb(224 174 78 / 0.8), 0 0 2px rgb(224 174 78 / 0.9);
+  border-radius: 0 9999px 9999px 0;
   transform-origin: left;
   pointer-events: none;
 }
 
+/* Carregamento com o binário do 41 (G + 0101001): as casas acendem em sequência, da esquerda para a direita */
+@keyframes acender {
+  0%, 100% { background-color: transparent; transform: scale(0.86); }
+  20%, 40% { background-color: #e0ae4e; transform: none; }
+}
+.binario-carregando {
+  display: inline-flex;
+  gap: 5px;
+}
+.binario-carregando > span {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 2px solid #e0ae4e;
+  animation: acender 1.4s var(--suave) infinite;
+  animation-delay: calc(var(--casa, 0) * 110ms);
+}
+.binario-carregando > span:first-child {
+  border-color: #11141a;
+  background-color: #11141a;
+  animation: none;
+}
+
 /* Esqueleto de carregamento com brilho passando */
 .esqueleto {
-  background: linear-gradient(90deg, #eef0f3 30%, #f8f9fb 50%, #eef0f3 70%);
+  background: linear-gradient(90deg, #e9e8e2 30%, #f7f6f2 50%, #e9e8e2 70%);
   background-size: 300% 100%;
   animation: brilho 1.4s ease-in-out infinite;
   border-radius: 0.5rem;

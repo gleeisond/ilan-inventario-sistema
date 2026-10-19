@@ -59,7 +59,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Filtros
         </div>
         <Link
           href="/usuarios/novo"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition"
+          className="bg-ouro-400 hover:bg-ouro-300 text-gray-900 font-semibold px-4 py-2 rounded-lg transition"
         >
           + Novo usuário
         </Link>
@@ -77,8 +77,8 @@ export default async function Usuarios({ searchParams }: { searchParams: Filtros
           <Link
             key={perfil}
             href={searchParams.perfil === perfil ? '/usuarios' : `/usuarios?perfil=${perfil}`}
-            className={`bg-white rounded-lg border p-4 hover:border-indigo-300 ${
-              searchParams.perfil === perfil ? 'border-indigo-500 ring-1 ring-indigo-500' : 'border-gray-200'
+            className={`bg-white rounded-lg border p-4 hover:border-ouro-300 ${
+              searchParams.perfil === perfil ? 'border-ouro-500 ring-1 ring-ouro-500' : 'border-gray-200'
             }`}
           >
             <div className="flex items-center justify-between">
@@ -125,7 +125,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Filtros
           Filtrar
         </button>
         {temFiltro && (
-          <Link href="/usuarios" className="text-sm text-indigo-600 hover:text-indigo-700 py-2">
+          <Link href="/usuarios" className="text-sm text-ouro-600 hover:text-ouro-700 py-2">
             Limpar filtros
           </Link>
         )}
@@ -174,7 +174,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Filtros
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Link href={`/usuarios/${u.id}`} className="text-indigo-600 hover:text-indigo-700">
+                    <Link href={`/usuarios/${u.id}`} className="text-ouro-600 hover:text-ouro-700">
                       Editar
                     </Link>
                   </td>

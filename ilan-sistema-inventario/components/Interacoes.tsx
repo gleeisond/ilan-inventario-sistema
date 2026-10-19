@@ -26,8 +26,20 @@ export default function Interacoes() {
     setTimeout(() => setProgresso(p => (p === 100 ? null : p)), 350)
   }
 
-  // A tela mudou: completa a barra e libera os botões
-  useEffect(concluir, [caminho, busca])
+  // A tela mudou: completa a barra e libera os botões. Se o endereço trocou mas ainda está no
+  // esqueleto de carregamento (loading.tsx), espera os dados chegarem para completar.
+  useEffect(() => {
+    const principal = document.querySelector('main')
+    const carregando = () => !!principal?.querySelector('[aria-busy="true"]')
+    if (!principal || !carregando()) return concluir()
+    const observador = new MutationObserver(() => {
+      if (carregando()) return
+      observador.disconnect()
+      concluir()
+    })
+    observador.observe(principal, { childList: true, subtree: true })
+    return () => observador.disconnect()
+  }, [caminho, busca])
 
   useEffect(() => {
     const aoClicar = (e: MouseEvent) => {

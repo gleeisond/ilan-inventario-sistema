@@ -1,6 +1,6 @@
 import { salvarCampus } from '../actions'
 
-const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none'
+const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ouro-500 focus:border-transparent outline-none'
 
 type Campus = { id: string; name: string; location: string | null; region_id: string }
 
@@ -25,7 +25,7 @@ export default function FormCampus({ campus, regioes }: { campus?: Campus; regio
         <span className="block mb-1">Endereço</span>
         <input name="location" defaultValue={campus?.location ?? ''} placeholder="Rua, número, bairro" className={inputClass} />
       </label>
-      <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition">
+      <button type="submit" className="bg-ouro-400 hover:bg-ouro-300 text-gray-900 font-semibold px-4 py-2 rounded-lg transition">
         {campus ? 'Salvar alterações' : 'Criar campus'}
       </button>
     </form>

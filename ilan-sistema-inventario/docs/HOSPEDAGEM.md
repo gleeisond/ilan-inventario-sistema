@@ -23,7 +23,7 @@ Toda hospedagem precisa destas variáveis:
 | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Sim | Endereço do projeto Supabase (`https://<ref>.supabase.co`). |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Sim | Chave pública do Supabase. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Sim | Chave secreta do Supabase. Usada só no servidor, para criar e trocar senhas. Nunca exponha. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Sim | Chave secreta do Supabase. Usada só no servidor, em todas as consultas ao banco e para criar e trocar senhas. Marque como **Sensitive** na Vercel e nunca exponha. Sem ela, o servidor usa a chave pública e o banco precisaria ficar aberto. |
 | `SESSION_SECRET` | Recomendada | Texto longo e aleatório que assina o cookie de sessão. Sem ela, a aplicação usa a `SUPABASE_SERVICE_ROLE_KEY`. Trocar esse valor desconecta todo mundo. |
 | `LOGIN_ATIVO` | Sim, em produção | `1` exige login. Sem ela, o sistema fica aberto (modo de teste). |
 
@@ -81,6 +81,7 @@ Num projeto Supabase novo, rode no SQL Editor, nesta ordem:
 3. `sql/01_activity_logs.sql`: tabela de logs.
 4. `sql/02_cadastros.sql`: categorias e locais.
 5. `sql/03_fluxo_reparo.sql`: etapas do fluxo de reparo (triagem, aprovação de orçamento, descarte, instalação).
+6. `sql/04_fecha_acesso_anonimo.sql`: fecha o banco para a chave pública. Só rode com a aplicação já configurada com a `SUPABASE_SERVICE_ROLE_KEY`. Se rodar de novo algum dos scripts 01 a 03, rode este em seguida, porque eles reabrem o acesso.
 
 Toda mudança futura de banco deve ganhar um arquivo novo em `sql/` com o próximo número e ser registrada aqui.
 

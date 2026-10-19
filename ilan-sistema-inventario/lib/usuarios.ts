@@ -26,7 +26,7 @@ export const PERFIL_COLORS: Record<UserRole, string> = {
   rodrigo: 'bg-blue-100 text-blue-800',
   lider_regional: 'bg-teal-100 text-teal-800',
   pastor: 'bg-amber-100 text-amber-800',
-  lider_midia: 'bg-indigo-100 text-indigo-800',
+  lider_midia: 'bg-ouro-100 text-ouro-800',
 }
 
 // Qual vínculo cada perfil exige

@@ -1,0 +1,4 @@
+
+# Gerados pelo build do Next
+*.tsbuildinfo
+next-env.d.ts

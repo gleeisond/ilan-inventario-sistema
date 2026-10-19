@@ -18,7 +18,7 @@ export default async function EditarCampus({ params, searchParams }: { params: {
 
   return (
     <div className="space-y-4">
-      <Link href="/cadastros/campus" className="text-sm text-indigo-600 hover:text-indigo-700">← Voltar para campus</Link>
+      <Link href="/cadastros/campus" className="text-sm text-ouro-600 hover:text-ouro-700">← Voltar para campus</Link>
       <h2 className="font-semibold text-lg">Editar {campus.name}</h2>
       <Aviso erro={searchParams.erro} />
       <FormCampus campus={campus} regioes={regioes ?? []} />

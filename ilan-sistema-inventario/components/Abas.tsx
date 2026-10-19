@@ -33,7 +33,7 @@ export default function Abas({ abas }: { abas: Aba[] }) {
           }}
           aria-current={i === ativa ? 'page' : undefined}
           className={`px-4 py-2 font-medium whitespace-nowrap transition-colors duration-200 ${
-            i === ativa ? 'text-indigo-700' : 'text-gray-600 hover:text-gray-900'
+            i === ativa ? 'text-ouro-700' : 'text-gray-600 hover:text-gray-900'
           }`}
         >
           {aba.rotulo}
@@ -41,7 +41,7 @@ export default function Abas({ abas }: { abas: Aba[] }) {
       ))}
       <span
         aria-hidden="true"
-        className="absolute bottom-0 h-0.5 rounded-full bg-indigo-600"
+        className="absolute bottom-0 h-0.5 rounded-full bg-ouro-500"
         style={{
           left: linha?.left ?? 0,
           width: linha?.width ?? 0,

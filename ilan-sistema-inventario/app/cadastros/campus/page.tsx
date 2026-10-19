@@ -53,7 +53,7 @@ export default async function CadastroCampus({ searchParams }: { searchParams: {
                 <td className="px-5 py-3">{contar(usuarios, c.id)}</td>
                 <td className="px-5 py-3">
                   <div className="flex justify-end gap-4">
-                    <Link href={`/cadastros/campus/${c.id}`} className="text-indigo-600 hover:text-indigo-700">Editar</Link>
+                    <Link href={`/cadastros/campus/${c.id}`} className="text-ouro-600 hover:text-ouro-700">Editar</Link>
                     <form action={excluirCampus}>
                       <input type="hidden" name="id" value={c.id} />
                       <BotaoExcluir nome={c.name} />

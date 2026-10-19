@@ -202,7 +202,7 @@ export default async function Relatorios({ searchParams }: { searchParams: Filtr
                   <tr key={m.id}>
                     <td className="px-4 py-2 whitespace-nowrap">{formatarData(m.created_at)}</td>
                     <td className="px-4 py-2">
-                      <Link href={`/manutencoes/${m.id}`} className="text-indigo-700 hover:underline">{m.equipment?.name ?? 'Equipamento'}</Link>
+                      <Link href={`/manutencoes/${m.id}`} className="text-ouro-700 hover:underline">{m.equipment?.name ?? 'Equipamento'}</Link>
                     </td>
                     <td className="px-4 py-2">{m.campus?.name}</td>
                     <td className="px-4 py-2">{MANUTENCAO_STATUS_LABELS[m.status]}</td>
