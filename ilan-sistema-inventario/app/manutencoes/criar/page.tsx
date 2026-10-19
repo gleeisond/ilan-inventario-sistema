@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { getSupabase } from '@/lib/supabase'
 import { PRIORIDADE_LABELS } from '@/lib/manutencoes'
-import { getUsuarioAtual, exigirLogin } from '@/lib/auth'
+import { getUsuarioAtual, exigirLogin, igrejaDoContexto } from '@/lib/auth'
 import { criarManutencao } from '../actions'
 
 export const dynamic = 'force-dynamic'
@@ -22,9 +22,10 @@ type EquipamentoOpcao = { id: string; name: string; campus: { name: string } | n
 export default async function CriarManutencao({ searchParams }: { searchParams: { erro?: string; equipamento?: string } }) {
   await exigirLogin()
   const supabase = getSupabase()
+  const igreja = await igrejaDoContexto()
   const [{ data: equipData, error: erroEquip }, { data: usuarios, error: erroUsuarios }] = await Promise.all([
     supabase.from('equipment').select('id, name, campus:campus_id (name)').neq('status', 'descartado').order('name'),
-    supabase.from('users').select('id, name').eq('is_active', true).order('name'),
+    supabase.from('users').select('id, name').eq('igreja_id', igreja).eq('is_active', true).order('name'),
   ])
   const equipamentos = (equipData ?? []) as unknown as EquipamentoOpcao[]
   const usuarioLogado = await getUsuarioAtual()

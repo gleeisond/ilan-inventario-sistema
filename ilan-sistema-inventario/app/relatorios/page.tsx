@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getSupabase } from '@/lib/supabase'
-import { exigirLogin } from '@/lib/auth'
+import { exigirLogin, igrejaDoContexto } from '@/lib/auth'
 import { STATUS_LABELS, formatarMoeda } from '@/lib/equipamentos'
 import { MANUTENCAO_STATUS_LABELS, STATUS_FINALIZADOS } from '@/lib/manutencoes'
 import { EquipmentStatus, MaintenanceStatus } from '@/types/database'
@@ -61,13 +61,14 @@ function formatarData(data: string) {
 
 export default async function Relatorios({ searchParams }: { searchParams: FiltrosRelatorio }) {
   await exigirLogin()
+  const igreja = await igrejaDoContexto()
   const { de, ate } = periodoPadrao(searchParams)
   const filtros = { ...searchParams, de, ate }
 
   const [{ equipamentos, error: erroEquip }, { manutencoes, error: erroManut }, { data: campusList }] = await Promise.all([
     buscarEquipamentos(filtros),
     buscarManutencoes(filtros),
-    getSupabase().from('campus').select('id, name').order('name'),
+    getSupabase().from('campus').select('id, name').eq('igreja_id', igreja).order('name'),
   ])
   const erro = erroEquip ?? erroManut
   const campusNome = campusList?.find(c => c.id === searchParams.campus)?.name

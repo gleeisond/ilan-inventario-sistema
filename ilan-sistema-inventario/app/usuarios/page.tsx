@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { getSupabase } from '@/lib/supabase'
 import { PERFIS, PERFIL_COLORS, PERFIL_DESCRICOES, PERFIL_LABELS } from '@/lib/usuarios'
 import { UserRole } from '@/types/database'
-import { emailParaLogin, exigirAdmin, idsComAcesso } from '@/lib/auth'
+import { emailParaLogin, exigirAdmin, idsComAcesso, igrejaDoContexto } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,11 +23,13 @@ const selectClass = 'px-3 py-2 border border-gray-300 rounded-lg'
 export default async function Usuarios({ searchParams }: { searchParams: Filtros }) {
   await exigirAdmin()
   const supabase = getSupabase()
+  const igreja = await igrejaDoContexto()
   const situacao = searchParams.situacao ?? 'ativos'
 
   let query = supabase
     .from('users')
     .select('id, name, email, role, is_active, campus:campus_id (name), region:region_id (name)')
+    .eq('igreja_id', igreja)
     .order('name')
   if (searchParams.perfil) query = query.eq('role', searchParams.perfil)
   if (searchParams.campus) query = query.eq('campus_id', searchParams.campus)
@@ -39,8 +41,8 @@ export default async function Usuarios({ searchParams }: { searchParams: Filtros
 
   const [{ data, error }, { data: campusList }, { data: todos }, comAcesso] = await Promise.all([
     query,
-    supabase.from('campus').select('id, name').order('name'),
-    supabase.from('users').select('role').eq('is_active', true),
+    supabase.from('campus').select('id, name').eq('igreja_id', igreja).order('name'),
+    supabase.from('users').select('role').eq('igreja_id', igreja).eq('is_active', true),
     idsComAcesso(),
   ])
 

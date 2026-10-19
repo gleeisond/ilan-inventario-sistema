@@ -22,7 +22,28 @@ export function emailParaLogin(email: string) {
 
 export const FORMATO_LOGIN = /^[a-z0-9._-]{3,40}$/
 
-export type UsuarioAtual = { id: string; name: string; role: UserRole; campus_id: string | null; region_id: string | null }
+// O superadmin aparece aqui com role 'admin' e superadmin = true: assim ele passa em todas as
+// regras de administrador da igreja sem precisar mexer em cada uma delas.
+export type UsuarioAtual = {
+  id: string
+  name: string
+  role: UserRole
+  campus_id: string | null
+  region_id: string | null
+  igreja_id: string | null
+  superadmin: boolean
+}
+
+type LinhaUsuario = {
+  id: string
+  name: string
+  role: UserRole
+  campus_id: string | null
+  region_id: string | null
+  igreja_id: string | null
+  is_active: boolean
+  igreja: { situacao: string } | null
+}
 
 // cache: layout, menu e página leem o mesmo usuário numa só consulta por requisição
 export const getUsuarioAtual = cache(async (): Promise<UsuarioAtual | null> => {
@@ -30,11 +51,39 @@ export const getUsuarioAtual = cache(async (): Promise<UsuarioAtual | null> => {
   if (!sessao) return null
   const { data } = await getSupabase()
     .from('users')
-    .select('id, name, role, campus_id, region_id, is_active')
+    .select('id, name, role, campus_id, region_id, igreja_id, is_active, igreja:igreja_id (situacao)')
     .eq('id', sessao.uid)
     .maybeSingle()
-  if (!data || !data.is_active) return null
-  return { id: data.id, name: data.name, role: data.role, campus_id: data.campus_id, region_id: data.region_id }
+  const linha = data as unknown as LinhaUsuario | null
+  if (!linha || !linha.is_active) return null
+  const superadmin = linha.role === 'superadmin'
+  // Usuário de igreja em implantação ou suspensa não entra (o superadmin não tem igreja)
+  if (!superadmin && linha.igreja?.situacao !== 'ativa') return null
+  return {
+    id: linha.id,
+    name: linha.name,
+    role: superadmin ? 'admin' : linha.role,
+    campus_id: linha.campus_id,
+    region_id: linha.region_id,
+    igreja_id: linha.igreja_id,
+    superadmin,
+  }
+})
+
+// Igreja cujos dados aparecem nas telas do sistema. O superadmin não pertence a nenhuma:
+// enquanto o "entrar como igreja" não existe, ele vê a primeira igreja ativa (a ILAN).
+export const igrejaDoContexto = cache(async (): Promise<string> => {
+  const usuario = await getUsuarioAtual()
+  if (usuario?.igreja_id) return usuario.igreja_id
+  const { data, error } = await getSupabase()
+    .from('igrejas')
+    .select('id')
+    .eq('situacao', 'ativa')
+    .order('criada_em')
+    .limit(1)
+    .single()
+  if (error || !data) throw new Error('Nenhuma igreja ativa cadastrada. Rode sql/05_igrejas.sql.')
+  return data.id
 })
 
 // Ids dos usuários que já têm senha (conta no Supabase Auth). Null se a chave de admin não estiver configurada.
@@ -62,6 +111,15 @@ export async function exigirAdmin() {
   return usuario
 }
 
+// Painel da plataforma Genesis41: só o superadmin
+export async function exigirSuperadmin() {
+  if (!loginAtivo()) return null
+  const usuario = await getUsuarioAtual()
+  if (!usuario) redirect('/login')
+  if (!usuario.superadmin) redirect('/dashboard?sem_permissao=1')
+  return usuario
+}
+
 export type AcaoLog =
   | 'login'
   | 'login_falhou'
@@ -82,20 +140,25 @@ export type AcaoLog =
   | 'cadastro_editado'
   | 'cadastro_excluido'
   | 'relatorio_exportado'
+  | 'igreja_criada'
+  | 'igreja_editada'
 
 type Log = {
   acao: AcaoLog
   descricao: string
-  entidade?: 'equipment' | 'maintenance_request' | 'user' | 'campus' | 'category' | 'location'
+  entidade?: 'equipment' | 'maintenance_request' | 'user' | 'campus' | 'category' | 'location' | 'igreja' | 'region'
   entidade_id?: string | null
   // Quem fez. Sem informar, usa o usuário logado.
   usuario?: { id: string | null; name: string } | null
+  // Igreja em que a ação aconteceu. Sem informar, usa a do contexto; null registra como ação da plataforma.
+  igreja_id?: string | null
 }
 
 // Nunca interrompe a ação principal: se o log falhar, só registra no console.
-export async function registrarLog({ acao, descricao, entidade, entidade_id, usuario }: Log) {
+export async function registrarLog({ acao, descricao, entidade, entidade_id, usuario, igreja_id }: Log) {
   try {
     const autor = usuario === undefined ? await getUsuarioAtual() : usuario
+    const igreja = igreja_id === undefined ? await igrejaDoContexto().catch(() => null) : igreja_id
     const { error } = await getSupabase()
       .from('activity_logs')
       .insert({
@@ -105,6 +168,7 @@ export async function registrarLog({ acao, descricao, entidade, entidade_id, usu
         entity: entidade ?? null,
         entity_id: entidade_id ?? null,
         description: descricao,
+        igreja_id: igreja,
       })
     if (error) console.error('Falha ao registrar log:', error.message)
   } catch (e) {

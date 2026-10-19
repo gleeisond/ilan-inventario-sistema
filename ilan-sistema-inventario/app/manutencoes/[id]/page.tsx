@@ -14,7 +14,7 @@ import {
   formatarData,
 } from '@/lib/manutencoes'
 import { ActionType, MaintenanceStatus, PriorityLevel } from '@/types/database'
-import { getUsuarioAtual, exigirLogin } from '@/lib/auth'
+import { getUsuarioAtual, exigirLogin, igrejaDoContexto } from '@/lib/auth'
 import { atualizarManutencao, avancarEtapa } from '../actions'
 import { ETAPAS, acoesDisponiveis, etapaAtual, podeAgir, responsavelPor } from '@/lib/fluxoReparo'
 import { PERFIL_LABELS } from '@/lib/usuarios'
@@ -73,6 +73,7 @@ export default async function DetalheManutencao({
 }) {
   await exigirLogin()
   const supabase = getSupabase()
+  const igreja = await igrejaDoContexto()
   const [{ data, error }, { data: logsData }, { data: usuarios }] = await Promise.all([
     supabase
       .from('maintenance_requests')
@@ -86,7 +87,7 @@ export default async function DetalheManutencao({
       .select('id, action_type, description, created_at, performed_by:performed_by_id (name)')
       .eq('maintenance_request_id', params.id)
       .order('created_at', { ascending: false }),
-    supabase.from('users').select('id, name').eq('is_active', true).order('name'),
+    supabase.from('users').select('id, name').eq('igreja_id', igreja).eq('is_active', true).order('name'),
   ])
 
   if (error) {

@@ -1,7 +1,8 @@
 // types/database.ts
 // Tipos baseados no schema SQL
 
-export type UserRole = 'lider_midia' | 'pastor' | 'rodrigo' | 'lider_regional' | 'admin'
+// superadmin: dono da plataforma Genesis41, acima do administrador de cada igreja
+export type UserRole = 'lider_midia' | 'pastor' | 'rodrigo' | 'lider_regional' | 'admin' | 'superadmin'
 export type EquipmentStatus = 'ativo' | 'danificado' | 'em_manutencao' | 'descartado'
 export type MaintenanceStatus =
   | 'aberto'
@@ -41,6 +42,23 @@ export type ActionType =
 export type NotificationType = 'pronto_para_buscar' | 'pronto' | 'aguardando_pecas' | 'atrasado' | 'nova_requisicao'
 
 // Tabelas
+export type PlanoIgreja = 'essencial' | 'rede' | 'ministerio' | 'sob_consulta'
+export type SituacaoIgreja = 'implantacao' | 'ativa' | 'suspensa'
+
+export interface Igreja {
+  id: string
+  nome: string
+  cidade: string | null
+  responsavel: string | null
+  contato: string | null
+  cor_principal: string
+  plano: PlanoIgreja
+  situacao: SituacaoIgreja
+  modulos: string[]
+  criada_em: string
+  atualizada_em: string
+}
+
 export interface Region {
   id: string
   name: string

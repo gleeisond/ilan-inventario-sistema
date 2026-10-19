@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { getSupabase } from '@/lib/supabase'
 import { STATUS_LABELS, podeEditarNoCampus } from '@/lib/equipamentos'
-import { UsuarioAtual } from '@/lib/auth'
+import { UsuarioAtual, igrejaDoContexto } from '@/lib/auth'
 import { Equipment } from '@/types/database'
 
 const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ouro-500 focus:border-transparent outline-none'
@@ -33,10 +33,11 @@ export default async function FormEquipamento({
   textoBotao: string
 }) {
   const supabase = getSupabase()
+  const igreja = await igrejaDoContexto()
   const [{ data: campusList, error: erroCampus }, { data: usuarios, error: erroUsuarios }, { data: categorias }, { data: locais }] =
     await Promise.all([
-      supabase.from('campus').select('id, name, region_id').order('name'),
-      supabase.from('users').select('id, name').eq('is_active', true).order('name'),
+      supabase.from('campus').select('id, name, region_id').eq('igreja_id', igreja).order('name'),
+      supabase.from('users').select('id, name').eq('igreja_id', igreja).eq('is_active', true).order('name'),
       supabase.from('categories').select('name').order('name'),
       supabase.from('locations').select('name').order('name'),
     ])
