@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { getSupabase } from '@/lib/supabase'
 import { STATUS_COLORS, STATUS_LABELS, formatarMoeda } from '@/lib/equipamentos'
 import {
@@ -57,6 +58,8 @@ function Indicador({ titulo, valor, detalhe, destaque }: { titulo: string; valor
 
 export default async function Dashboard({ searchParams }: { searchParams: { sem_permissao?: string; campus?: string } }) {
   const usuario = await exigirLogin()
+  // O superadmin cuida da plataforma: a tela inicial dele é o painel Genesis41
+  if (usuario?.superadmin) redirect('/plataforma/igrejas')
   const supabase = getSupabase()
   const igreja = await igrejaDoContexto()
 

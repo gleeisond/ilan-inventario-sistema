@@ -4,6 +4,7 @@ import { exigirSuperadmin } from '@/lib/auth'
 const ABAS = [
   { href: '/plataforma/igrejas', rotulo: 'Igrejas' },
   { href: '/plataforma/modulos', rotulo: 'Módulos' },
+  { href: '/plataforma/equipe', rotulo: 'Equipe' },
 ]
 
 // Painel da plataforma Genesis41: só o superadmin entra
