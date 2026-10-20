@@ -1,12 +1,11 @@
 'use server'
 
 import { randomUUID } from 'crypto'
-import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { getSupabase } from '@/lib/supabase'
 import { sincronizarAcesso } from '@/lib/acesso'
-import { COOKIE_IGREJA_ABERTA, FORMATO_LOGIN, exigirSuperadmin, loginParaEmail, registrarLog } from '@/lib/auth'
+import { FORMATO_LOGIN, exigirSuperadmin, loginParaEmail, registrarLog } from '@/lib/auth'
 import { daIgreja } from '@/lib/db'
 import { PLANOS } from '@/lib/igrejas'
 import { MODULOS } from '@/lib/modulos'
@@ -88,15 +87,18 @@ export async function salvarModulos(form: FormData) {
   const id = texto(form, 'id')
   if (!id) voltar('/plataforma/igrejas', 'erro', 'Igreja não informada.')
   const caminho = `/plataforma/igrejas/${id}`
-  // Só módulos no ar podem ser contratados; o patrimônio é a base de todos os planos
+  // Qualquer combinação de módulos. Os que ainda estão em prévia ficam liberados e aparecem
+  // para a igreja como "em implantação" até saírem da prévia.
   const escolhidos = form.getAll('modulos').map(String)
-  const modulos = MODULOS.filter(m => m.situacao === 'no_ar' && (m.id === 'patrimonio' || escolhidos.includes(m.id))).map(m => m.id)
+  const modulos = MODULOS.filter(m => escolhidos.includes(m.id)).map(m => m.id)
+  if (modulos.length === 0) voltar(caminho, 'erro', 'Libere pelo menos um módulo para a igreja.')
 
   const supabase = getSupabase()
   const { data, error } = await supabase.from('igrejas').update({ modulos, atualizada_em: new Date().toISOString() }).eq('id', id).select('nome').single()
   if (error) voltar(caminho, 'erro', `Não foi possível salvar: ${error.message}`)
 
-  await registrarLog({ acao: 'igreja_editada', descricao: `Atualizou os módulos da igreja ${data.nome}`, entidade: 'igreja', entidade_id: id, igreja_id: null })
+  const nomes = modulos.map(id => MODULOS.find(m => m.id === id)!.nome).join(', ')
+  await registrarLog({ acao: 'igreja_editada', descricao: `Módulos da igreja ${data.nome}: ${nomes}`, entidade: 'igreja', entidade_id: id, igreja_id: null })
   voltar(caminho, 'salvo', 'Módulos salvos.')
 }
 
@@ -170,15 +172,4 @@ export async function criarAdministrador(form: FormData) {
   await registrarLog({ acao: 'usuario_criado', descricao: `Cadastrou ${name} (${login}) como administrador da igreja`, entidade: 'user', entidade_id: id, igreja_id: null })
   if (erroAcesso) voltar(caminho, 'erro', `Administrador cadastrado, mas a senha não foi definida: ${erroAcesso}`)
   voltar(caminho, 'salvo', `Administrador ${name} cadastrado.${igreja.situacao === 'ativa' ? '' : ' O acesso é liberado quando a igreja for ativada.'}`)
-}
-
-// O superadmin passa a ver as telas do sistema com os dados desta igreja
-export async function abrirIgreja(form: FormData) {
-  await exigirSuperadmin()
-  const id = texto(form, 'id')
-  const { data } = id ? await getSupabase().from('igrejas').select('id, nome').eq('id', id).maybeSingle() : { data: null }
-  if (!data) voltar('/plataforma/igrejas', 'erro', 'Igreja não encontrada.')
-  cookies().set(COOKIE_IGREJA_ABERTA, data.id, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/' })
-  await registrarLog({ acao: 'igreja_aberta', descricao: `Abriu a igreja ${data.nome} pelo painel da plataforma`, entidade: 'igreja', entidade_id: data.id, igreja_id: data.id })
-  redirect('/dashboard')
 }

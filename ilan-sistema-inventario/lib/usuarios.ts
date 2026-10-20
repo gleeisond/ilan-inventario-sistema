@@ -16,7 +16,7 @@ export const PERFIL_LABELS: Record<UserRole, string> = {
 }
 
 export const PERFIL_DESCRICOES: Record<UserRole, string> = {
-  superadmin: 'Cria e gerencia as igrejas da plataforma. Tem também todos os acessos do administrador de cada igreja.',
+  superadmin: 'Cria e gerencia as igrejas da plataforma. Não vê os dados de nenhuma igreja.',
   admin: 'Acesso total. Aprova ou reprova os orçamentos de reparo e pode agir em qualquer etapa.',
   rodrigo: 'Recebe os equipamentos, faz o diagnóstico, pede aprovação dos custos e conserta ou descarta.',
   lider_regional: 'Faz a triagem dos defeitos dos campus da sua região: envia para a assistência técnica ou resolve no campus.',

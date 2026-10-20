@@ -22,8 +22,8 @@ export function emailParaLogin(email: string) {
 
 export const FORMATO_LOGIN = /^[a-z0-9._-]{3,40}$/
 
-// O superadmin aparece aqui com role 'admin' e superadmin = true: assim ele passa em todas as
-// regras de administrador da igreja sem precisar mexer em cada uma delas.
+// O superadmin (role 'superadmin') só gerencia a plataforma: não pertence a nenhuma igreja
+// e não entra em nenhuma tela com dados de igreja (ver exigirLogin e dadosDaIgreja).
 export type UsuarioAtual = {
   id: string
   name: string
@@ -62,7 +62,7 @@ export const getUsuarioAtual = cache(async (): Promise<UsuarioAtual | null> => {
   return {
     id: linha.id,
     name: linha.name,
-    role: superadmin ? 'admin' : linha.role,
+    role: linha.role,
     campus_id: linha.campus_id,
     region_id: linha.region_id,
     igreja_id: linha.igreja_id,
@@ -70,28 +70,21 @@ export const getUsuarioAtual = cache(async (): Promise<UsuarioAtual | null> => {
   }
 })
 
-// Igreja que o superadmin abriu no painel da plataforma ("Abrir igreja")
-export const COOKIE_IGREJA_ABERTA = 'g41_igreja'
+export type IgrejaDoContexto = { id: string; nome: string; logo_url: string | null; cor_principal: string; modulos: string[] }
 
-export type IgrejaDoContexto = { id: string; nome: string; logo_url: string | null; cor_principal: string }
-
-// Igreja cujos dados aparecem nas telas do sistema: a do usuário logado. O superadmin não
-// pertence a nenhuma e vê a igreja que abriu no painel (ou a mais antiga, se não abriu nenhuma).
+// Igreja cujos dados aparecem nas telas do sistema: a do usuário logado.
+// O superadmin não tem igreja e nunca recebe dados de uma: aqui ele é recusado.
 export const dadosDaIgreja = cache(async (): Promise<IgrejaDoContexto> => {
   const usuario = await getUsuarioAtual()
-  const colunas = 'id, nome, logo_url, cor_principal'
+  if (usuario?.superadmin) throw new Error('O administrador Genesis41 não acessa dados das igrejas.')
+  const colunas = 'id, nome, logo_url, cor_principal, modulos'
   const supabase = getSupabase()
   if (usuario?.igreja_id) {
     const { data } = await supabase.from('igrejas').select(colunas).eq('id', usuario.igreja_id).single()
     if (!data) throw new Error('Igreja do usuário não encontrada.')
     return data as IgrejaDoContexto
   }
-  // Sem igreja só o superadmin (ou o modo de teste sem login)
-  const aberta = usuario?.superadmin ? cookies().get(COOKIE_IGREJA_ABERTA)?.value : undefined
-  if (aberta && /^[0-9a-f-]{36}$/i.test(aberta)) {
-    const { data } = await supabase.from('igrejas').select(colunas).eq('id', aberta).maybeSingle()
-    if (data) return data as IgrejaDoContexto
-  }
+  // Modo de teste sem login: a igreja mais antiga
   const { data } = await supabase.from('igrejas').select(colunas).order('criada_em').limit(1).maybeSingle()
   if (!data) throw new Error('Nenhuma igreja cadastrada. Rode sql/05_igrejas.sql.')
   return data as IgrejaDoContexto
@@ -113,19 +106,22 @@ export async function idsComAcesso(): Promise<Set<string> | null> {
   return new Set(data.users.map(u => u.id))
 }
 
-// Com o login ligado, exige um usuário ativo (usado nas server actions e no layout)
-export async function exigirLogin() {
+// Com o login ligado, exige um usuário ativo (usado nas telas e server actions das igrejas).
+// O superadmin vai para o painel da plataforma, exceto onde permitirSuperadmin (ex.: trocar a senha).
+export async function exigirLogin({ permitirSuperadmin = false } = {}) {
   if (!loginAtivo()) return null
   const usuario = await getUsuarioAtual()
   if (!usuario) redirect('/login')
+  if (usuario.superadmin && !permitirSuperadmin) redirect('/plataforma/igrejas')
   return usuario
 }
 
-// Com o login ligado, só o admin entra nas áreas de Usuários e Logs
+// Com o login ligado, só o admin da igreja entra nas áreas de Usuários, Cadastros e Logs
 export async function exigirAdmin() {
   if (!loginAtivo()) return null
   const usuario = await getUsuarioAtual()
   if (!usuario) redirect('/login')
+  if (usuario.superadmin) redirect('/plataforma/igrejas')
   if (usuario.role !== 'admin') redirect('/dashboard?sem_permissao=1')
   return usuario
 }
@@ -161,7 +157,6 @@ export type AcaoLog =
   | 'relatorio_exportado'
   | 'igreja_criada'
   | 'igreja_editada'
-  | 'igreja_aberta'
 
 type Log = {
   acao: AcaoLog

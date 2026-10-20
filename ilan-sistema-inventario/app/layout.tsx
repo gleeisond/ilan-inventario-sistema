@@ -6,7 +6,9 @@ import { Suspense } from 'react'
 import { Figtree, IBM_Plex_Mono, Sora } from 'next/font/google'
 import Sidebar from '@/components/Sidebar'
 import Interacoes from '@/components/Interacoes'
-import { exigirLogin } from '@/lib/auth'
+import { redirect } from 'next/navigation'
+import { dadosDaIgreja, exigirLogin } from '@/lib/auth'
+import { moduloDaRota } from '@/lib/modulos'
 
 // Fontes da identidade Genesis41: Sora nos títulos, Figtree no texto e IBM Plex Mono nos números
 const titulo = Sora({ subsets: ['latin'], weight: ['600', '700'], variable: '--fonte-titulo' })
@@ -31,7 +33,13 @@ export default async function RootLayout({
   children: React.ReactNode
 }) {
   // O middleware já barra quem não tem sessão; aqui também barra quem foi desativado depois de entrar
-  if (headers().get('x-pathname') !== '/login') await exigirLogin()
+  const caminho = headers().get('x-pathname') ?? ''
+  if (caminho !== '/login') {
+    const usuario = await exigirLogin({ permitirSuperadmin: true })
+    // Tela de um módulo que a igreja não tem liberado: volta para o início
+    const modulo = moduloDaRota(caminho)
+    if (usuario && !usuario.superadmin && modulo && !(await dadosDaIgreja()).modulos.includes(modulo.id)) redirect('/inicio')
+  }
 
   return (
     <html lang="pt-BR" className={`${titulo.variable} ${texto.variable} ${mono.variable}`}>

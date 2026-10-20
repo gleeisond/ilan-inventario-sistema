@@ -59,7 +59,8 @@ export async function excluirCampus(form: FormData) {
   if (!id) voltar(caminho, 'erro', 'Campus não informado.')
 
   const db = await daIgreja()
-  const contar = (tabela: TabelaDaIgreja) => db.select(tabela, 'id', { count: 'exact', head: true }).eq('campus_id', id)
+  // Conta mesmo se a igreja não tiver mais o Patrimônio: excluir o campus apagaria os equipamentos em cascata
+  const contar = async (tabela: TabelaDaIgreja) => ({ count: await db.contarVinculados(tabela, 'campus_id', id) })
   const [{ data: campus }, equipamentos, usuarios, chamados] = await Promise.all([
     db.select('campus', 'name').eq('id', id).maybeSingle(),
     contar('equipment'),

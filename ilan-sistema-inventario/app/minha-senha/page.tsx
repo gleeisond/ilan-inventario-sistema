@@ -15,7 +15,7 @@ function Campo({ label, children }: { label: string; children: React.ReactNode }
 }
 
 export default async function MinhaSenha({ searchParams }: { searchParams: { erro?: string; salvo?: string } }) {
-  const usuario = await exigirLogin()
+  const usuario = await exigirLogin({ permitirSuperadmin: true })
 
   return (
     <div className="p-4 md:p-8 max-w-md">

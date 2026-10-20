@@ -3,11 +3,11 @@ import { notFound } from 'next/navigation'
 import { getSupabase } from '@/lib/supabase'
 import { emailParaLogin } from '@/lib/auth'
 import { PLANOS, SITUACOES, acimaDoLimite } from '@/lib/igrejas'
-import { MODULOS, SITUACAO_MODULO_LABELS } from '@/lib/modulos'
+import { MODULOS } from '@/lib/modulos'
 import { PERFIL_LABELS } from '@/lib/usuarios'
 import { Igreja, UserRole } from '@/types/database'
 import Aviso from '@/app/cadastros/Aviso'
-import { abrirIgreja, criarAdministrador, criarFilial, criarRegiao, salvarIgreja, salvarModulos } from '../../actions'
+import { criarAdministrador, criarFilial, criarRegiao, salvarIgreja, salvarModulos } from '../../actions'
 import CamposIgreja, { inputClass } from '../CamposIgreja'
 
 export const dynamic = 'force-dynamic'
@@ -57,13 +57,6 @@ export default async function DetalheIgreja({ params, searchParams }: { params: 
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${SITUACOES[igreja.situacao].cor}`}>{SITUACOES[igreja.situacao].nome}</span>
         </div>
         <p className="text-sm text-gray-600">{SITUACOES[igreja.situacao].descricao}</p>
-        <form action={abrirIgreja}>
-          <input type="hidden" name="id" value={igreja.id} />
-          <button type="submit" className="bg-gray-900 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition text-sm">
-            Abrir esta igreja
-          </button>
-          <span className="ml-3 text-xs text-gray-500">Você passa a ver o sistema com os dados dela, para dar suporte ou demonstrar.</span>
-        </form>
         <Aviso erro={searchParams.erro} salvo={searchParams.salvo} />
       </div>
 
@@ -190,34 +183,22 @@ export default async function DetalheIgreja({ params, searchParams }: { params: 
         </form>
       </Secao>
 
-      <Secao titulo="Módulos" descricao="O patrimônio vem em todos os planos. Os demais entram conforme forem saindo da prévia.">
+      <Secao
+        titulo="Módulos liberados"
+        descricao="O que esta igreja tem no sistema. Ela só vê as telas dos módulos marcados. Módulos em prévia ficam liberados e aparecem para a igreja como em implantação."
+      >
         <form action={salvarModulos} className="bg-white rounded-lg border border-gray-200 p-5 space-y-4">
           <input type="hidden" name="id" value={igreja.id} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {MODULOS.map(m => {
-              const disponivel = m.situacao === 'no_ar' && m.id !== 'patrimonio'
-              return (
-                <label
-                  key={m.id}
-                  className={`flex items-start gap-3 rounded-lg border p-3 text-sm ${disponivel ? 'border-gray-200 cursor-pointer hover:border-ouro-300' : 'border-gray-100 bg-gray-50'}`}
-                >
-                  <input
-                    type="checkbox"
-                    name="modulos"
-                    value={m.id}
-                    defaultChecked={igreja.modulos.includes(m.id)}
-                    disabled={!disponivel}
-                    className="mt-0.5 accent-ouro-500"
-                  />
-                  <span>
-                    <span className="block font-medium text-gray-900">{m.nome}</span>
-                    <span className="block text-xs text-gray-500">
-                      {m.id === 'patrimonio' ? 'Incluído em todos os planos' : SITUACAO_MODULO_LABELS[m.situacao]}
-                    </span>
-                  </span>
-                </label>
-              )
-            })}
+            {MODULOS.map(m => (
+              <label key={m.id} className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 text-sm cursor-pointer hover:border-ouro-300 has-[:checked]:border-ouro-400 has-[:checked]:bg-ouro-50">
+                <input type="checkbox" name="modulos" value={m.id} defaultChecked={igreja.modulos.includes(m.id)} className="mt-0.5 accent-ouro-500" />
+                <span>
+                  <span className="block font-medium text-gray-900">{m.nome}</span>
+                  <span className="block text-xs text-gray-500">{m.situacao === 'no_ar' ? 'No ar' : 'Em prévia: liberado como em implantação'}</span>
+                </span>
+              </label>
+            ))}
           </div>
           <button type="submit" className={botaoClass}>
             Salvar módulos

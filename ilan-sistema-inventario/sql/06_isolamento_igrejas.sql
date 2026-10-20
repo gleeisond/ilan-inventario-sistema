@@ -47,12 +47,10 @@ create index if not exists idx_locations_igreja on locations (igreja_id);
 
 -- ---------- Gatilhos de integridade ----------
 
--- O usuário pertence à igreja (o superadmin, sem igreja, pode agir em qualquer uma)
+-- O usuário pertence à igreja (o superadmin não pertence a nenhuma e não age dentro delas)
 create or replace function g41_usuario_da_igreja(uid uuid, igreja uuid) returns boolean
 language sql stable set search_path = public as $$
-  select uid is null or exists (
-    select 1 from users u where u.id = uid and (u.igreja_id = igreja or u.role = 'superadmin')
-  )
+  select uid is null or exists (select 1 from users u where u.id = uid and u.igreja_id = igreja)
 $$;
 
 -- Confere a igreja esperada (vinda do registro pai) e impede a troca de igreja

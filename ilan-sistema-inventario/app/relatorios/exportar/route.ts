@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { exigirLogin, registrarLog } from '@/lib/auth'
+import { dadosDaIgreja, exigirLogin, registrarLog } from '@/lib/auth'
 import { STATUS_LABELS } from '@/lib/equipamentos'
 import { MANUTENCAO_STATUS_LABELS, PRIORIDADE_LABELS } from '@/lib/manutencoes'
 import { buscarEquipamentos, buscarManutencoes, diasParaResolver, periodoPadrao } from '@/lib/relatorios'
@@ -25,6 +25,8 @@ function dataBR(data: string | null) {
 
 export async function GET(req: NextRequest) {
   await exigirLogin()
+  // Rotas de API não passam pelo layout: confere aqui se a igreja tem o Patrimônio
+  if (!(await dadosDaIgreja()).modulos.includes('patrimonio')) return new Response('Módulo não liberado para esta igreja.', { status: 403 })
   const p = req.nextUrl.searchParams
   const filtros = { campus: p.get('campus') ?? undefined, de: p.get('de') ?? undefined, ate: p.get('ate') ?? undefined }
   const tipo = p.get('tipo') === 'manutencoes' ? 'manutencoes' : 'equipamentos'

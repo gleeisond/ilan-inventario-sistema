@@ -13,10 +13,12 @@ type CampusLinha = { id: string; name: string; location: string | null; region: 
 export default async function CadastroCampus({ searchParams }: { searchParams: { erro?: string; salvo?: string } }) {
   await exigirAdmin()
   const db = await daIgreja()
+  // A coluna de equipamentos só aparece para quem tem o Patrimônio
+  const temPatrimonio = Boolean(db.modulos?.includes('patrimonio'))
   const [{ data, error }, { data: regioes }, { data: equipamentos }, { data: usuarios }] = await Promise.all([
     db.select('campus', 'id, name, location, region:region_id (name)').order('name'),
     db.select('regions', 'id, name').order('name'),
-    db.select('equipment', 'campus_id'),
+    temPatrimonio ? db.select('equipment', 'campus_id') : Promise.resolve({ data: [] as { campus_id: string | null }[] }),
     db.select('users', 'campus_id').not('campus_id', 'is', null),
   ])
   const lista = ((data ?? []) as unknown as CampusLinha[]).sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
@@ -38,7 +40,7 @@ export default async function CadastroCampus({ searchParams }: { searchParams: {
               <th className="px-5 py-3 font-semibold">Campus</th>
               <th className="px-5 py-3 font-semibold">Região</th>
               <th className="px-5 py-3 font-semibold">Endereço</th>
-              <th className="px-5 py-3 font-semibold">Equipamentos</th>
+              {temPatrimonio && <th className="px-5 py-3 font-semibold">Equipamentos</th>}
               <th className="px-5 py-3 font-semibold">Usuários</th>
               <th className="px-5 py-3"></th>
             </tr>
@@ -49,7 +51,7 @@ export default async function CadastroCampus({ searchParams }: { searchParams: {
                 <td className="px-5 py-3 font-medium text-gray-900">{c.name}</td>
                 <td className="px-5 py-3">{c.region?.name ?? '—'}</td>
                 <td className="px-5 py-3 text-gray-600">{c.location ?? '—'}</td>
-                <td className="px-5 py-3">{contar(equipamentos, c.id)}</td>
+                {temPatrimonio && <td className="px-5 py-3">{contar(equipamentos, c.id)}</td>}
                 <td className="px-5 py-3">{contar(usuarios, c.id)}</td>
                 <td className="px-5 py-3">
                   <div className="flex justify-end gap-4">

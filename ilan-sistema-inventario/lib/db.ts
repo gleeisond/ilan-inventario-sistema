@@ -2,7 +2,7 @@
 // Acesso às tabelas de cada igreja (só no servidor).
 //
 // Regra: nenhuma tela ou ação consulta direto as tabelas abaixo. Tudo passa por daIgreja(),
-// que já filtra pela igreja do usuário logado (ou pela igreja que o superadmin abriu) e grava
+// que já filtra pela igreja do usuário logado e grava
 // a igreja nos registros novos. O script scripts/verificar-isolamento.mjs roda antes do build
 // e barra qualquer .from() fora dos arquivos autorizados.
 //
@@ -11,13 +11,16 @@
 //
 // Dentro da igreja, cada perfil só enxerga os próprios campus (campusVisiveis):
 //   líder de campus e pastor: o campus deles | líder regional: os campus da região
-//   administrador, assistência técnica e superadmin: todos
+//   administrador e assistência técnica: todos
+// O superadmin não passa por aqui: dadosDaIgreja() o recusa.
+// Tabelas de um módulo (ex.: equipamentos, do Patrimônio) só abrem se a igreja tem o módulo liberado.
 // Registros, notificações e histórico de chamados não têm campus: são sempre lidos a partir
 // de um chamado ou equipamento já filtrado.
 
 import type { PostgrestFilterBuilder } from '@supabase/postgrest-js'
 import { getSupabase } from '@/lib/supabase'
-import { getUsuarioAtual, igrejaDoContexto } from '@/lib/auth'
+import { dadosDaIgreja, getUsuarioAtual } from '@/lib/auth'
+import { moduloDaTabela } from '@/lib/modulos'
 
 export const TABELAS_DA_IGREJA = [
   'regions',
@@ -77,11 +80,20 @@ const COLUNA_CAMPUS: Partial<Record<TabelaDaIgreja, string>> = {
 // PostgREST: valores do filtro in.(...)
 const lista = (ids: string[]) => `(${ids.map(id => `"${id}"`).join(',')})`
 
-// igrejaId explícito é usado pelo painel da plataforma (superadmin): sem filtro de campus
+// igrejaId explícito é usado só pelo painel da plataforma, para cadastrar filiais e administradores: sem filtro de campus
 export async function daIgreja(igrejaId?: string) {
-  const igreja = igrejaId ?? (await igrejaDoContexto())
+  const contexto = igrejaId ? null : await dadosDaIgreja()
+  const igreja = igrejaId ?? contexto!.id
   const visiveis = igrejaId ? null : await campusVisiveis(igreja)
   const supabase = getSupabase()
+
+  // Tabela de um módulo que a igreja não tem liberado (ex.: equipamentos sem o Patrimônio): recusa
+  function exigirModulo(tabela: TabelaDaIgreja) {
+    const modulo = moduloDaTabela(tabela)
+    if (contexto && modulo && !contexto.modulos.includes(modulo.id)) {
+      throw new Error(`O módulo ${modulo.nome} não está liberado para esta igreja.`)
+    }
+  }
 
   // Aplica a igreja e, para quem só vê alguns campus, o filtro de campus
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -99,12 +111,29 @@ export async function daIgreja(igrejaId?: string) {
   return {
     igreja,
     campusVisiveis: visiveis,
-    select: (tabela: TabelaDaIgreja, colunas = '*', opcoes?: OpcoesSelect) =>
-      filtrar(tabela, supabase.from(tabela).select(colunas, opcoes)) as unknown as Consulta,
-    insert: (tabela: TabelaDaIgreja, linhas: Linha | Linha[]) => supabase.from(tabela).insert(comIgreja(linhas, igreja)),
-    update: (tabela: TabelaDaIgreja, dados: Linha, opcoes?: OpcoesEscrita) =>
-      filtrar(tabela, supabase.from(tabela).update(semIgreja(dados), opcoes)),
-    delete: (tabela: TabelaDaIgreja, opcoes?: OpcoesEscrita) => filtrar(tabela, supabase.from(tabela).delete(opcoes)),
+    modulos: contexto?.modulos ?? null,
+    // Só para checar integridade antes de excluir (ex.: campus com equipamentos de um módulo
+    // que foi desligado): conta sem exigir o módulo, mas sempre dentro da igreja
+    contarVinculados: async (tabela: TabelaDaIgreja, coluna: string, valor: string) => {
+      const { count } = await supabase.from(tabela).select('id', { count: 'exact', head: true }).eq('igreja_id', igreja).eq(coluna, valor)
+      return count ?? 0
+    },
+    select: (tabela: TabelaDaIgreja, colunas = '*', opcoes?: OpcoesSelect) => {
+      exigirModulo(tabela)
+      return filtrar(tabela, supabase.from(tabela).select(colunas, opcoes)) as unknown as Consulta
+    },
+    insert: (tabela: TabelaDaIgreja, linhas: Linha | Linha[]) => {
+      exigirModulo(tabela)
+      return supabase.from(tabela).insert(comIgreja(linhas, igreja))
+    },
+    update: (tabela: TabelaDaIgreja, dados: Linha, opcoes?: OpcoesEscrita) => {
+      exigirModulo(tabela)
+      return filtrar(tabela, supabase.from(tabela).update(semIgreja(dados), opcoes))
+    },
+    delete: (tabela: TabelaDaIgreja, opcoes?: OpcoesEscrita) => {
+      exigirModulo(tabela)
+      return filtrar(tabela, supabase.from(tabela).delete(opcoes))
+    },
   }
 }
 

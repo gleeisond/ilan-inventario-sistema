@@ -9,7 +9,7 @@ export async function trocarSenha(form: FormData) {
     redirect(`/minha-senha?erro=${encodeURIComponent(erro)}`)
   }
 
-  const usuario = await exigirLogin()
+  const usuario = await exigirLogin({ permitirSuperadmin: true })
   if (!usuario) voltarCom('A troca de senha só funciona com o login ligado.')
 
   const atual = String(form.get('atual') ?? '')
