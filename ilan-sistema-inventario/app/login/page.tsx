@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 
 const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ouro-500 focus:border-transparent outline-none'
 
-export default function Login({ searchParams }: { searchParams: { erro?: string; voltar?: string } }) {
+export default function Login({ searchParams }: { searchParams: { erro?: string; voltar?: string; criado?: string } }) {
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-gray-900">
       <div className="w-full max-w-sm">
@@ -20,6 +20,9 @@ export default function Login({ searchParams }: { searchParams: { erro?: string;
           style={{ '--atraso': '300ms' } as React.CSSProperties}
         >
           <input type="hidden" name="voltar" value={searchParams.voltar ?? ''} />
+          {searchParams.criado && !searchParams.erro && (
+            <div className="aviso p-3 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200">Acesso criado. Entre com o usuário e a senha que você escolheu.</div>
+          )}
           {searchParams.erro && (
             <div className="aviso aviso-erro p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">{searchParams.erro}</div>
           )}

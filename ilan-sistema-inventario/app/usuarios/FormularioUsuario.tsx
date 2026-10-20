@@ -1,9 +1,9 @@
 import Link from 'next/link'
-import { getSupabase } from '@/lib/supabase'
 import { PERFIS, PERFIL_DESCRICOES, PERFIL_LABELS } from '@/lib/usuarios'
 import { User } from '@/types/database'
-import { emailParaLogin, igrejaDoContexto } from '@/lib/auth'
+import { emailParaLogin } from '@/lib/auth'
 import { salvarUsuario } from './actions'
+import { daIgreja } from '@/lib/db'
 
 const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ouro-500 focus:border-transparent outline-none'
 
@@ -27,11 +27,10 @@ export default async function FormularioUsuario({
   erro?: string
   temAcesso?: boolean | null
 }) {
-  const supabase = getSupabase()
-  const igreja = await igrejaDoContexto()
+  const db = await daIgreja()
   const [{ data: campusList }, { data: regioes }] = await Promise.all([
-    supabase.from('campus').select('id, name').eq('igreja_id', igreja).order('name'),
-    supabase.from('regions').select('id, name').eq('igreja_id', igreja).order('name'),
+    db.select('campus', 'id, name').order('name'),
+    db.select('regions', 'id, name').order('name'),
   ])
 
   return (

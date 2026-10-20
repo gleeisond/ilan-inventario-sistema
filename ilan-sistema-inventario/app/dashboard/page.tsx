@@ -1,6 +1,4 @@
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
-import { getSupabase } from '@/lib/supabase'
 import { STATUS_COLORS, STATUS_LABELS, formatarMoeda } from '@/lib/equipamentos'
 import {
   MANUTENCAO_STATUS_LABELS,
@@ -15,8 +13,9 @@ import NumeroAnimado from '@/components/NumeroAnimado'
 import TextoRevelado from '@/components/TextoRevelado'
 import SeletorCampus from '@/components/SeletorCampus'
 import { EquipmentStatus, MaintenanceStatus, PriorityLevel } from '@/types/database'
-import { exigirLogin, igrejaDoContexto } from '@/lib/auth'
+import { exigirLogin } from '@/lib/auth'
 import { aguardaUsuario } from '@/lib/fluxoReparo'
+import { daIgreja } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,17 +57,12 @@ function Indicador({ titulo, valor, detalhe, destaque }: { titulo: string; valor
 
 export default async function Dashboard({ searchParams }: { searchParams: { sem_permissao?: string; campus?: string } }) {
   const usuario = await exigirLogin()
-  // O superadmin cuida da plataforma: a tela inicial dele é o painel Genesis41
-  if (usuario?.superadmin) redirect('/plataforma/igrejas')
-  const supabase = getSupabase()
-  const igreja = await igrejaDoContexto()
+  const db = await daIgreja()
 
   const [equipRes, manutRes, campusRes] = await Promise.all([
-    supabase.from('equipment').select('id, name, category, location, status, value, campus_id').order('name'),
-    supabase
-      .from('maintenance_requests')
-      .select('id, status, priority, problem_description, scheduled_completion_date, campus_id, equipment:equipment_id (name), campus:campus_id (name, region_id)'),
-    supabase.from('campus').select('id, name').eq('igreja_id', igreja).order('name'),
+    db.select('equipment', 'id, name, category, location, status, value, campus_id').order('name'),
+    db.select('maintenance_requests', 'id, status, priority, problem_description, scheduled_completion_date, campus_id, equipment:equipment_id (name), campus:campus_id (name, region_id)'),
+    db.select('campus', 'id, name').order('name'),
   ])
 
   const erro = equipRes.error ?? manutRes.error ?? campusRes.error

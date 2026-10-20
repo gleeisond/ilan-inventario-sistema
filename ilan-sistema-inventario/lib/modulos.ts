@@ -22,6 +22,9 @@ export type Modulo = {
   integracoes: { com: IdModulo; como: string }[]
   // O que muda para o escritório contábil parceiro
   ganhoContador: string
+  // Telas e tabelas do módulo: só abrem para as igrejas que têm o módulo liberado
+  rotas: string[]
+  tabelas: string[]
 }
 
 export const MODULOS: Modulo[] = [
@@ -46,6 +49,8 @@ export const MODULOS: Modulo[] = [
       { com: 'ministerios', como: 'Equipamentos reservados para cultos e eventos da escala' },
     ],
     ganhoContador: 'Imobilizado conciliado com o inventário real, sem planilha paralela.',
+    rotas: ['/dashboard', '/equipamentos', '/manutencoes', '/relatorios', '/cadastros/categorias', '/cadastros/locais'],
+    tabelas: ['equipment', 'maintenance_requests', 'maintenance_logs', 'maintenance_notifications', 'equipment_history', 'categories', 'locations'],
   },
   {
     id: 'tesouraria',
@@ -68,6 +73,8 @@ export const MODULOS: Modulo[] = [
       { com: 'membros', como: 'Contribuições ligadas ao cadastro do membro, para recibo e informe' },
     ],
     ganhoContador: 'Recebe o movimento já classificado e conciliado, em vez de caixas de comprovantes.',
+    rotas: [],
+    tabelas: [],
   },
   {
     id: 'contabilidade',
@@ -89,6 +96,8 @@ export const MODULOS: Modulo[] = [
       { com: 'pessoal', como: 'Folha e encargos lançados automaticamente' },
     ],
     ganhoContador: 'Menos digitação e mais análise: o escritório atende mais igrejas com a mesma equipe.',
+    rotas: [],
+    tabelas: [],
   },
   {
     id: 'pessoal',
@@ -109,6 +118,8 @@ export const MODULOS: Modulo[] = [
       { com: 'contabilidade', como: 'Folha, encargos e provisões lançados no fechamento' },
     ],
     ganhoContador: 'Documentos e prazos na mão sem cobrar a igreja por e-mail.',
+    rotas: [],
+    tabelas: [],
   },
   {
     id: 'membros',
@@ -129,6 +140,8 @@ export const MODULOS: Modulo[] = [
       { com: 'ministerios', como: 'Membros disponíveis para as escalas' },
     ],
     ganhoContador: 'Base confiável de contribuintes para os recibos de doação.',
+    rotas: [],
+    tabelas: [],
   },
   {
     id: 'ministerios',
@@ -149,12 +162,24 @@ export const MODULOS: Modulo[] = [
       { com: 'membros', como: 'Escala só com membros ativos do campus' },
     ],
     ganhoContador: 'Voluntariado documentado, sem risco trabalhista.',
+    rotas: [],
+    tabelas: [],
   },
 ]
 
 export const SITUACAO_MODULO_LABELS: Record<SituacaoModulo, string> = {
   no_ar: 'No ar',
   previa: 'Prévia',
+}
+
+// Módulo dono de uma tela (null = tela comum a todos: usuários, campus, logs, senha)
+export function moduloDaRota(caminho: string) {
+  return MODULOS.find(m => m.rotas.some(r => caminho === r || caminho.startsWith(r + '/'))) ?? null
+}
+
+// Módulo dono de uma tabela (null = tabela comum: igreja, campus, regiões, usuários, logs)
+export function moduloDaTabela(tabela: string) {
+  return MODULOS.find(m => m.tabelas.includes(tabela)) ?? null
 }
 
 export function buscarModulo(id: string) {

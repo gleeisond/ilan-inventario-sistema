@@ -1,10 +1,10 @@
 import Link from 'next/link'
-import { getSupabase } from '@/lib/supabase'
 import BotaoExcluir from '@/components/BotaoExcluir'
-import { excluirCampus } from '../actions'
+import { criarRegiao, excluirCampus } from '../actions'
 import Aviso from '../Aviso'
 import FormCampus from './FormCampus'
-import { exigirAdmin, igrejaDoContexto } from '@/lib/auth'
+import { exigirAdmin } from '@/lib/auth'
+import { daIgreja } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,13 +12,14 @@ type CampusLinha = { id: string; name: string; location: string | null; region: 
 
 export default async function CadastroCampus({ searchParams }: { searchParams: { erro?: string; salvo?: string } }) {
   await exigirAdmin()
-  const supabase = getSupabase()
-  const igreja = await igrejaDoContexto()
+  const db = await daIgreja()
+  // A coluna de equipamentos só aparece para quem tem o Patrimônio
+  const temPatrimonio = Boolean(db.modulos?.includes('patrimonio'))
   const [{ data, error }, { data: regioes }, { data: equipamentos }, { data: usuarios }] = await Promise.all([
-    supabase.from('campus').select('id, name, location, region:region_id (name)').eq('igreja_id', igreja).order('name'),
-    supabase.from('regions').select('id, name').eq('igreja_id', igreja).order('name'),
-    supabase.from('equipment').select('campus_id'),
-    supabase.from('users').select('campus_id').eq('igreja_id', igreja).not('campus_id', 'is', null),
+    db.select('campus', 'id, name, location, region:region_id (name)').order('name'),
+    db.select('regions', 'id, name').order('name'),
+    temPatrimonio ? db.select('equipment', 'campus_id') : Promise.resolve({ data: [] as { campus_id: string | null }[] }),
+    db.select('users', 'campus_id').not('campus_id', 'is', null),
   ])
   const lista = ((data ?? []) as unknown as CampusLinha[]).sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
   const contar = (linhas: { campus_id: string | null }[] | null, id: string) => (linhas ?? []).filter(l => l.campus_id === id).length
@@ -30,6 +31,11 @@ export default async function CadastroCampus({ searchParams }: { searchParams: {
       <section>
         <h2 className="font-semibold text-lg mb-3">Novo campus</h2>
         <FormCampus key={Date.now()} regioes={regioes ?? []} />
+        <form action={criarRegiao} className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-gray-600">Precisa de outra região?</span>
+          <input name="name" required placeholder="Ex: Zona Oeste" className="px-3 py-1.5 border border-gray-300 rounded-lg" />
+          <button type="submit" className="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-100">Criar região</button>
+        </form>
       </section>
 
       <section className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
@@ -39,7 +45,7 @@ export default async function CadastroCampus({ searchParams }: { searchParams: {
               <th className="px-5 py-3 font-semibold">Campus</th>
               <th className="px-5 py-3 font-semibold">Região</th>
               <th className="px-5 py-3 font-semibold">Endereço</th>
-              <th className="px-5 py-3 font-semibold">Equipamentos</th>
+              {temPatrimonio && <th className="px-5 py-3 font-semibold">Equipamentos</th>}
               <th className="px-5 py-3 font-semibold">Usuários</th>
               <th className="px-5 py-3"></th>
             </tr>
@@ -50,7 +56,7 @@ export default async function CadastroCampus({ searchParams }: { searchParams: {
                 <td className="px-5 py-3 font-medium text-gray-900">{c.name}</td>
                 <td className="px-5 py-3">{c.region?.name ?? '—'}</td>
                 <td className="px-5 py-3 text-gray-600">{c.location ?? '—'}</td>
-                <td className="px-5 py-3">{contar(equipamentos, c.id)}</td>
+                {temPatrimonio && <td className="px-5 py-3">{contar(equipamentos, c.id)}</td>}
                 <td className="px-5 py-3">{contar(usuarios, c.id)}</td>
                 <td className="px-5 py-3">
                   <div className="flex justify-end gap-4">

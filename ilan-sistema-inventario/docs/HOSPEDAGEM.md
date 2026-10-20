@@ -26,6 +26,9 @@ Toda hospedagem precisa destas variáveis:
 | `SUPABASE_SERVICE_ROLE_KEY` | Sim | Chave secreta do Supabase. Usada só no servidor, em todas as consultas ao banco e para criar e trocar senhas. Marque como **Sensitive** na Vercel e nunca exponha. Sem ela, o servidor usa a chave pública e o banco precisaria ficar aberto. |
 | `SESSION_SECRET` | Recomendada | Texto longo e aleatório que assina o cookie de sessão. Sem ela, a aplicação usa a `SUPABASE_SERVICE_ROLE_KEY`. Trocar esse valor desconecta todo mundo. |
 | `LOGIN_ATIVO` | Sim, em produção | `1` exige login. Sem ela, o sistema fica aberto (modo de teste). |
+| `ASAAS_API_KEY` | Para cobrar | Chave da API do Asaas (Integrações > Chaves de API). Marque como **Sensitive**. Sem ela, o painel mostra as assinaturas mas não cria nenhuma. |
+| `ASAAS_AMBIENTE` | Para cobrar | `producao` para cobrar de verdade. Qualquer outro valor usa o sandbox (cobranças de teste), e a chave precisa ser do mesmo ambiente. |
+| `ASAAS_WEBHOOK_TOKEN` | Para cobrar | Token que o Asaas manda nos avisos de pagamento. Use o mesmo texto no webhook do Asaas (Integrações > Webhooks), com a URL `https://<domínio>/api/asaas/webhook` e os eventos de cobrança. De 32 a 255 caracteres, sem espaços. |
 
 Os valores atuais estão na Vercel, em **Settings > Environment Variables**. Não guarde as chaves no código nem neste documento.
 
@@ -83,6 +86,23 @@ Num projeto Supabase novo, rode no SQL Editor, nesta ordem:
 5. `sql/03_fluxo_reparo.sql`: etapas do fluxo de reparo (triagem, aprovação de orçamento, descarte, instalação).
 6. `sql/04_fecha_acesso_anonimo.sql`: fecha o banco para a chave pública. Só rode com a aplicação já configurada com a `SUPABASE_SERVICE_ROLE_KEY`. Se rodar de novo algum dos scripts 01 a 03, rode este em seguida, porque eles reabrem o acesso.
 7. `sql/05_igrejas.sql`: tabela de igrejas, `igreja_id` nos cadastros e o perfil `superadmin`. Rode antes de publicar a versão com o painel da plataforma. Para dar o perfil a alguém: `update users set role = 'superadmin', igreja_id = null where email = '<usuario>@ilan.local';`
+8. `sql/06_isolamento_igrejas.sql`: igreja_id em equipamentos, chamados e histórico, e os gatilhos que recusam qualquer registro ligado a outra igreja. Compatível com a versão anterior do sistema: rode antes de publicar a versão nova.
+9. `sql/07_igreja_obrigatoria.sql`: torna o igreja_id obrigatório. Rode depois de publicar a versão que grava igreja_id.
+10. `sql/08_assinaturas.sql`: dados de cobrança das igrejas, faturas do Asaas, avisos recebidos e convites do administrador. Rode antes de publicar a versão com as assinaturas.
+
+## Isolamento entre igrejas
+
+Cada igreja só vê os próprios dados. Isso é garantido em três camadas:
+
+- **Código:** toda consulta às tabelas da igreja passa por `daIgreja()` (`lib/db.ts`), que filtra pela igreja do usuário logado e grava a igreja nos registros novos.
+- **Build:** `npm run build` roda antes `scripts/verificar-isolamento.mjs`, que barra qualquer `.from()` fora dos arquivos autorizados. Para conferir à mão: `npm run verificar`.
+- **Banco:** gatilhos (`sql/06`) recusam equipamento num campus de outra igreja, chamado com usuário de outra igreja, troca de igreja e afins.
+
+O administrador Genesis41 (superadmin) não vê dados de nenhuma igreja: só o painel `/plataforma`, onde cria igrejas, filiais e administradores e escolhe os módulos liberados de cada uma.
+
+Cada igreja só abre as telas e tabelas dos módulos liberados para ela (`igrejas.modulos`; telas e tabelas de cada módulo em `lib/modulos.ts`).
+
+Dentro da igreja, `daIgreja()` também limita os campus: líder de campus e pastor veem só o próprio campus, líder regional os campus da sua região, e administrador e assistência técnica veem todos.
 
 Toda mudança futura de banco deve ganhar um arquivo novo em `sql/` com o próximo número e ser registrada aqui.
 

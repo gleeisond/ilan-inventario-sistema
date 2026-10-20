@@ -24,7 +24,7 @@ export default function MenuLateral({ children }: { children: React.ReactNode })
   }, [aberto])
 
   // Quem é desativado e mandado ao login durante a navegação chega sem recarregar a página; o menu some igual
-  if (caminho === '/login') return null
+  if (caminho === '/login' || caminho.startsWith('/convite/')) return null
 
   return (
     <>

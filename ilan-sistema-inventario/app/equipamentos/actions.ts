@@ -2,9 +2,9 @@
 
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-import { getSupabase } from '@/lib/supabase'
 import { lerMoeda, podeEditarNoCampus, podeExcluirEquipamento } from '@/lib/equipamentos'
 import { exigirLogin, igrejaDoContexto, registrarLog } from '@/lib/auth'
+import { daIgreja } from '@/lib/db'
 
 function texto(form: FormData, campo: string) {
   const valor = String(form.get(campo) ?? '').trim()
@@ -31,11 +31,10 @@ async function lerFormulario(form: FormData, caminho: string, usuario: Awaited<R
   const value = lerMoeda(texto(form, 'value'))
   if (value !== null && Number.isNaN(value)) voltar(caminho, 'erro', 'Valor inválido. Use só números, ex: 3500,00')
 
-  const { data: campus } = await getSupabase()
-    .from('campus')
-    .select('id, name, region_id')
+  const db = await daIgreja()
+  const { data: campus } = await db.select('campus', 'id, name, region_id')
     .eq('id', campus_id)
-    .eq('igreja_id', await igrejaDoContexto())
+    
     .maybeSingle()
   if (!campus) voltar(caminho, 'erro', 'Campus não encontrado.')
   if (!podeEditarNoCampus(usuario, campus)) voltar(caminho, 'erro', `Você não tem permissão para cadastrar equipamentos em ${campus.name}.`)
@@ -62,9 +61,8 @@ type Atual = { id: string; name: string; status: string; campus: { id: string; n
 // Busca o equipamento e confere se o usuário pode mexer nele
 async function carregarComPermissao(id: string | null, usuario: Awaited<ReturnType<typeof exigirLogin>>) {
   if (!id) voltar('/equipamentos', 'erro', 'Equipamento não informado.')
-  const { data } = await getSupabase()
-    .from('equipment')
-    .select('id, name, status, campus:campus_id (id, name, region_id)')
+  const db = await daIgreja()
+  const { data } = await db.select('equipment', 'id, name, status, campus:campus_id (id, name, region_id)')
     .eq('id', id)
     .maybeSingle()
   const atual = data as unknown as Atual | null
@@ -79,7 +77,8 @@ export async function criarEquipamento(form: FormData) {
   const usuario = await exigirLogin()
   const { campus, dados } = await lerFormulario(form, '/equipamentos/criar', usuario)
 
-  const { data: criado, error } = await getSupabase().from('equipment').insert(dados).select('id').single()
+  const db = await daIgreja()
+  const { data: criado, error } = await db.insert('equipment', dados).select('id').single()
   if (error) voltar('/equipamentos/criar', 'erro', 'Não foi possível salvar: ' + error.message)
 
   await registrarLog({
@@ -99,9 +98,8 @@ export async function editarEquipamento(form: FormData) {
   const caminho = `/equipamentos/${atual.id}`
   const { campus, dados } = await lerFormulario(form, caminho, usuario)
 
-  const { error } = await getSupabase()
-    .from('equipment')
-    .update({ ...dados, updated_at: new Date().toISOString() })
+  const db = await daIgreja()
+  const { error } = await db.update('equipment', { ...dados, updated_at: new Date().toISOString() })
     .eq('id', atual.id)
   if (error) voltar(caminho, 'erro', 'Não foi possível salvar: ' + error.message)
 
@@ -126,9 +124,8 @@ export async function alternarBaixa(form: FormData) {
   const darBaixa = atual.status !== 'descartado'
   const retorno = texto(form, 'retorno')
 
-  const { error } = await getSupabase()
-    .from('equipment')
-    .update({ status: darBaixa ? 'descartado' : 'ativo', updated_at: new Date().toISOString() })
+  const db = await daIgreja()
+  const { error } = await db.update('equipment', { status: darBaixa ? 'descartado' : 'ativo', updated_at: new Date().toISOString() })
     .eq('id', atual.id)
   if (error) voltar('/equipamentos', 'erro', 'Não foi possível salvar: ' + error.message)
 
@@ -145,15 +142,13 @@ export async function alternarBaixa(form: FormData) {
 
 export async function excluirEquipamento(form: FormData) {
   const usuario = await exigirLogin()
-  if (!podeExcluirEquipamento(usuario)) voltar('/equipamentos', 'erro', 'Só o ADM Ilan pode excluir equipamentos. Use "Dar baixa".')
+  if (!podeExcluirEquipamento(usuario)) voltar('/equipamentos', 'erro', 'Só o administrador pode excluir equipamentos. Use "Dar baixa".')
   const atual = await carregarComPermissao(texto(form, 'id'), usuario)
-  const supabase = getSupabase()
+  const db = await daIgreja()
   const retorno = texto(form, 'retorno')
 
   // Excluir apagaria em cascata os chamados de reparo do equipamento, então nesse caso só deixa dar baixa
-  const { count } = await supabase
-    .from('maintenance_requests')
-    .select('id', { count: 'exact', head: true })
+  const { count } = await db.select('maintenance_requests', 'id', { count: 'exact', head: true })
     .eq('equipment_id', atual.id)
   if (count) {
     voltarParaLista(
@@ -163,7 +158,7 @@ export async function excluirEquipamento(form: FormData) {
     )
   }
 
-  const { error } = await supabase.from('equipment').delete().eq('id', atual.id)
+  const { error } = await db.delete('equipment').eq('id', atual.id)
   if (error) voltarParaLista(retorno, 'erro', 'Não foi possível excluir: ' + error.message)
 
   await registrarLog({

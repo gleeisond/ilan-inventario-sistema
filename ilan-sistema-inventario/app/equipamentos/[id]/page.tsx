@@ -1,18 +1,17 @@
 import Link from 'next/link'
-import { getSupabase } from '@/lib/supabase'
 import { podeEditarNoCampus } from '@/lib/equipamentos'
 import { editarEquipamento } from '../actions'
 import FormEquipamento from '../FormEquipamento'
 import { exigirLogin } from '@/lib/auth'
 import { Equipment } from '@/types/database'
+import { daIgreja } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
 export default async function EditarEquipamento({ params, searchParams }: { params: { id: string }; searchParams: { erro?: string } }) {
   const usuario = await exigirLogin()
-  const { data } = await getSupabase()
-    .from('equipment')
-    .select('*, campus:campus_id (id, name, region_id)')
+  const db = await daIgreja()
+  const { data } = await db.select('equipment', '*, campus:campus_id (id, name, region_id)')
     .eq('id', params.id)
     .maybeSingle()
   const equipamento = data as (Equipment & { campus: { id: string; name: string; region_id: string | null } | null }) | null

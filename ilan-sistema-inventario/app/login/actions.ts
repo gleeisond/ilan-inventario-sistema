@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { criarClienteLogin, getSupabase } from '@/lib/supabase'
 import { COOKIE_SESSAO, DURACAO_SESSAO_SEGUNDOS, criarToken } from '@/lib/sessao'
 import { getUsuarioAtual, loginParaEmail, registrarLog } from '@/lib/auth'
+import { situacaoFinanceira } from '@/lib/assinaturas'
 
 function destinoSeguro(voltar: string | null) {
   return voltar && voltar.startsWith('/') && !voltar.startsWith('//') && voltar !== '/login' ? voltar : '/dashboard'
@@ -41,6 +42,10 @@ export async function entrar(form: FormData) {
   if (usuario.role !== 'superadmin' && usuario.igreja?.situacao !== 'ativa') {
     await registrarLog({ acao: 'login_falhou', descricao: `Igreja ainda não liberada para "${login}"`, usuario, igreja_id })
     falhar(usuario.igreja?.situacao === 'suspensa' ? 'O acesso da sua igreja está suspenso.' : 'Sua igreja ainda está em implantação. Em breve o acesso será liberado.')
+  }
+  if (usuario.role !== 'superadmin' && igreja_id && (await situacaoFinanceira(igreja_id)).bloqueada) {
+    await registrarLog({ acao: 'login_falhou', descricao: `Acesso bloqueado por pagamento pendente para "${login}"`, usuario, igreja_id })
+    falhar('O acesso da sua igreja está bloqueado por pagamento pendente. Fale com o administrador da sua igreja.')
   }
 
   cookies().set(COOKIE_SESSAO, await criarToken(usuario.id), {

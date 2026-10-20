@@ -8,19 +8,19 @@ export const PERFIS: UserRole[] = ['admin', 'rodrigo', 'lider_regional', 'pastor
 
 export const PERFIL_LABELS: Record<UserRole, string> = {
   superadmin: 'Administrador Genesis41',
-  admin: 'ADM Ilan',
-  rodrigo: 'Ilan Tech Pro',
+  admin: 'Administrador',
+  rodrigo: 'Assistência técnica',
   lider_regional: 'Líder regional',
   pastor: 'Pastor de campus',
   lider_midia: 'Líder de campus',
 }
 
 export const PERFIL_DESCRICOES: Record<UserRole, string> = {
-  superadmin: 'Cria e gerencia as igrejas da plataforma. Tem também todos os acessos do administrador de cada igreja.',
+  superadmin: 'Cria e gerencia as igrejas da plataforma. Não vê os dados de nenhuma igreja.',
   admin: 'Acesso total. Aprova ou reprova os orçamentos de reparo e pode agir em qualquer etapa.',
   rodrigo: 'Recebe os equipamentos, faz o diagnóstico, pede aprovação dos custos e conserta ou descarta.',
-  lider_regional: 'Faz a triagem dos defeitos dos campus da sua região: envia para a Ilan Tech Pro ou resolve no campus.',
-  pastor: 'Leva o equipamento até a Ilan Tech Pro e traz de volta ao campus depois do conserto.',
+  lider_regional: 'Faz a triagem dos defeitos dos campus da sua região: envia para a assistência técnica ou resolve no campus.',
+  pastor: 'Leva o equipamento até a assistência técnica e traz de volta ao campus depois do conserto.',
   lider_midia: 'Cuida do inventário do seu campus, abre os chamados e instala o equipamento quando ele volta.',
 }
 

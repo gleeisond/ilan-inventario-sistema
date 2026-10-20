@@ -1,10 +1,10 @@
 import Link from 'next/link'
-import { getSupabase } from '@/lib/supabase'
 import { STATUS_COLORS, STATUS_LABELS, formatarMoeda, podeEditarNoCampus, podeExcluirEquipamento } from '@/lib/equipamentos'
 import { EquipmentStatus } from '@/types/database'
-import { exigirLogin, igrejaDoContexto } from '@/lib/auth'
+import { exigirLogin } from '@/lib/auth'
 import BotaoExcluir from '@/components/BotaoExcluir'
 import { alternarBaixa, excluirEquipamento } from './actions'
+import { daIgreja } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,12 +24,9 @@ type EquipamentoLinha = {
 
 export default async function Equipamentos({ searchParams }: { searchParams: Filtros }) {
   const usuario = await exigirLogin()
-  const supabase = getSupabase()
-  const igreja = await igrejaDoContexto()
+  const db = await daIgreja()
 
-  let query = supabase
-    .from('equipment')
-    .select('id, name, brand, category, value, status, location, campus:campus_id (id, name, region_id), responsible:responsible_id (name)')
+  let query = db.select('equipment', 'id, name, brand, category, value, status, location, campus:campus_id (id, name, region_id), responsible:responsible_id (name)')
     .order('name')
 
   if (searchParams.campus) query = query.eq('campus_id', searchParams.campus)
@@ -42,8 +39,8 @@ export default async function Equipamentos({ searchParams }: { searchParams: Fil
 
   const [{ data, error }, { data: campusList }, { data: categorias }] = await Promise.all([
     query,
-    supabase.from('campus').select('id, name').eq('igreja_id', igreja).order('name'),
-    supabase.from('categories').select('name').order('name'),
+    db.select('campus', 'id, name').order('name'),
+    db.select('categories', 'name').order('name'),
   ])
 
   const equipamentos = (data ?? []) as unknown as EquipamentoLinha[]

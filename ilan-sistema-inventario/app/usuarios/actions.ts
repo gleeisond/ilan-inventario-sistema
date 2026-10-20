@@ -3,11 +3,12 @@
 import { randomUUID } from 'crypto'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-import { getSupabase } from '@/lib/supabase'
 import { sincronizarAcesso } from '@/lib/acesso'
-import { FORMATO_LOGIN, exigirAdmin, igrejaDoContexto, loginParaEmail, registrarLog } from '@/lib/auth'
+import { FORMATO_LOGIN, exigirAdmin, igrejaDoContexto, loginParaEmail, registrarLog, dadosDaIgreja } from '@/lib/auth'
+import { limiteAtingido } from '@/lib/igrejas'
 import { PERFIS, PERFIL_LABELS, PERFIL_VINCULO } from '@/lib/usuarios'
 import { UserRole } from '@/types/database'
+import { daIgreja } from '@/lib/db'
 
 function texto(form: FormData, campo: string) {
   const valor = String(form.get(campo) ?? '').trim()
@@ -46,31 +47,37 @@ export async function salvarUsuario(form: FormData) {
   if (vinculo === 'regiao' && !region_id) voltarCom('Escolha a região deste usuário.')
 
   // O mesmo usuário não pode existir duas vezes, nem com o e-mail antigo (ex: lider.arena@ilan.com)
-  const supabase = getSupabase()
-  const igreja = await igrejaDoContexto()
+  const db = await daIgreja()
   // Só edita usuários da própria igreja (o superadmin não tem igreja, então nunca é editado por aqui)
   if (id) {
-    const { data: alvo } = await supabase.from('users').select('id').eq('id', id).eq('igreja_id', igreja).maybeSingle()
+    const { data: alvo } = await db.select('users', 'id').eq('id', id).maybeSingle()
     if (!alvo) voltarCom('Usuário não encontrado.')
   }
   // Campus e região escolhidos precisam ser da mesma igreja
   if (campus_id) {
-    const { data: c } = await supabase.from('campus').select('id').eq('id', campus_id).eq('igreja_id', igreja).maybeSingle()
+    const { data: c } = await db.select('campus', 'id').eq('id', campus_id).maybeSingle()
     if (!c) voltarCom('Campus não encontrado.')
   }
   if (region_id) {
-    const { data: r } = await supabase.from('regions').select('id').eq('id', region_id).eq('igreja_id', igreja).maybeSingle()
+    const { data: r } = await db.select('regions', 'id').eq('id', region_id).maybeSingle()
     if (!r) voltarCom('Região não encontrada.')
   }
-  const { data: repetidos } = await supabase.from('users').select('id').ilike('email', `${login.replace(/[_%\\]/g, '\\$&')}@%`)
+  const { data: repetidos } = await db.select('users', 'id').ilike('email', `${login.replace(/[_%\\]/g, '\\$&')}@%`)
   if (repetidos?.some(u => u.id !== id)) voltarCom(`Já existe um usuário "${login}".`)
 
   const email = loginParaEmail(login)
   const dados = { name, email, role, campus_id, region_id, is_active: form.get('is_active') === 'on' }
+  // Usuário novo ativo (ou reativado): respeita o limite do plano da igreja
+  const { data: anterior } = id ? await db.select('users', 'is_active').eq('id', id).maybeSingle() : { data: null }
+  if (dados.is_active && !anterior?.is_active) {
+    const { count } = await db.select('users', 'id', { count: 'exact', head: true }).eq('is_active', true)
+    const limite = limiteAtingido((await dadosDaIgreja()).plano, 'usuarios', count ?? 0)
+    if (limite) voltarCom(limite)
+  }
   const novoId = id ?? randomUUID()
   const { error } = id
-    ? await supabase.from('users').update(dados).eq('id', id)
-    : await supabase.from('users').insert({ id: novoId, ...dados, igreja_id: igreja })
+    ? await db.update('users', dados).eq('id', id)
+    : await db.insert('users', { id: novoId, ...dados })
   if (error) {
     voltarCom(error.code === '23505' ? `Já existe um usuário "${login}".` : 'Não foi possível salvar: ' + error.message)
   }

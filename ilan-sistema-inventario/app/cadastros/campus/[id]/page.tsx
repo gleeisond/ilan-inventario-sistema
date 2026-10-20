@@ -1,19 +1,18 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getSupabase } from '@/lib/supabase'
 import Aviso from '../../Aviso'
 import FormCampus from '../FormCampus'
-import { exigirAdmin, igrejaDoContexto } from '@/lib/auth'
+import { exigirAdmin } from '@/lib/auth'
+import { daIgreja } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
 export default async function EditarCampus({ params, searchParams }: { params: { id: string }; searchParams: { erro?: string } }) {
   await exigirAdmin()
-  const supabase = getSupabase()
-  const igreja = await igrejaDoContexto()
+  const db = await daIgreja()
   const [{ data: campus }, { data: regioes }] = await Promise.all([
-    supabase.from('campus').select('id, name, location, region_id').eq('id', params.id).eq('igreja_id', igreja).maybeSingle(),
-    supabase.from('regions').select('id, name').eq('igreja_id', igreja).order('name'),
+    db.select('campus', 'id, name, location, region_id').eq('id', params.id).maybeSingle(),
+    db.select('regions', 'id, name').order('name'),
   ])
   if (!campus) notFound()
 

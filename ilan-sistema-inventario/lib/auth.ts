@@ -6,7 +6,8 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { getSupabase, getSupabaseAdmin } from '@/lib/supabase'
 import { COOKIE_SESSAO, lerToken, loginAtivo } from '@/lib/sessao'
-import { UserRole } from '@/types/database'
+import { PlanoIgreja, UserRole } from '@/types/database'
+import { situacaoFinanceira } from '@/lib/assinaturas'
 
 // O acesso é por usuário, não por e-mail. Como o Supabase Auth exige um e-mail,
 // cada usuário recebe um endereço interno <usuario>@ilan.local que nunca recebe mensagens.
@@ -22,8 +23,8 @@ export function emailParaLogin(email: string) {
 
 export const FORMATO_LOGIN = /^[a-z0-9._-]{3,40}$/
 
-// O superadmin aparece aqui com role 'admin' e superadmin = true: assim ele passa em todas as
-// regras de administrador da igreja sem precisar mexer em cada uma delas.
+// O superadmin (role 'superadmin') só gerencia a plataforma: não pertence a nenhuma igreja
+// e não entra em nenhuma tela com dados de igreja (ver exigirLogin e dadosDaIgreja).
 export type UsuarioAtual = {
   id: string
   name: string
@@ -59,10 +60,12 @@ export const getUsuarioAtual = cache(async (): Promise<UsuarioAtual | null> => {
   const superadmin = linha.role === 'superadmin'
   // Usuário de igreja em implantação ou suspensa não entra (o superadmin não tem igreja)
   if (!superadmin && linha.igreja?.situacao !== 'ativa') return null
+  // Nem de igreja bloqueada por atraso no pagamento
+  if (!superadmin && linha.igreja_id && (await situacaoFinanceira(linha.igreja_id)).bloqueada) return null
   return {
     id: linha.id,
     name: linha.name,
-    role: superadmin ? 'admin' : linha.role,
+    role: linha.role,
     campus_id: linha.campus_id,
     region_id: linha.region_id,
     igreja_id: linha.igreja_id,
@@ -70,21 +73,33 @@ export const getUsuarioAtual = cache(async (): Promise<UsuarioAtual | null> => {
   }
 })
 
-// Igreja cujos dados aparecem nas telas do sistema. O superadmin não pertence a nenhuma:
-// enquanto o "entrar como igreja" não existe, ele vê a primeira igreja ativa (a ILAN).
-export const igrejaDoContexto = cache(async (): Promise<string> => {
+export type IgrejaDoContexto = { id: string; nome: string; logo_url: string | null; cor_principal: string; modulos: string[]; plano: PlanoIgreja }
+
+// Igreja cujos dados aparecem nas telas do sistema: a do usuário logado.
+// O superadmin não tem igreja e nunca recebe dados de uma: aqui ele é recusado.
+export const dadosDaIgreja = cache(async (): Promise<IgrejaDoContexto> => {
   const usuario = await getUsuarioAtual()
-  if (usuario?.igreja_id) return usuario.igreja_id
-  const { data, error } = await getSupabase()
-    .from('igrejas')
-    .select('id')
-    .eq('situacao', 'ativa')
-    .order('criada_em')
-    .limit(1)
-    .single()
-  if (error || !data) throw new Error('Nenhuma igreja ativa cadastrada. Rode sql/05_igrejas.sql.')
-  return data.id
+  if (usuario?.superadmin) throw new Error('O administrador Genesis41 não acessa dados das igrejas.')
+  const colunas = 'id, nome, logo_url, cor_principal, modulos, plano'
+  const supabase = getSupabase()
+  if (usuario?.igreja_id) {
+    const { data } = await supabase.from('igrejas').select(colunas).eq('id', usuario.igreja_id).single()
+    if (!data) throw new Error('Igreja do usuário não encontrada.')
+    return data as IgrejaDoContexto
+  }
+  // Modo de teste sem login: a igreja mais antiga
+  const { data } = await supabase.from('igrejas').select(colunas).order('criada_em').limit(1).maybeSingle()
+  if (!data) throw new Error('Nenhuma igreja cadastrada. Rode sql/05_igrejas.sql.')
+  return data as IgrejaDoContexto
 })
+
+export const igrejaDoContexto = cache(async (): Promise<string> => (await dadosDaIgreja()).id)
+
+// E-mail interno do próprio usuário logado. Lê direto (sem filtro de igreja) porque o superadmin não tem igreja.
+export async function emailDoUsuario(id: string) {
+  const { data } = await getSupabase().from('users').select('email').eq('id', id).maybeSingle()
+  return (data?.email as string | undefined) ?? null
+}
 
 // Ids dos usuários que já têm senha (conta no Supabase Auth). Null se a chave de admin não estiver configurada.
 export async function idsComAcesso(): Promise<Set<string> | null> {
@@ -94,19 +109,22 @@ export async function idsComAcesso(): Promise<Set<string> | null> {
   return new Set(data.users.map(u => u.id))
 }
 
-// Com o login ligado, exige um usuário ativo (usado nas server actions e no layout)
-export async function exigirLogin() {
+// Com o login ligado, exige um usuário ativo (usado nas telas e server actions das igrejas).
+// O superadmin vai para o painel da plataforma, exceto onde permitirSuperadmin (ex.: trocar a senha).
+export async function exigirLogin({ permitirSuperadmin = false } = {}) {
   if (!loginAtivo()) return null
   const usuario = await getUsuarioAtual()
   if (!usuario) redirect('/login')
+  if (usuario.superadmin && !permitirSuperadmin) redirect('/plataforma/igrejas')
   return usuario
 }
 
-// Com o login ligado, só o admin entra nas áreas de Usuários e Logs
+// Com o login ligado, só o admin da igreja entra nas áreas de Usuários, Cadastros e Logs
 export async function exigirAdmin() {
   if (!loginAtivo()) return null
   const usuario = await getUsuarioAtual()
   if (!usuario) redirect('/login')
+  if (usuario.superadmin) redirect('/plataforma/igrejas')
   if (usuario.role !== 'admin') redirect('/dashboard?sem_permissao=1')
   return usuario
 }

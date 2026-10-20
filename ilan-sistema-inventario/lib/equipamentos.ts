@@ -32,8 +32,8 @@ export function lerMoeda(valorTexto: string | null) {
 
 // ---------- Permissões ----------
 // Com o login desligado (usuario null) todos podem tudo, como no resto do sistema.
-// ADM Ilan mexe em qualquer campus; líder de campus e pastor só no próprio campus;
-// líder regional nos campus da sua região. O Ilan Tech Pro cuida do reparo, não do cadastro.
+// O administrador mexe em qualquer campus; líder de campus e pastor só no próprio campus;
+// líder regional nos campus da sua região. A assistência técnica cuida do reparo, não do cadastro.
 
 type QuemMexe = { role: UserRole; campus_id: string | null; region_id: string | null } | null
 export type CampusDoEquipamento = { id: string; region_id: string | null }
@@ -45,7 +45,7 @@ export function podeEditarNoCampus(usuario: QuemMexe, campus: CampusDoEquipament
   return false
 }
 
-// Excluir apaga também o histórico do equipamento, então fica só com o ADM Ilan
+// Excluir apaga também o histórico do equipamento, então fica só com o administrador
 export function podeExcluirEquipamento(usuario: QuemMexe) {
   return !usuario || usuario.role === 'admin'
 }
