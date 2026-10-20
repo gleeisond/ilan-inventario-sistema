@@ -164,26 +164,16 @@ begin
   return new;
 end $$;
 
-drop trigger if exists trg_g41_isolar on regions;
-create trigger trg_g41_isolar before update on regions for each row execute function g41_isolar_raiz();
-drop trigger if exists trg_g41_isolar on categories;
-create trigger trg_g41_isolar before update on categories for each row execute function g41_isolar_raiz();
-drop trigger if exists trg_g41_isolar on locations;
-create trigger trg_g41_isolar before update on locations for each row execute function g41_isolar_raiz();
-drop trigger if exists trg_g41_isolar on campus;
-create trigger trg_g41_isolar before insert or update on campus for each row execute function g41_isolar_campus();
-drop trigger if exists trg_g41_isolar on users;
-create trigger trg_g41_isolar before insert or update on users for each row execute function g41_isolar_usuario();
-drop trigger if exists trg_g41_isolar on equipment;
-create trigger trg_g41_isolar before insert or update on equipment for each row execute function g41_isolar_equipamento();
-drop trigger if exists trg_g41_isolar on maintenance_requests;
-create trigger trg_g41_isolar before insert or update on maintenance_requests for each row execute function g41_isolar_chamado();
-drop trigger if exists trg_g41_isolar on maintenance_logs;
-create trigger trg_g41_isolar before insert or update on maintenance_logs for each row execute function g41_isolar_log_chamado();
-drop trigger if exists trg_g41_isolar on maintenance_notifications;
-create trigger trg_g41_isolar before insert or update on maintenance_notifications for each row execute function g41_isolar_notificacao();
-drop trigger if exists trg_g41_isolar on equipment_history;
-create trigger trg_g41_isolar before insert or update on equipment_history for each row execute function g41_isolar_historico();
+create or replace trigger trg_g41_isolar before update on regions for each row execute function g41_isolar_raiz();
+create or replace trigger trg_g41_isolar before update on categories for each row execute function g41_isolar_raiz();
+create or replace trigger trg_g41_isolar before update on locations for each row execute function g41_isolar_raiz();
+create or replace trigger trg_g41_isolar before insert or update on campus for each row execute function g41_isolar_campus();
+create or replace trigger trg_g41_isolar before insert or update on users for each row execute function g41_isolar_usuario();
+create or replace trigger trg_g41_isolar before insert or update on equipment for each row execute function g41_isolar_equipamento();
+create or replace trigger trg_g41_isolar before insert or update on maintenance_requests for each row execute function g41_isolar_chamado();
+create or replace trigger trg_g41_isolar before insert or update on maintenance_logs for each row execute function g41_isolar_log_chamado();
+create or replace trigger trg_g41_isolar before insert or update on maintenance_notifications for each row execute function g41_isolar_notificacao();
+create or replace trigger trg_g41_isolar before insert or update on equipment_history for each row execute function g41_isolar_historico();
 
 -- As funções só servem aos gatilhos: a chave pública não chama nenhuma delas
 revoke all on function g41_usuario_da_igreja(uuid, uuid) from public, anon, authenticated;
