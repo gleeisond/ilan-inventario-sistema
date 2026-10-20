@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { STATUS_LABELS, podeEditarNoCampus } from '@/lib/equipamentos'
+import { podeEditarNoCampus } from '@/lib/equipamentos'
 import { UsuarioAtual } from '@/lib/auth'
 import { Equipment } from '@/types/database'
 import { daIgreja } from '@/lib/db'
@@ -93,13 +93,6 @@ export default async function FormEquipamento({
               <option value="">Nenhum</option>
               {usuarios?.map(u => (
                 <option key={u.id} value={u.id}>{u.name}</option>
-              ))}
-            </select>
-          </Campo>
-          <Campo label="Status">
-            <select name="status" defaultValue={e.status ?? 'ativo'} className={inputClass}>
-              {Object.entries(STATUS_LABELS).map(([valor, rotulo]) => (
-                <option key={valor} value={valor}>{rotulo}</option>
               ))}
             </select>
           </Campo>

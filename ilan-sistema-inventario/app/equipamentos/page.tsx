@@ -183,13 +183,18 @@ export default async function Equipamentos({ searchParams }: { searchParams: Fil
                         <Link href={`/equipamentos/${e.id}`} className="text-ouro-600 hover:text-ouro-700">
                           Editar
                         </Link>
-                        <form action={alternarBaixa}>
-                          <input type="hidden" name="id" value={e.id} />
-                          <input type="hidden" name="retorno" value={retorno} />
-                          <button type="submit" className="text-gray-600 hover:text-gray-900">
-                            {e.status === 'descartado' ? 'Reativar' : 'Dar baixa'}
-                          </button>
-                        </form>
+                        {e.status === 'descartado' ? (
+                          <form action={alternarBaixa}>
+                            <input type="hidden" name="id" value={e.id} />
+                            <input type="hidden" name="retorno" value={retorno} />
+                            <button type="submit" className="text-gray-600 hover:text-gray-900">Reativar</button>
+                          </form>
+                        ) : (
+                          // A baixa pede o motivo e encerra chamados abertos: é feita na ficha do equipamento
+                          <Link href={`/equipamentos/${e.id}#baixa`} className="text-gray-600 hover:text-gray-900">
+                            Dar baixa
+                          </Link>
+                        )}
                         {podeExcluir && (
                           <form action={excluirEquipamento}>
                             <input type="hidden" name="id" value={e.id} />

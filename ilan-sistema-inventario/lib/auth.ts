@@ -146,6 +146,7 @@ export type AcaoLog =
   | 'equipamento_editado'
   | 'equipamento_baixa'
   | 'equipamento_reativado'
+  | 'equipamento_status_corrigido'
   | 'equipamento_excluido'
   | 'manutencao_aberta'
   | 'manutencao_atualizada'

@@ -49,3 +49,8 @@ export function podeEditarNoCampus(usuario: QuemMexe, campus: CampusDoEquipament
 export function podeExcluirEquipamento(usuario: QuemMexe) {
   return !usuario || usuario.role === 'admin'
 }
+
+// Corrigir o status à mão (fora do fluxo dos chamados) é só do administrador
+export function podeCorrigirStatus(usuario: QuemMexe) {
+  return !usuario || usuario.role === 'admin'
+}
