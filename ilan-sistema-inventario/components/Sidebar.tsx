@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { headers } from 'next/headers'
-import { getUsuarioAtual, igrejaDoContexto } from '@/lib/auth'
-import { getSupabase } from '@/lib/supabase'
+import { getUsuarioAtual } from '@/lib/auth'
 import { loginAtivo } from '@/lib/sessao'
 import { PERFIL_LABELS } from '@/lib/usuarios'
 import { sair } from '@/app/login/actions'
@@ -15,12 +14,6 @@ export default async function Sidebar() {
   const usuario = await getUsuarioAtual()
   // Sem login ligado, todos veem tudo. Com login, Usuários e Logs são só do admin.
   const podeAdministrar = !loginAtivo() || usuario?.role === 'admin'
-  // O superadmin vê os dados de uma igreja nas telas comuns; o menu diz de qual
-  let igrejaVista: string | null = null
-  if (usuario?.superadmin) {
-    const { data } = await getSupabase().from('igrejas').select('nome').eq('id', await igrejaDoContexto()).maybeSingle()
-    igrejaVista = data?.nome ?? null
-  }
 
   return (
     <MenuLateral>
@@ -32,14 +25,13 @@ export default async function Sidebar() {
             itens={[
               { href: '/plataforma/igrejas', rotulo: 'Igrejas' },
               { href: '/plataforma/modulos', rotulo: 'Próximos módulos' },
+              { href: '/plataforma/equipe', rotulo: 'Equipe Genesis41' },
             ]}
           />
         </div>
       )}
-      {igrejaVista && (
-        <p className="px-3 mb-2 text-[11px] uppercase tracking-[0.18em] text-gray-400">Dados de {igrejaVista}</p>
-      )}
-      <NavMenu
+      {/* O superadmin cuida da plataforma: as telas de uma igreja não aparecem no menu dele */}
+      {!usuario?.superadmin && <NavMenu
         itens={[
           { href: '/dashboard', rotulo: 'Dashboard' },
           { href: '/equipamentos', rotulo: 'Equipamentos' },
@@ -53,7 +45,7 @@ export default async function Sidebar() {
               ]
             : []),
         ]}
-      />
+      />}
       <div className="mt-auto pt-8 text-sm">
         {usuario ? (
           <>
