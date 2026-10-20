@@ -53,6 +53,14 @@ export interface Igreja {
   contato: string | null
   cor_principal: string
   logo_url: string | null
+  cpf_cnpj: string | null
+  email_cobranca: string | null
+  telefone_cobranca: string | null
+  valor_mensal: number | null
+  dia_vencimento: number
+  asaas_cliente_id: string | null
+  asaas_assinatura_id: string | null
+  liberada_ate: string | null
   plano: PlanoIgreja
   situacao: SituacaoIgreja
   modulos: string[]

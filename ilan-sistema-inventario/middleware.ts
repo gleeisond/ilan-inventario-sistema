@@ -11,8 +11,10 @@ export async function middleware(request: NextRequest) {
   if (pathname === '/') return NextResponse.redirect(new URL('/dashboard', request.url))
   if (pathname === '/auth') return NextResponse.redirect(new URL('/login', request.url))
 
-  // /api/manter-ativo é chamada pelo Vercel Cron, sem sessão
-  if (loginAtivo() && pathname !== '/login' && pathname !== '/api/manter-ativo') {
+  // Sem sessão: o Vercel Cron (/api/manter-ativo), os avisos do Asaas (/api/asaas/webhook, com token
+  // próprio) e o link de convite do administrador da igreja (/convite/...)
+  const publico = pathname === '/login' || pathname === '/api/manter-ativo' || pathname === '/api/asaas/webhook' || pathname.startsWith('/convite/')
+  if (loginAtivo() && !publico) {
     const sessao = await lerToken(request.cookies.get(COOKIE_SESSAO)?.value)
     if (!sessao) {
       const destino = new URL('/login', request.url)

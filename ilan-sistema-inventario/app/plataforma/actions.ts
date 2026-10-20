@@ -1,11 +1,10 @@
 'use server'
 
-import { randomUUID } from 'crypto'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { getSupabase } from '@/lib/supabase'
-import { sincronizarAcesso } from '@/lib/acesso'
-import { FORMATO_LOGIN, exigirSuperadmin, loginParaEmail, registrarLog } from '@/lib/auth'
+import { cancelarConvite, criarConvite } from '@/lib/convites'
+import { exigirSuperadmin, registrarLog } from '@/lib/auth'
 import { daIgreja } from '@/lib/db'
 import { PLANOS } from '@/lib/igrejas'
 import { MODULOS } from '@/lib/modulos'
@@ -137,39 +136,29 @@ export async function criarFilial(form: FormData) {
   voltar(caminho, 'salvo', `Filial ${name} criada.`)
 }
 
-export async function criarAdministrador(form: FormData) {
+// Convite para o administrador da igreja: o link aparece uma vez no painel e vale 7 dias.
+// O próprio administrador escolhe o usuário e a senha; ninguém da Genesis41 fica sabendo a senha.
+export async function gerarConvite(form: FormData) {
   await exigirSuperadmin()
   const igreja_id = texto(form, 'igreja_id')
   if (!igreja_id) voltar('/plataforma/igrejas', 'erro', 'Igreja não informada.')
   const caminho = `/plataforma/igrejas/${igreja_id}`
-
-  const name = texto(form, 'name')
-  const login = texto(form, 'login')?.toLowerCase() ?? null
-  const senha = texto(form, 'senha')
-  if (!name || !login || !senha) voltar(caminho, 'erro', 'Preencha nome, usuário e senha do administrador.')
-  if (!FORMATO_LOGIN.test(login)) voltar(caminho, 'erro', 'Usuário inválido. Use de 3 a 40 letras minúsculas, números, ponto, hífen ou sublinhado.')
-  if (senha.length < 6) voltar(caminho, 'erro', 'A senha precisa ter pelo menos 6 caracteres.')
-
-  const supabase = getSupabase()
-  const { data: igreja } = await supabase.from('igrejas').select('situacao').eq('id', igreja_id).maybeSingle()
+  const nome = texto(form, 'nome')
+  if (!nome) voltar(caminho, 'erro', 'Informe o nome de quem vai administrar a igreja.')
+  const { data: igreja } = await getSupabase().from('igrejas').select('nome').eq('id', igreja_id).maybeSingle()
   if (!igreja) voltar('/plataforma/igrejas', 'erro', 'Igreja não encontrada.')
 
-  // O usuário é único na plataforma inteira, não só na igreja
-  const { data: repetidos } = await supabase.from('users').select('id').ilike('email', `${login.replace(/[_%\\]/g, '\\$&')}@%`)
-  if (repetidos?.length) voltar(caminho, 'erro', `Já existe um usuário "${login}". Escolha outro.`)
+  const token = await criarConvite(igreja_id, nome)
+  await registrarLog({ acao: 'usuario_criado', descricao: `Gerou convite de administrador para ${nome} na igreja ${igreja.nome}`, entidade: 'igreja', entidade_id: igreja_id, igreja_id: null })
+  revalidatePath(caminho)
+  redirect(`${caminho}?convite=${encodeURIComponent(token)}#administradores`)
+}
 
-  const id = randomUUID()
-  const email = loginParaEmail(login)
-  const { error } = await (await daIgreja(igreja_id)).insert('users', { id, name, email, role: 'admin', is_active: true })
-  if (error) voltar(caminho, 'erro', `Não foi possível cadastrar: ${error.message}`)
-
-  let erroAcesso: string | null
-  try {
-    erroAcesso = await sincronizarAcesso(id, email, senha)
-  } catch (e) {
-    erroAcesso = e instanceof Error ? e.message : String(e)
-  }
-  await registrarLog({ acao: 'usuario_criado', descricao: `Cadastrou ${name} (${login}) como administrador da igreja`, entidade: 'user', entidade_id: id, igreja_id: null })
-  if (erroAcesso) voltar(caminho, 'erro', `Administrador cadastrado, mas a senha não foi definida: ${erroAcesso}`)
-  voltar(caminho, 'salvo', `Administrador ${name} cadastrado.${igreja.situacao === 'ativa' ? '' : ' O acesso é liberado quando a igreja for ativada.'}`)
+export async function cancelarConviteAcao(form: FormData) {
+  await exigirSuperadmin()
+  const igreja_id = texto(form, 'igreja_id')
+  const id = texto(form, 'id')
+  if (!igreja_id || !id) voltar('/plataforma/igrejas', 'erro', 'Convite não informado.')
+  await cancelarConvite(id, igreja_id)
+  voltar(`/plataforma/igrejas/${igreja_id}`, 'salvo', 'Convite cancelado.')
 }

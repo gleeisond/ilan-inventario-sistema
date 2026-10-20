@@ -17,6 +17,11 @@ const AUTORIZADOS = {
   'app/plataforma/actions.ts': ['igrejas', 'users'],
   'app/plataforma/igrejas/page.tsx': ['igrejas', 'campus', 'users'],
   'app/plataforma/igrejas/[id]/page.tsx': ['igrejas', 'regions', 'campus', 'users'],
+  'app/plataforma/assinaturas/page.tsx': ['igrejas'],
+  'app/plataforma/assinaturas/actions.ts': ['igrejas', 'cobrancas'],
+  // Tabelas da plataforma (não são de uma igreja): faturas, avisos do Asaas e convites
+  'lib/assinaturas.ts': ['igrejas', 'cobrancas', 'asaas_eventos'],
+  'lib/convites.ts': ['convites', 'users'], // users: login único na plataforma e desfazer se a senha falhar
 }
 
 function arquivos(dir) {

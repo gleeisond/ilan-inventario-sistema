@@ -10,7 +10,8 @@ import NavMenu from './NavMenu'
 import MarcaIgreja from './MarcaIgreja'
 
 export default async function Sidebar() {
-  if (headers().get('x-pathname') === '/login') return null
+  const caminho = headers().get('x-pathname') ?? ''
+  if (caminho === '/login' || caminho.startsWith('/convite/')) return null
 
   const usuario = await getUsuarioAtual()
   // O administrador Genesis41 só vê o painel da plataforma: nenhum dado de igreja no menu
@@ -29,6 +30,7 @@ export default async function Sidebar() {
         <NavMenu
           itens={[
             { href: '/plataforma/igrejas', rotulo: 'Igrejas' },
+            { href: '/plataforma/assinaturas', rotulo: 'Assinaturas' },
             { href: '/plataforma/modulos', rotulo: 'Próximos módulos' },
           ]}
         />

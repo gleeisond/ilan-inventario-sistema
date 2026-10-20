@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import BotaoExcluir from '@/components/BotaoExcluir'
-import { excluirCampus } from '../actions'
+import { criarRegiao, excluirCampus } from '../actions'
 import Aviso from '../Aviso'
 import FormCampus from './FormCampus'
 import { exigirAdmin } from '@/lib/auth'
@@ -31,6 +31,11 @@ export default async function CadastroCampus({ searchParams }: { searchParams: {
       <section>
         <h2 className="font-semibold text-lg mb-3">Novo campus</h2>
         <FormCampus key={Date.now()} regioes={regioes ?? []} />
+        <form action={criarRegiao} className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-gray-600">Precisa de outra região?</span>
+          <input name="name" required placeholder="Ex: Zona Oeste" className="px-3 py-1.5 border border-gray-300 rounded-lg" />
+          <button type="submit" className="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-100">Criar região</button>
+        </form>
       </section>
 
       <section className="bg-white rounded-lg border border-gray-200 overflow-x-auto">

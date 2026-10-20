@@ -6,7 +6,8 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { getSupabase, getSupabaseAdmin } from '@/lib/supabase'
 import { COOKIE_SESSAO, lerToken, loginAtivo } from '@/lib/sessao'
-import { UserRole } from '@/types/database'
+import { PlanoIgreja, UserRole } from '@/types/database'
+import { situacaoFinanceira } from '@/lib/assinaturas'
 
 // O acesso é por usuário, não por e-mail. Como o Supabase Auth exige um e-mail,
 // cada usuário recebe um endereço interno <usuario>@ilan.local que nunca recebe mensagens.
@@ -59,6 +60,8 @@ export const getUsuarioAtual = cache(async (): Promise<UsuarioAtual | null> => {
   const superadmin = linha.role === 'superadmin'
   // Usuário de igreja em implantação ou suspensa não entra (o superadmin não tem igreja)
   if (!superadmin && linha.igreja?.situacao !== 'ativa') return null
+  // Nem de igreja bloqueada por atraso no pagamento
+  if (!superadmin && linha.igreja_id && (await situacaoFinanceira(linha.igreja_id)).bloqueada) return null
   return {
     id: linha.id,
     name: linha.name,
@@ -70,14 +73,14 @@ export const getUsuarioAtual = cache(async (): Promise<UsuarioAtual | null> => {
   }
 })
 
-export type IgrejaDoContexto = { id: string; nome: string; logo_url: string | null; cor_principal: string; modulos: string[] }
+export type IgrejaDoContexto = { id: string; nome: string; logo_url: string | null; cor_principal: string; modulos: string[]; plano: PlanoIgreja }
 
 // Igreja cujos dados aparecem nas telas do sistema: a do usuário logado.
 // O superadmin não tem igreja e nunca recebe dados de uma: aqui ele é recusado.
 export const dadosDaIgreja = cache(async (): Promise<IgrejaDoContexto> => {
   const usuario = await getUsuarioAtual()
   if (usuario?.superadmin) throw new Error('O administrador Genesis41 não acessa dados das igrejas.')
-  const colunas = 'id, nome, logo_url, cor_principal, modulos'
+  const colunas = 'id, nome, logo_url, cor_principal, modulos, plano'
   const supabase = getSupabase()
   if (usuario?.igreja_id) {
     const { data } = await supabase.from('igrejas').select(colunas).eq('id', usuario.igreja_id).single()

@@ -2,7 +2,8 @@
 
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-import { exigirAdmin, igrejaDoContexto, registrarLog } from '@/lib/auth'
+import { dadosDaIgreja, exigirAdmin, registrarLog } from '@/lib/auth'
+import { limiteAtingido } from '@/lib/igrejas'
 import { TabelaDaIgreja, daIgreja } from '@/lib/db'
 
 function texto(form: FormData, campo: string) {
@@ -34,6 +35,12 @@ export async function salvarCampus(form: FormData) {
   // A região escolhida precisa ser da mesma igreja
   const { data: regiao } = await db.select('regions', 'id').eq('id', region_id).maybeSingle()
   if (!regiao) voltar(id ? `${caminho}/${id}` : caminho, 'erro', 'Região não encontrada.')
+  // Campus novo: respeita o limite do plano da igreja
+  if (!id) {
+    const { count } = await db.select('campus', 'id', { count: 'exact', head: true })
+    const limite = limiteAtingido((await dadosDaIgreja()).plano, 'campus', count ?? 0)
+    if (limite) voltar(caminho, 'erro', limite)
+  }
   const { data, error } = id
     ? await db.update('campus', { name, region_id, location }).eq('id', id).select('id').single()
     : await db.insert('campus', { name, region_id, location }).select('id').single()
@@ -84,6 +91,20 @@ export async function excluirCampus(form: FormData) {
 
   await registrarLog({ acao: 'cadastro_excluido', descricao: `Excluiu o campus ${campus.name}`, entidade: 'campus', entidade_id: id })
   voltar(caminho, 'salvo', `Campus ${campus.name} excluído.`)
+}
+
+// ---------- Regiões ----------
+
+export async function criarRegiao(form: FormData) {
+  await exigirAdmin()
+  const caminho = '/cadastros/campus'
+  const name = texto(form, 'name')
+  if (!name) voltar(caminho, 'erro', 'Informe o nome da região.')
+  const db = await daIgreja()
+  const { data, error } = await db.insert('regions', { name }).select('id').single()
+  if (error) voltar(caminho, 'erro', error.code === '23505' ? `A região "${name}" já existe.` : `Não foi possível criar: ${error.message}`)
+  await registrarLog({ acao: 'cadastro_criado', descricao: `Criou a região ${name}`, entidade: 'region', entidade_id: data.id })
+  voltar(caminho, 'salvo', `Região ${name} criada.`)
 }
 
 // ---------- Categorias e locais ----------

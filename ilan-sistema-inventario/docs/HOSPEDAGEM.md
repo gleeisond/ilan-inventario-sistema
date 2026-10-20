@@ -26,6 +26,9 @@ Toda hospedagem precisa destas variáveis:
 | `SUPABASE_SERVICE_ROLE_KEY` | Sim | Chave secreta do Supabase. Usada só no servidor, em todas as consultas ao banco e para criar e trocar senhas. Marque como **Sensitive** na Vercel e nunca exponha. Sem ela, o servidor usa a chave pública e o banco precisaria ficar aberto. |
 | `SESSION_SECRET` | Recomendada | Texto longo e aleatório que assina o cookie de sessão. Sem ela, a aplicação usa a `SUPABASE_SERVICE_ROLE_KEY`. Trocar esse valor desconecta todo mundo. |
 | `LOGIN_ATIVO` | Sim, em produção | `1` exige login. Sem ela, o sistema fica aberto (modo de teste). |
+| `ASAAS_API_KEY` | Para cobrar | Chave da API do Asaas (Integrações > Chaves de API). Marque como **Sensitive**. Sem ela, o painel mostra as assinaturas mas não cria nenhuma. |
+| `ASAAS_AMBIENTE` | Para cobrar | `producao` para cobrar de verdade. Qualquer outro valor usa o sandbox (cobranças de teste), e a chave precisa ser do mesmo ambiente. |
+| `ASAAS_WEBHOOK_TOKEN` | Para cobrar | Token que o Asaas manda nos avisos de pagamento. Use o mesmo texto no webhook do Asaas (Integrações > Webhooks), com a URL `https://<domínio>/api/asaas/webhook` e os eventos de cobrança. De 32 a 255 caracteres, sem espaços. |
 
 Os valores atuais estão na Vercel, em **Settings > Environment Variables**. Não guarde as chaves no código nem neste documento.
 
@@ -85,6 +88,7 @@ Num projeto Supabase novo, rode no SQL Editor, nesta ordem:
 7. `sql/05_igrejas.sql`: tabela de igrejas, `igreja_id` nos cadastros e o perfil `superadmin`. Rode antes de publicar a versão com o painel da plataforma. Para dar o perfil a alguém: `update users set role = 'superadmin', igreja_id = null where email = '<usuario>@ilan.local';`
 8. `sql/06_isolamento_igrejas.sql`: igreja_id em equipamentos, chamados e histórico, e os gatilhos que recusam qualquer registro ligado a outra igreja. Compatível com a versão anterior do sistema: rode antes de publicar a versão nova.
 9. `sql/07_igreja_obrigatoria.sql`: torna o igreja_id obrigatório. Rode depois de publicar a versão que grava igreja_id.
+10. `sql/08_assinaturas.sql`: dados de cobrança das igrejas, faturas do Asaas, avisos recebidos e convites do administrador. Rode antes de publicar a versão com as assinaturas.
 
 ## Isolamento entre igrejas
 

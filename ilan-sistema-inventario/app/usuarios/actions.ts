@@ -4,7 +4,8 @@ import { randomUUID } from 'crypto'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { sincronizarAcesso } from '@/lib/acesso'
-import { FORMATO_LOGIN, exigirAdmin, igrejaDoContexto, loginParaEmail, registrarLog } from '@/lib/auth'
+import { FORMATO_LOGIN, exigirAdmin, igrejaDoContexto, loginParaEmail, registrarLog, dadosDaIgreja } from '@/lib/auth'
+import { limiteAtingido } from '@/lib/igrejas'
 import { PERFIS, PERFIL_LABELS, PERFIL_VINCULO } from '@/lib/usuarios'
 import { UserRole } from '@/types/database'
 import { daIgreja } from '@/lib/db'
@@ -66,6 +67,13 @@ export async function salvarUsuario(form: FormData) {
 
   const email = loginParaEmail(login)
   const dados = { name, email, role, campus_id, region_id, is_active: form.get('is_active') === 'on' }
+  // Usuário novo ativo (ou reativado): respeita o limite do plano da igreja
+  const { data: anterior } = id ? await db.select('users', 'is_active').eq('id', id).maybeSingle() : { data: null }
+  if (dados.is_active && !anterior?.is_active) {
+    const { count } = await db.select('users', 'id', { count: 'exact', head: true }).eq('is_active', true)
+    const limite = limiteAtingido((await dadosDaIgreja()).plano, 'usuarios', count ?? 0)
+    if (limite) voltarCom(limite)
+  }
   const novoId = id ?? randomUUID()
   const { error } = id
     ? await db.update('users', dados).eq('id', id)
