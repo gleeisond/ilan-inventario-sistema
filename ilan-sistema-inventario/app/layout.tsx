@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   description: 'O celeiro digital da sua igreja: equipamentos, manutenções e cadastros em um só lugar.',
   // Nome e ícone quando o sistema é instalado na tela de início do iPhone
   appleWebApp: { capable: true, title: NOME, statusBarStyle: 'black' },
-  icons: { icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }, { url: '/icone-192.png', type: 'image/png' }], apple: '/apple-touch-icon.png' },
+  icons: { icon: [{ url: '/favicon.ico', sizes: '48x48' }, { url: '/favicon.svg', type: 'image/svg+xml' }, { url: '/icone-192.png', type: 'image/png', sizes: '192x192' }], apple: '/apple-touch-icon.png' },
 }
 
 export const viewport: Viewport = {
