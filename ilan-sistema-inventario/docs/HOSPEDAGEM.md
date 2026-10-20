@@ -1,6 +1,6 @@
 # Como o sistema está montado e como levá-lo para outro lugar
 
-Este documento descreve onde cada parte do Inventário ILAN roda hoje e o passo a passo para mudar de hospedagem no futuro. Atualize-o sempre que mudar algo na infraestrutura.
+Este documento descreve onde cada parte do Genesis41 roda hoje e o passo a passo para mudar de hospedagem no futuro. Atualize-o sempre que mudar algo na infraestrutura.
 
 ## Visão geral
 
@@ -10,7 +10,7 @@ Este documento descreve onde cada parte do Inventário ILAN roda hoje e o passo 
 | Banco de dados | Supabase, projeto `tffdimvvjneahqfwlmxz` | PostgreSQL com todas as tabelas (campus, equipamentos, manutenções, usuários, logs, categorias, locais). |
 | Senhas de acesso | Supabase Auth (mesmo projeto) | Guarda as senhas com segurança. Cada usuário tem um e-mail interno `<usuario>@ilan.local`, que nunca recebe mensagens. |
 | Sessão (quem está logado) | Cookie `ilan_sessao`, assinado pela própria aplicação | Não depende da Vercel nem do Supabase. |
-| Domínio | `inventario-ilan.nex4.com.br`, DNS no Cloudflare | Registro CNAME para `cname.vercel-dns.com`, com o proxy do Cloudflare **desligado** (nuvem cinza). |
+| Domínio | `genesis41.nex4.com.br`, DNS no Cloudflare | Registro CNAME para `cname.vercel-dns.com`, com o proxy do Cloudflare **desligado** (nuvem cinza). O endereço antigo `inventario-ilan.nex4.com.br` redireciona (308) para o novo, configurado em Vercel > Settings > Domains. |
 | Código | GitHub `gleeisond/ilan-inventario-sistema` | Cada mudança entra por pull request. A Vercel publica sozinha o que chega na `main`. |
 
 Nada no código depende de recursos exclusivos da Vercel. A aplicação é um projeto Next.js comum e roda em qualquer lugar que execute Node.js.

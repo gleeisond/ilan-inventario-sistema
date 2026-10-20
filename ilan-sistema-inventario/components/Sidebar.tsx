@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { headers } from 'next/headers'
-import { getUsuarioAtual } from '@/lib/auth'
+import { getUsuarioAtual, igrejaDoContexto } from '@/lib/auth'
+import { getSupabase } from '@/lib/supabase'
 import { loginAtivo } from '@/lib/sessao'
 import { PERFIL_LABELS } from '@/lib/usuarios'
 import { sair } from '@/app/login/actions'
@@ -14,10 +15,30 @@ export default async function Sidebar() {
   const usuario = await getUsuarioAtual()
   // Sem login ligado, todos veem tudo. Com login, Usuários e Logs são só do admin.
   const podeAdministrar = !loginAtivo() || usuario?.role === 'admin'
+  // O superadmin vê os dados de uma igreja nas telas comuns; o menu diz de qual
+  let igrejaVista: string | null = null
+  if (usuario?.superadmin) {
+    const { data } = await getSupabase().from('igrejas').select('nome').eq('id', await igrejaDoContexto()).maybeSingle()
+    igrejaVista = data?.nome ?? null
+  }
 
   return (
     <MenuLateral>
-      <img src="/logo-ilan.png" alt="Ilan Church" className="hidden md:block w-full max-w-[200px] mb-8" />
+      <img src="/genesis41-negativo.svg" alt="Genesis41" className="hidden md:block w-full max-w-[170px] mb-8" />
+      {usuario?.superadmin && (
+        <div className="mb-8">
+          <p className="px-3 mb-2 text-[11px] uppercase tracking-[0.18em] text-ouro-400">Genesis41</p>
+          <NavMenu
+            itens={[
+              { href: '/plataforma/igrejas', rotulo: 'Igrejas' },
+              { href: '/plataforma/modulos', rotulo: 'Próximos módulos' },
+            ]}
+          />
+        </div>
+      )}
+      {igrejaVista && (
+        <p className="px-3 mb-2 text-[11px] uppercase tracking-[0.18em] text-gray-400">Dados de {igrejaVista}</p>
+      )}
       <NavMenu
         itens={[
           { href: '/dashboard', rotulo: 'Dashboard' },
@@ -33,17 +54,6 @@ export default async function Sidebar() {
             : []),
         ]}
       />
-      {usuario?.superadmin && (
-        <div className="mt-8">
-          <p className="px-3 mb-2 text-[11px] uppercase tracking-[0.18em] text-ouro-400">Genesis41</p>
-          <NavMenu
-            itens={[
-              { href: '/plataforma/igrejas', rotulo: 'Igrejas' },
-              { href: '/plataforma/modulos', rotulo: 'Próximos módulos' },
-            ]}
-          />
-        </div>
-      )}
       <div className="mt-auto pt-8 text-sm">
         {usuario ? (
           <>
@@ -58,11 +68,6 @@ export default async function Sidebar() {
           !loginAtivo() && <p className="text-gray-400">Login desligado (modo de teste)</p>
         )}
         <InstalarApp />
-        {/* Assinatura do produto: a igreja aparece em cima, a Genesis41 no rodapé */}
-        <div className="mt-6 pt-4 border-t border-white/10 flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-gray-400">
-          por
-          <img src="/genesis41-negativo.svg" alt="Genesis41" className="h-3.5 w-auto opacity-80" />
-        </div>
       </div>
     </MenuLateral>
   )

@@ -29,7 +29,7 @@ export default function MenuLateral({ children }: { children: React.ReactNode })
   return (
     <>
       <header className="md:hidden sticky top-0 z-30 flex items-center justify-between bg-gray-900 px-4 py-3">
-        <img src="/logo-ilan.png" alt="Ilan Church" className="h-7 w-auto" />
+        <img src="/genesis41-negativo.svg" alt="Genesis41" className="h-6 w-auto" />
         <button
           type="button"
           onClick={() => setAberto(true)}

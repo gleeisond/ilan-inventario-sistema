@@ -51,7 +51,8 @@ export async function entrar(form: FormData) {
     maxAge: DURACAO_SESSAO_SEGUNDOS,
   })
   await registrarLog({ acao: 'login', descricao: 'Entrou no sistema', entidade: 'user', entidade_id: usuario.id, usuario, igreja_id })
-  redirect(voltar)
+  // O superadmin não é de nenhuma igreja: começa no painel da plataforma
+  redirect(usuario.role === 'superadmin' && voltar === '/dashboard' ? '/plataforma/igrejas' : voltar)
 }
 
 export async function sair() {

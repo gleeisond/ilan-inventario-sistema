@@ -1,6 +1,6 @@
 # Animações e microinterações
 
-Guia rápido do sistema de movimento do Inventário ILAN. Não há biblioteca de animação: tudo é CSS em `app/globals.css` mais alguns componentes pequenos.
+Guia rápido do sistema de movimento do Genesis41. Não há biblioteca de animação: tudo é CSS em `app/globals.css` mais alguns componentes pequenos.
 
 ## Princípios
 
