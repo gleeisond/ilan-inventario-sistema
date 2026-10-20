@@ -12,7 +12,6 @@
 -- ---------- Colunas ----------
 -- Logo de cada igreja no menu (sem logo, o menu mostra o nome)
 alter table igrejas add column if not exists logo_url text;
-update igrejas set logo_url = '/logo-ilan.png' where nome = 'ILAN Church' and logo_url is null;
 
 alter table equipment add column if not exists igreja_id uuid references igrejas(id) on delete restrict;
 alter table maintenance_requests add column if not exists igreja_id uuid references igrejas(id) on delete restrict;

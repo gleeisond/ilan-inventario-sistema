@@ -11,6 +11,7 @@ import { dadosDaIgreja, exigirLogin } from '@/lib/auth'
 import { moduloDaRota } from '@/lib/modulos'
 import { situacaoFinanceira } from '@/lib/assinaturas'
 import AvisoPagamento from '@/components/AvisoPagamento'
+import { NOME, SLOGAN } from '@/lib/marca'
 
 // Fontes da identidade Genesis41: Sora nos títulos, Figtree no texto e IBM Plex Mono nos números
 const titulo = Sora({ subsets: ['latin'], weight: ['600', '700'], variable: '--fonte-titulo' })
@@ -18,11 +19,11 @@ const texto = Figtree({ subsets: ['latin'], variable: '--fonte-texto' })
 const mono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '600'], variable: '--fonte-mono' })
 
 export const metadata: Metadata = {
-  title: 'ILAN - Sistema de Inventário de Mídia',
-  description: 'Gerenciamento de equipamentos e manutenção de mídia para igrejas ILAN',
+  title: `${NOME} · ${SLOGAN}`,
+  description: 'O celeiro digital da sua igreja: equipamentos, manutenções e cadastros em um só lugar.',
   // Nome e ícone quando o sistema é instalado na tela de início do iPhone
-  appleWebApp: { capable: true, title: 'Inventário ILAN', statusBarStyle: 'black' },
-  icons: { icon: '/icone-192.png', apple: '/apple-touch-icon.png' },
+  appleWebApp: { capable: true, title: NOME, statusBarStyle: 'black' },
+  icons: { icon: [{ url: '/favicon.ico', sizes: '48x48' }, { url: '/favicon.svg', type: 'image/svg+xml' }, { url: '/icone-192.png', type: 'image/png', sizes: '192x192' }], apple: '/apple-touch-icon.png' },
 }
 
 export const viewport: Viewport = {

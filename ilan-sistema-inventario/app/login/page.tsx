@@ -1,4 +1,5 @@
 import { entrar } from './actions'
+import { SLOGAN } from '@/lib/marca'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,9 +9,9 @@ export default function Login({ searchParams }: { searchParams: { erro?: string;
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-gray-900">
       <div className="w-full max-w-sm">
-        <img src="/logo-ilan.png" alt="Ilan Church" className="entrada w-64 mx-auto" />
-        <p className="entrada text-gray-400 text-center mt-4 mb-8" style={{ '--atraso': '150ms' } as React.CSSProperties}>
-          Inventário de Mídia
+        <img src="/genesis41-logo-negativo.svg" alt="Genesis41" className="entrada w-44 mx-auto" />
+        <p className="entrada text-gray-400 text-center mt-5 mb-8" style={{ '--atraso': '150ms' } as React.CSSProperties}>
+          {SLOGAN}
         </p>
 
         <form
@@ -38,14 +39,6 @@ export default function Login({ searchParams }: { searchParams: { erro?: string;
           </button>
           <p className="text-xs text-gray-500 text-center">No primeiro acesso, use a senha que o administrador passou. Depois você pode trocá-la. Esqueceu? Peça ao administrador uma nova.</p>
         </form>
-
-        <div
-          className="entrada mt-10 flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.18em] text-gray-400"
-          style={{ '--atraso': '450ms' } as React.CSSProperties}
-        >
-          por
-          <img src="/genesis41-negativo.svg" alt="Genesis41" className="h-4 w-auto" />
-        </div>
       </div>
     </div>
   )

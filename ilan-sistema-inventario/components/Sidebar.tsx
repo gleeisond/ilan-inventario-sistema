@@ -21,19 +21,23 @@ export default async function Sidebar() {
   const podeAdministrar = !loginAtivo() || usuario?.role === 'admin'
   // O menu mostra só as telas dos módulos que a igreja tem liberados
   const temPatrimonio = Boolean(igreja?.modulos.includes('patrimonio'))
-  const marcaGenesis = <img src="/genesis41-negativo.svg" alt="Genesis41" className="h-6 w-auto" />
 
   return (
-    <MenuLateral marca={igreja ? <MarcaIgreja igreja={igreja} /> : marcaGenesis}>
-      <div className="hidden md:block mb-8">{igreja ? <MarcaIgreja igreja={igreja} grande /> : marcaGenesis}</div>
+    <MenuLateral>
+      <img src="/genesis41-negativo.svg" alt="Genesis41" className="hidden md:block w-full max-w-[170px] mb-6" />
+      {igreja && <div className="mb-8 px-3"><MarcaIgreja igreja={igreja} /></div>}
       {superadmin ? (
-        <NavMenu
-          itens={[
-            { href: '/plataforma/igrejas', rotulo: 'Igrejas' },
-            { href: '/plataforma/assinaturas', rotulo: 'Assinaturas' },
-            { href: '/plataforma/modulos', rotulo: 'Próximos módulos' },
-          ]}
-        />
+        <div className="mb-8">
+          <p className="px-3 mb-2 text-[11px] uppercase tracking-[0.18em] text-ouro-400">Genesis41</p>
+          <NavMenu
+            itens={[
+              { href: '/plataforma/igrejas', rotulo: 'Igrejas' },
+              { href: '/plataforma/assinaturas', rotulo: 'Assinaturas' },
+              { href: '/plataforma/modulos', rotulo: 'Próximos módulos' },
+              { href: '/plataforma/equipe', rotulo: 'Equipe Genesis41' },
+            ]}
+          />
+        </div>
       ) : (
         <NavMenu
           itens={[
@@ -69,11 +73,6 @@ export default async function Sidebar() {
           !loginAtivo() && <p className="text-gray-400">Login desligado (modo de teste)</p>
         )}
         <InstalarApp />
-        {/* Assinatura do produto: a igreja aparece em cima, a Genesis41 no rodapé */}
-        {!superadmin && <div className="mt-6 pt-4 border-t border-white/10 flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-gray-400">
-          por
-          <img src="/genesis41-negativo.svg" alt="Genesis41" className="h-3.5 w-auto opacity-80" />
-        </div>}
       </div>
     </MenuLateral>
   )

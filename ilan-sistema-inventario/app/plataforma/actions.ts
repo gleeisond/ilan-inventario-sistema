@@ -1,10 +1,12 @@
 'use server'
 
+import { randomUUID } from 'crypto'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { getSupabase } from '@/lib/supabase'
 import { cancelarConvite, criarConvite } from '@/lib/convites'
-import { exigirSuperadmin, registrarLog } from '@/lib/auth'
+import { sincronizarAcesso } from '@/lib/acesso'
+import { FORMATO_LOGIN, exigirSuperadmin, loginParaEmail, registrarLog } from '@/lib/auth'
 import { daIgreja } from '@/lib/db'
 import { PLANOS } from '@/lib/igrejas'
 import { MODULOS } from '@/lib/modulos'
@@ -161,4 +163,81 @@ export async function cancelarConviteAcao(form: FormData) {
   if (!igreja_id || !id) voltar('/plataforma/igrejas', 'erro', 'Convite não informado.')
   await cancelarConvite(id, igreja_id)
   voltar(`/plataforma/igrejas/${igreja_id}`, 'salvo', 'Convite cancelado.')
+}
+
+// Equipe Genesis41: os superadmins, que não pertencem a nenhuma igreja
+const EQUIPE = '/plataforma/equipe'
+
+export async function criarSuperadmin(form: FormData) {
+  await exigirSuperadmin()
+  const name = texto(form, 'name')
+  const login = texto(form, 'login')?.toLowerCase() ?? null
+  const senha = texto(form, 'senha')
+  if (!name || !login || !senha) voltar(EQUIPE, 'erro', 'Preencha nome, usuário e senha.')
+  if (!FORMATO_LOGIN.test(login)) voltar(EQUIPE, 'erro', 'Usuário inválido. Use de 3 a 40 letras minúsculas, números, ponto, hífen ou sublinhado.')
+  if (senha.length < 6) voltar(EQUIPE, 'erro', 'A senha precisa ter pelo menos 6 caracteres.')
+
+  const supabase = getSupabase()
+  const { data: repetidos } = await supabase.from('users').select('id').ilike('email', `${login.replace(/[_%\\]/g, '\\$&')}@%`)
+  if (repetidos?.length) voltar(EQUIPE, 'erro', `Já existe um usuário "${login}". Escolha outro.`)
+
+  const id = randomUUID()
+  const email = loginParaEmail(login)
+  const { error } = await supabase.from('users').insert({ id, name, email, role: 'superadmin', is_active: true, igreja_id: null })
+  if (error) voltar(EQUIPE, 'erro', `Não foi possível cadastrar: ${error.message}`)
+
+  let erroAcesso: string | null
+  try {
+    erroAcesso = await sincronizarAcesso(id, email, senha)
+  } catch (e) {
+    erroAcesso = e instanceof Error ? e.message : String(e)
+  }
+  await registrarLog({ acao: 'usuario_criado', descricao: `Cadastrou ${name} (${login}) como administrador Genesis41`, entidade: 'user', entidade_id: id, igreja_id: null })
+  if (erroAcesso) voltar(EQUIPE, 'erro', `Cadastrado, mas a senha não foi definida: ${erroAcesso}`)
+  voltar(EQUIPE, 'salvo', `${name} agora é administrador Genesis41.`)
+}
+
+async function buscarSuperadmin(form: FormData) {
+  const id = texto(form, 'id')
+  if (!id) voltar(EQUIPE, 'erro', 'Usuário não informado.')
+  const { data } = await getSupabase().from('users').select('id, name, email, is_active').eq('id', id).eq('role', 'superadmin').maybeSingle()
+  if (!data) voltar(EQUIPE, 'erro', 'Usuário não encontrado.')
+  return data as { id: string; name: string; email: string; is_active: boolean }
+}
+
+export async function alternarSuperadmin(form: FormData) {
+  const eu = await exigirSuperadmin()
+  const alvo = await buscarSuperadmin(form)
+  const supabase = getSupabase()
+  if (alvo.is_active) {
+    if (eu && eu.id === alvo.id) voltar(EQUIPE, 'erro', 'Você não pode bloquear o seu próprio acesso.')
+    const { count } = await supabase.from('users').select('id', { count: 'exact', head: true }).eq('role', 'superadmin').eq('is_active', true)
+    if ((count ?? 0) <= 1) voltar(EQUIPE, 'erro', 'É preciso ter pelo menos um administrador Genesis41 liberado.')
+  }
+  const { error } = await supabase.from('users').update({ is_active: !alvo.is_active }).eq('id', alvo.id)
+  if (error) voltar(EQUIPE, 'erro', `Não foi possível salvar: ${error.message}`)
+  await registrarLog({
+    acao: 'usuario_editado',
+    descricao: `${alvo.is_active ? 'Bloqueou' : 'Liberou'} o acesso de ${alvo.name} (administrador Genesis41)`,
+    entidade: 'user',
+    entidade_id: alvo.id,
+    igreja_id: null,
+  })
+  voltar(EQUIPE, 'salvo', `Acesso de ${alvo.name} ${alvo.is_active ? 'bloqueado' : 'liberado'}.`)
+}
+
+export async function redefinirSenhaSuperadmin(form: FormData) {
+  await exigirSuperadmin()
+  const alvo = await buscarSuperadmin(form)
+  const senha = texto(form, 'senha')
+  if (!senha || senha.length < 6) voltar(EQUIPE, 'erro', 'A senha precisa ter pelo menos 6 caracteres.')
+  let erroAcesso: string | null
+  try {
+    erroAcesso = await sincronizarAcesso(alvo.id, alvo.email, senha)
+  } catch (e) {
+    erroAcesso = e instanceof Error ? e.message : String(e)
+  }
+  if (erroAcesso) voltar(EQUIPE, 'erro', `Não foi possível definir a senha: ${erroAcesso}`)
+  await registrarLog({ acao: 'senha_definida', descricao: `Definiu a senha de ${alvo.name} (administrador Genesis41)`, entidade: 'user', entidade_id: alvo.id, igreja_id: null })
+  voltar(EQUIPE, 'salvo', `Senha de ${alvo.name} definida.`)
 }

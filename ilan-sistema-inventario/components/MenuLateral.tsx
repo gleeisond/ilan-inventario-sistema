@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 // No celular o menu fica escondido atrás do botão ☰ e desliza da esquerda; no computador fica fixo na lateral
-export default function MenuLateral({ children, marca }: { children: React.ReactNode; marca: React.ReactNode }) {
+export default function MenuLateral({ children }: { children: React.ReactNode }) {
   const [aberto, setAberto] = useState(false)
   const caminho = usePathname()
 
@@ -29,7 +29,7 @@ export default function MenuLateral({ children, marca }: { children: React.React
   return (
     <>
       <header className="md:hidden sticky top-0 z-30 flex items-center justify-between bg-gray-900 px-4 py-3">
-        {marca}
+        <img src="/genesis41-negativo.svg" alt="Genesis41" className="h-6 w-auto" />
         <button
           type="button"
           onClick={() => setAberto(true)}
