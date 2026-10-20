@@ -1,11 +1,12 @@
 import type { MetadataRoute } from 'next'
+import { NOME, SLOGAN } from '@/lib/marca'
 
 // Permite instalar o sistema como aplicativo no celular (Chrome no Android, Safari no iPhone)
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Inventário ILAN',
-    short_name: 'Inventário ILAN',
-    description: 'Equipamentos e manutenções de mídia da ILAN',
+    name: NOME,
+    short_name: NOME,
+    description: SLOGAN,
     start_url: '/dashboard',
     scope: '/',
     display: 'standalone',
@@ -15,7 +16,7 @@ export default function manifest(): MetadataRoute.Manifest {
     icons: [
       { src: '/icone-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
       { src: '/icone-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-      { src: '/icone-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      { src: '/icone-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
     ],
   }
 }

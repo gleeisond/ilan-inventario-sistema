@@ -17,7 +17,7 @@ export default async function Sidebar() {
 
   return (
     <MenuLateral>
-      <img src="/logo-ilan.png" alt="Ilan Church" className="hidden md:block w-full max-w-[200px] mb-8" />
+      <img src="/genesis41-negativo.svg" alt="Genesis41" className="hidden md:block w-full max-w-[170px] mb-8" />
       <NavMenu
         itens={[
           { href: '/dashboard', rotulo: 'Dashboard' },
@@ -58,11 +58,6 @@ export default async function Sidebar() {
           !loginAtivo() && <p className="text-gray-400">Login desligado (modo de teste)</p>
         )}
         <InstalarApp />
-        {/* Assinatura do produto: a igreja aparece em cima, a Genesis41 no rodapé */}
-        <div className="mt-6 pt-4 border-t border-white/10 flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-gray-400">
-          por
-          <img src="/genesis41-negativo.svg" alt="Genesis41" className="h-3.5 w-auto opacity-80" />
-        </div>
       </div>
     </MenuLateral>
   )
