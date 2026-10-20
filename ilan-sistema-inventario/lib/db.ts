@@ -8,10 +8,16 @@
 //
 // O banco confere de novo: gatilhos (sql/06_isolamento_igrejas.sql) recusam qualquer registro
 // que aponte para campus, equipamento ou usuário de outra igreja.
+//
+// Dentro da igreja, cada perfil só enxerga os próprios campus (campusVisiveis):
+//   líder de campus e pastor: o campus deles | líder regional: os campus da região
+//   administrador, assistência técnica e superadmin: todos
+// Registros, notificações e histórico de chamados não têm campus: são sempre lidos a partir
+// de um chamado ou equipamento já filtrado.
 
 import type { PostgrestFilterBuilder } from '@supabase/postgrest-js'
 import { getSupabase } from '@/lib/supabase'
-import { igrejaDoContexto } from '@/lib/auth'
+import { getUsuarioAtual, igrejaDoContexto } from '@/lib/auth'
 
 export const TABELAS_DA_IGREJA = [
   'regions',
@@ -48,17 +54,57 @@ function semIgreja(dados: Linha) {
   return resto
 }
 
+// Campus que o usuário logado pode ver. null = todos os campus da igreja.
+export async function campusVisiveis(igreja: string): Promise<string[] | null> {
+  const usuario = await getUsuarioAtual()
+  if (!usuario) return null // modo de teste sem login
+  if (usuario.role === 'lider_midia' || usuario.role === 'pastor') return usuario.campus_id ? [usuario.campus_id] : []
+  if (usuario.role === 'lider_regional') {
+    if (!usuario.region_id) return []
+    const { data } = await getSupabase().from('campus').select('id').eq('igreja_id', igreja).eq('region_id', usuario.region_id)
+    return (data ?? []).map(c => c.id as string)
+  }
+  return null
+}
+
+// Coluna de campus de cada tabela (as que não estão aqui não são filtradas por campus)
+const COLUNA_CAMPUS: Partial<Record<TabelaDaIgreja, string>> = {
+  campus: 'id',
+  equipment: 'campus_id',
+  maintenance_requests: 'campus_id',
+}
+
+// PostgREST: valores do filtro in.(...)
+const lista = (ids: string[]) => `(${ids.map(id => `"${id}"`).join(',')})`
+
+// igrejaId explícito é usado pelo painel da plataforma (superadmin): sem filtro de campus
 export async function daIgreja(igrejaId?: string) {
   const igreja = igrejaId ?? (await igrejaDoContexto())
+  const visiveis = igrejaId ? null : await campusVisiveis(igreja)
   const supabase = getSupabase()
+
+  // Aplica a igreja e, para quem só vê alguns campus, o filtro de campus
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function filtrar<T extends { eq: any; filter: any; or: any }>(tabela: TabelaDaIgreja, consulta: T): T {
+    let q = consulta.eq('igreja_id', igreja)
+    if (visiveis) {
+      const coluna = COLUNA_CAMPUS[tabela]
+      // Usuários: os do próprio campus e os que não são de campus (administração, assistência técnica)
+      if (tabela === 'users') q = q.or(`campus_id.in.${lista(visiveis)},campus_id.is.null`)
+      else if (coluna) q = q.filter(coluna, 'in', lista(visiveis))
+    }
+    return q
+  }
+
   return {
     igreja,
+    campusVisiveis: visiveis,
     select: (tabela: TabelaDaIgreja, colunas = '*', opcoes?: OpcoesSelect) =>
-      supabase.from(tabela).select(colunas, opcoes).eq('igreja_id', igreja) as unknown as Consulta,
+      filtrar(tabela, supabase.from(tabela).select(colunas, opcoes)) as unknown as Consulta,
     insert: (tabela: TabelaDaIgreja, linhas: Linha | Linha[]) => supabase.from(tabela).insert(comIgreja(linhas, igreja)),
     update: (tabela: TabelaDaIgreja, dados: Linha, opcoes?: OpcoesEscrita) =>
-      supabase.from(tabela).update(semIgreja(dados), opcoes).eq('igreja_id', igreja),
-    delete: (tabela: TabelaDaIgreja, opcoes?: OpcoesEscrita) => supabase.from(tabela).delete(opcoes).eq('igreja_id', igreja),
+      filtrar(tabela, supabase.from(tabela).update(semIgreja(dados), opcoes)),
+    delete: (tabela: TabelaDaIgreja, opcoes?: OpcoesEscrita) => filtrar(tabela, supabase.from(tabela).delete(opcoes)),
   }
 }
 

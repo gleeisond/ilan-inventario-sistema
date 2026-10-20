@@ -94,6 +94,8 @@ Cada igreja só vê os próprios dados. Isso é garantido em três camadas:
 - **Build:** `npm run build` roda antes `scripts/verificar-isolamento.mjs`, que barra qualquer `.from()` fora dos arquivos autorizados. Para conferir à mão: `npm run verificar`.
 - **Banco:** gatilhos (`sql/06`) recusam equipamento num campus de outra igreja, chamado com usuário de outra igreja, troca de igreja e afins.
 
+Dentro da igreja, `daIgreja()` também limita os campus: líder de campus e pastor veem só o próprio campus, líder regional os campus da sua região, e administrador e assistência técnica veem todos.
+
 Toda mudança futura de banco deve ganhar um arquivo novo em `sql/` com o próximo número e ser registrada aqui.
 
 ## Backups
